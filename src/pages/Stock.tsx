@@ -1,11 +1,12 @@
 import AppLayout from "@/components/AppLayout";
 import PageHeader from "@/components/PageHeader";
-import { Package, AlertTriangle, Search, Filter } from "lucide-react";
+import StockForm from "@/components/StockForm";
+import { Package, AlertTriangle, Search, Plus } from "lucide-react";
 import { useState } from "react";
 
 type Categorie = "all" | "abayas" | "foulards" | "bazin" | "autres";
 
-const stockItems = [
+const initialStock = [
   { id: 1, nom: "Abaya Noire Premium", categorie: "abayas", zone: "A", stock: 25, seuil: 10, max: 50, prix: "85 000 GNF" },
   { id: 2, nom: "Abaya Bleu Marine M", categorie: "abayas", zone: "A", stock: 3, seuil: 10, max: 50, prix: "90 000 GNF" },
   { id: 3, nom: "Abaya Bordeaux L", categorie: "abayas", zone: "A", stock: 18, seuil: 10, max: 50, prix: "95 000 GNF" },
@@ -29,8 +30,10 @@ const categories: { key: Categorie; label: string }[] = [
 const Stock = () => {
   const [cat, setCat] = useState<Categorie>("all");
   const [search, setSearch] = useState("");
+  const [list, setList] = useState(initialStock);
+  const [formOpen, setFormOpen] = useState(false);
 
-  const filtered = stockItems.filter(item => {
+  const filtered = list.filter(item => {
     const matchCat = cat === "all" || item.categorie === cat;
     const matchSearch = item.nom.toLowerCase().includes(search.toLowerCase());
     return matchCat && matchSearch;
@@ -48,13 +51,14 @@ const Stock = () => {
         title="Gestion du Stock"
         description="Suivi des articles par zone — Organisation ABCDE"
         action={
-          <button className="gradient-gold text-primary-foreground px-4 py-2.5 rounded-lg text-sm font-semibold flex items-center gap-2 shadow-elevated hover:opacity-90 transition-opacity">
-            <Package className="w-4 h-4" /> Inventaire
+          <button onClick={() => setFormOpen(true)} className="gradient-gold text-primary-foreground px-4 py-2.5 rounded-lg text-sm font-semibold flex items-center gap-2 shadow-elevated hover:opacity-90 transition-opacity">
+            <Plus className="w-4 h-4" /> Nouvel Article
           </button>
         }
       />
 
-      {/* Zones Summary */}
+      <StockForm open={formOpen} onOpenChange={setFormOpen} onSubmit={(data) => setList(prev => [data, ...prev])} />
+
       <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mb-6">
         {["A — Abayas", "B — Foulards", "C — Bazin", "D — Autres", "E — Sécurité"].map((zone, i) => (
           <div key={i} className="bg-card border border-border rounded-lg p-3 text-center shadow-card">
@@ -64,36 +68,23 @@ const Stock = () => {
         ))}
       </div>
 
-      {/* Filters */}
       <div className="flex flex-col sm:flex-row gap-3 mb-6">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-          <input
-            type="text"
-            placeholder="Rechercher un article..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-border bg-card text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring/30"
-          />
+          <input type="text" placeholder="Rechercher un article..." value={search} onChange={(e) => setSearch(e.target.value)}
+            className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-border bg-card text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring/30" />
         </div>
         <div className="flex gap-1.5">
           {categories.map((c) => (
-            <button
-              key={c.key}
-              onClick={() => setCat(c.key)}
+            <button key={c.key} onClick={() => setCat(c.key)}
               className={`px-3 py-2 rounded-lg text-xs font-medium transition-colors ${
-                cat === c.key
-                  ? "gradient-gold text-primary-foreground"
-                  : "bg-secondary text-secondary-foreground hover:bg-accent hover:text-accent-foreground"
+                cat === c.key ? "gradient-gold text-primary-foreground" : "bg-secondary text-secondary-foreground hover:bg-accent hover:text-accent-foreground"
               }`}
-            >
-              {c.label}
-            </button>
+            >{c.label}</button>
           ))}
         </div>
       </div>
 
-      {/* Table */}
       <div className="bg-card border border-border rounded-xl shadow-card overflow-hidden">
         <table className="w-full">
           <thead>
@@ -122,12 +113,9 @@ const Stock = () => {
                     <div className="flex items-center gap-2">
                       <span className="text-sm font-semibold text-foreground">{item.stock}</span>
                       <div className="w-16 h-1.5 rounded-full bg-border overflow-hidden">
-                        <div
-                          className={`h-full rounded-full transition-all ${
-                            item.stock <= item.seuil * 0.3 ? "bg-destructive" : item.stock <= item.seuil ? "bg-warning" : "bg-success"
-                          }`}
-                          style={{ width: `${Math.min((item.stock / item.max) * 100, 100)}%` }}
-                        />
+                        <div className={`h-full rounded-full transition-all ${
+                          item.stock <= item.seuil * 0.3 ? "bg-destructive" : item.stock <= item.seuil ? "bg-warning" : "bg-success"
+                        }`} style={{ width: `${Math.min((item.stock / item.max) * 100, 100)}%` }} />
                       </div>
                     </div>
                   </td>

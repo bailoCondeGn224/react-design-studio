@@ -1,8 +1,10 @@
 import AppLayout from "@/components/AppLayout";
 import PageHeader from "@/components/PageHeader";
+import VenteForm from "@/components/VenteForm";
 import { Plus, Receipt, Clock, CreditCard, Banknote, Smartphone } from "lucide-react";
+import { useState } from "react";
 
-const ventes = [
+const initialVentes = [
   { id: "V-001", client: "Fatimata Diallo", articles: "Abaya Noire Premium, Hijab Soie", total: "110 000 GNF", paiement: "Cash", date: "03/04/2026", heure: "09:15" },
   { id: "V-002", client: "Aissatou Barry", articles: "Lot Foulards Soie (x5)", total: "125 000 GNF", paiement: "Mobile Money", date: "03/04/2026", heure: "10:32" },
   { id: "V-003", client: "Mamadou Sow", articles: "Bazin Riche Bleu 10m", total: "350 000 GNF", paiement: "Virement", date: "03/04/2026", heure: "11:45" },
@@ -12,26 +14,27 @@ const ventes = [
 ];
 
 const paymentIcons: Record<string, typeof Banknote> = {
-  "Cash": Banknote,
-  "Mobile Money": Smartphone,
-  "Virement": CreditCard,
-  "Acompte 50%": Clock,
+  "Cash": Banknote, "Mobile Money": Smartphone, "Virement": CreditCard, "Acompte 50%": Clock,
 };
 
 const Ventes = () => {
+  const [list, setList] = useState(initialVentes);
+  const [formOpen, setFormOpen] = useState(false);
+
   return (
     <AppLayout>
       <PageHeader
         title="Gestion des Ventes"
         description="Registre des transactions et suivi commercial"
         action={
-          <button className="gradient-gold text-primary-foreground px-4 py-2.5 rounded-lg text-sm font-semibold flex items-center gap-2 shadow-elevated hover:opacity-90 transition-opacity">
+          <button onClick={() => setFormOpen(true)} className="gradient-gold text-primary-foreground px-4 py-2.5 rounded-lg text-sm font-semibold flex items-center gap-2 shadow-elevated hover:opacity-90 transition-opacity">
             <Plus className="w-4 h-4" /> Nouvelle Vente
           </button>
         }
       />
 
-      {/* Quick Stats */}
+      <VenteForm open={formOpen} onOpenChange={setFormOpen} onSubmit={(data) => setList(prev => [data, ...prev])} />
+
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
         <div className="bg-card border border-border rounded-xl p-4 shadow-card">
           <p className="text-xs text-muted-foreground mb-1">Ventes Aujourd'hui</p>
@@ -50,7 +53,6 @@ const Ventes = () => {
         </div>
       </div>
 
-      {/* Sales Table */}
       <div className="bg-card border border-border rounded-xl shadow-card overflow-hidden">
         <table className="w-full">
           <thead>
@@ -64,7 +66,7 @@ const Ventes = () => {
             </tr>
           </thead>
           <tbody>
-            {ventes.map((v) => {
+            {list.map((v) => {
               const PayIcon = paymentIcons[v.paiement] || Receipt;
               return (
                 <tr key={v.id} className="border-b border-border last:border-0 hover:bg-muted/30 transition-colors">
