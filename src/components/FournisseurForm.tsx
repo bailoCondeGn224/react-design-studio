@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import FormField from "@/components/FormField";
 import { toast } from "sonner";
@@ -7,14 +7,29 @@ interface FournisseurFormProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSubmit: (data: any) => void;
+  initialData?: any;
+  mode?: 'create' | 'edit';
 }
 
 const produitOptions = ["Abayas", "Foulards", "Bazin Riche", "Bazin Brodé", "Djellabas", "Boubous", "Pagne", "Tissus"];
 
-const FournisseurForm = ({ open, onOpenChange, onSubmit }: FournisseurFormProps) => {
-  const [form, setForm] = useState({
-    nom: "", ville: "", tel: "", email: "", produits: [] as string[], statut: "actif",
-  });
+const FournisseurForm = ({ open, onOpenChange, onSubmit, initialData = null, mode = 'create' }: FournisseurFormProps) => {
+  const getInitialState = () => {
+    if (mode === 'edit' && initialData) {
+      return initialData;
+    }
+    return {
+      nom: "", adresse: "", telephone: "", email: "", produits: [] as string[], statut: "actif",
+    };
+  };
+
+  const [form, setForm] = useState(getInitialState());
+
+  useEffect(() => {
+    if (mode === 'edit' && initialData) {
+      setForm(initialData);
+    }
+  }, [mode, initialData, open]);
 
   const update = (field: string, value: any) => setForm(prev => ({ ...prev, [field]: value }));
 
@@ -27,33 +42,43 @@ const FournisseurForm = ({ open, onOpenChange, onSubmit }: FournisseurFormProps)
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!form.nom.trim() || !form.ville.trim() || !form.tel.trim()) {
+    if (!form.nom.trim() || !form.adresse.trim() || !form.telephone.trim()) {
       toast.error("Veuillez remplir les champs obligatoires");
       return;
     }
-    onSubmit({ ...form, id: Date.now(), rating: 0 });
-    setForm({ nom: "", ville: "", tel: "", email: "", produits: [], statut: "actif" });
+
+    if (mode === 'edit') {
+      onSubmit(form);
+    } else {
+      onSubmit({ ...form, rating: 0 });
+    }
+
+    setForm(getInitialState());
     onOpenChange(false);
-    toast.success("Fournisseur ajouté avec succès");
+    toast.success(mode === 'edit' ? "Fournisseur mis à jour" : "Fournisseur ajouté avec succès");
   };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md">
+      <DialogContent className="max-w-[95vw] sm:max-w-md">
         <DialogHeader>
-          <DialogTitle className="font-heading">Nouveau Fournisseur</DialogTitle>
-          <DialogDescription>Renseignez les informations du fournisseur</DialogDescription>
+          <DialogTitle className="font-heading">
+            {mode === 'edit' ? 'Modifier le Fournisseur' : 'Nouveau Fournisseur'}
+          </DialogTitle>
+          <DialogDescription>
+            {mode === 'edit' ? 'Modifiez les informations du fournisseur' : 'Renseignez les informations du fournisseur'}
+          </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <FormField label="Nom *" placeholder="Ex: Al-Nour Textiles" value={form.nom} onChange={e => update("nom", (e.target as HTMLInputElement).value)} maxLength={100} />
-          <div className="grid grid-cols-2 gap-3">
-            <FormField label="Ville *" placeholder="Dubaï" value={form.ville} onChange={e => update("ville", (e.target as HTMLInputElement).value)} maxLength={50} />
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <FormField label="Adresse *" placeholder="Dubaï" value={form.adresse} onChange={e => update("adresse", (e.target as HTMLInputElement).value)} maxLength={50} />
             <FormField label="Statut" as="select" value={form.statut} onChange={e => update("statut", (e.target as HTMLSelectElement).value)}>
               <option value="actif">Actif</option>
-              <option value="en attente">En attente</option>
+              <option value="en_attente">En attente</option>
             </FormField>
           </div>
-          <FormField label="Téléphone *" type="tel" placeholder="+224 6XX XXX XXX" value={form.tel} onChange={e => update("tel", (e.target as HTMLInputElement).value)} maxLength={20} />
+          <FormField label="Téléphone *" type="tel" placeholder="+224 6XX XXX XXX" value={form.telephone} onChange={e => update("telephone", (e.target as HTMLInputElement).value)} maxLength={20} />
           <FormField label="Email" type="email" placeholder="contact@exemple.com" value={form.email} onChange={e => update("email", (e.target as HTMLInputElement).value)} maxLength={100} />
           
           <div className="space-y-1.5">
@@ -76,7 +101,7 @@ const FournisseurForm = ({ open, onOpenChange, onSubmit }: FournisseurFormProps)
               Annuler
             </button>
             <button type="submit" className="flex-1 py-2.5 rounded-lg gradient-gold text-primary-foreground text-sm font-semibold hover:opacity-90 transition-opacity">
-              Ajouter
+              {mode === 'edit' ? 'Enregistrer' : 'Ajouter'}
             </button>
           </div>
         </form>
