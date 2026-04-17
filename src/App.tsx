@@ -76,7 +76,7 @@ const App = () => (
               </ProtectedRoute>
             }
           />
-          {/* <Route
+          <Route
             path="/approvisionnements"
             element={
               <ProtectedRoute permissions={['approvisionnements.read']}>
@@ -91,7 +91,7 @@ const App = () => (
                 <Ventes />
               </ProtectedRoute>
             }
-          /> */}
+          />
           <Route
             path="/versements"
             element={
