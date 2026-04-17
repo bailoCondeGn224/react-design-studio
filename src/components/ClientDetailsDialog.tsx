@@ -60,7 +60,7 @@ const ClientDetailsDialog = ({ open, onOpenChange, clientId, clientNom }: Client
 
   if (!historique) return null;
 
-  const { stats, ventes, paiements, timeline } = historique;
+  const { stats, ventes, paiements, timeline, meta } = historique;
 
   const getTimelineIcon = (type: string) => {
     return type === 'achat' ? '🛒' : '💰';
@@ -159,7 +159,7 @@ const ClientDetailsDialog = ({ open, onOpenChange, clientId, clientNom }: Client
                 : 'border-transparent text-muted-foreground hover:text-foreground'
             }`}
           >
-            Tous ({timeline.length})
+            Tous ({stats.nombreVentes + stats.nombrePaiements})
           </button>
           <button
             onClick={() => setActiveTab('achats')}
@@ -169,7 +169,7 @@ const ClientDetailsDialog = ({ open, onOpenChange, clientId, clientNom }: Client
                 : 'border-transparent text-muted-foreground hover:text-foreground'
             }`}
           >
-            Achats ({ventes.length})
+            Achats ({stats.nombreVentes})
           </button>
           <button
             onClick={() => setActiveTab('paiements')}
@@ -179,7 +179,7 @@ const ClientDetailsDialog = ({ open, onOpenChange, clientId, clientNom }: Client
                 : 'border-transparent text-muted-foreground hover:text-foreground'
             }`}
           >
-            Paiements ({paiements.length})
+            Paiements ({stats.nombrePaiements})
           </button>
         </div>
 
@@ -286,9 +286,7 @@ const ClientDetailsDialog = ({ open, onOpenChange, clientId, clientNom }: Client
             </div>
           ))}
 
-          {((activeTab === 'tous' && timeline.length === 0) ||
-            (activeTab === 'achats' && ventes.length === 0) ||
-            (activeTab === 'paiements' && paiements.length === 0)) && (
+          {meta.total === 0 && (
             <div className="text-center py-12">
               <p className="text-muted-foreground">Aucun historique à afficher</p>
             </div>

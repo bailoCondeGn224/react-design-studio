@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import FormField from "@/components/FormField";
 import { toast } from "sonner";
+import { useCategoriesActive } from "@/hooks/useCategories";
 
 interface FournisseurFormProps {
   open: boolean;
@@ -11,9 +12,9 @@ interface FournisseurFormProps {
   mode?: 'create' | 'edit';
 }
 
-const produitOptions = ["Abayas", "Foulards", "Bazin Riche", "Bazin Brodé", "Djellabas", "Boubous", "Pagne", "Tissus"];
-
 const FournisseurForm = ({ open, onOpenChange, onSubmit, initialData = null, mode = 'create' }: FournisseurFormProps) => {
+  const { data: categories = [], isLoading: loadingCategories } = useCategoriesActive();
+
   const getInitialState = () => {
     if (mode === 'edit' && initialData) {
       return initialData;
@@ -82,18 +83,22 @@ const FournisseurForm = ({ open, onOpenChange, onSubmit, initialData = null, mod
           <FormField label="Email" type="email" placeholder="contact@exemple.com" value={form.email} onChange={e => update("email", (e.target as HTMLInputElement).value)} maxLength={100} />
           
           <div className="space-y-1.5">
-            <label className="text-sm font-medium text-foreground">Produits fournis</label>
-            <div className="flex flex-wrap gap-1.5">
-              {produitOptions.map(p => (
-                <button key={p} type="button" onClick={() => toggleProduit(p)}
-                  className={`text-xs px-2.5 py-1 rounded-full font-medium transition-colors ${
-                    form.produits.includes(p)
-                      ? "gradient-gold text-primary-foreground"
-                      : "bg-secondary text-secondary-foreground hover:bg-accent"
-                  }`}
-                >{p}</button>
-              ))}
-            </div>
+            <label className="text-sm font-medium text-foreground">Catégories fournies</label>
+            {loadingCategories ? (
+              <p className="text-sm text-muted-foreground">Chargement des catégories...</p>
+            ) : (
+              <div className="flex flex-wrap gap-1.5">
+                {categories.map(cat => (
+                  <button key={cat.id} type="button" onClick={() => toggleProduit(cat.nom)}
+                    className={`text-xs px-2.5 py-1 rounded-full font-medium transition-colors ${
+                      form.produits.includes(cat.nom)
+                        ? "gradient-gold text-primary-foreground"
+                        : "bg-secondary text-secondary-foreground hover:bg-accent"
+                    }`}
+                  >{cat.nom}</button>
+                ))}
+              </div>
+            )}
           </div>
 
           <div className="flex gap-2 pt-2">

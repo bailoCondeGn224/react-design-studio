@@ -4,6 +4,7 @@ import FormField from "@/components/FormField";
 import { toast } from "sonner";
 import { useRoles } from "@/hooks/useRoles";
 import { User } from "@/types";
+import { Eye, EyeOff } from "lucide-react";
 
 interface UserFormProps {
   open: boolean;
@@ -15,6 +16,7 @@ interface UserFormProps {
 
 const UserForm = ({ open, onOpenChange, onSubmit, initialData = null, mode = 'create' }: UserFormProps) => {
   const { data: roles = [], isLoading: loadingRoles } = useRoles();
+  const [showPassword, setShowPassword] = useState(false);
 
   const getInitialState = () => {
     if (mode === 'edit' && initialData) {
@@ -110,13 +112,32 @@ const UserForm = ({ open, onOpenChange, onSubmit, initialData = null, mode = 'cr
             maxLength={100}
           />
 
-          <FormField
-            label={mode === 'edit' ? "Nouveau mot de passe (optionnel)" : "Mot de passe *"}
-            type="password"
-            placeholder={mode === 'edit' ? "Laisser vide pour ne pas changer" : "••••••••"}
-            value={form.password}
-            onChange={e => update("password", (e.target as HTMLInputElement).value)}
-          />
+          {/* Champ mot de passe avec icône œil */}
+          <div className="space-y-1.5">
+            <label className="text-sm font-medium text-foreground">
+              {mode === 'edit' ? "Nouveau mot de passe (optionnel)" : "Mot de passe *"}
+            </label>
+            <div className="relative">
+              <input
+                type={showPassword ? "text" : "password"}
+                placeholder={mode === 'edit' ? "Laisser vide pour ne pas changer" : "••••••••"}
+                value={form.password}
+                onChange={e => update("password", e.target.value)}
+                className="w-full pr-12 px-4 py-2.5 rounded-lg border border-border bg-card text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring/30"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+              >
+                {showPassword ? (
+                  <EyeOff className="w-5 h-5" />
+                ) : (
+                  <Eye className="w-5 h-5" />
+                )}
+              </button>
+            </div>
+          </div>
 
           <FormField
             label="Rôle *"

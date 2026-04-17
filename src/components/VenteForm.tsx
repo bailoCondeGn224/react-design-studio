@@ -103,12 +103,8 @@ const VenteForm = ({ open, onOpenChange, onSubmit, initialData = null, mode = 'c
     setForm(prev => {
       const newLignes = [...prev.lignes];
 
-      // Convertir en nombre pour quantite et prixUnitaire
-      if (field === 'quantite' || field === 'prixUnitaire') {
-        newLignes[index] = { ...newLignes[index], [field]: Number(value) || 0 };
-      } else {
-        newLignes[index] = { ...newLignes[index], [field]: value };
-      }
+      // Garder la valeur telle quelle (comme pour le formulaire d'approvisionnement)
+      newLignes[index] = { ...newLignes[index], [field]: value };
 
       // Si on change l'article, pré-remplir le nom et le prix
       if (field === 'articleId') {
@@ -131,7 +127,7 @@ const VenteForm = ({ open, onOpenChange, onSubmit, initialData = null, mode = 'c
         }
       }
 
-      // Calculer le sous-total
+      // Calculer le sous-total (convertir en nombre seulement ici)
       const quantite = Number(newLignes[index].quantite) || 0;
       const prixUnitaire = Number(newLignes[index].prixUnitaire) || 0;
       newLignes[index].sousTotal = quantite * prixUnitaire;
