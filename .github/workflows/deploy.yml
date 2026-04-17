@@ -15,8 +15,10 @@ jobs:
           username: root
           password: ${{ secrets.SERVER_PASSWORD }}
           script: |
+            cp /opt/gestion-boutique/frontend/.env /tmp/frontend.env
             cd /opt/gestion-boutique/frontend
             git pull origin main
+            cp /tmp/frontend.env /opt/gestion-boutique/frontend/.env
             cd /opt/gestion-boutique
             docker compose build --no-cache frontend
             docker compose up -d frontend
