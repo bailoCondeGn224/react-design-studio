@@ -219,56 +219,56 @@ const Approvisionnements = () => {
       <Dialog open={detailsId !== null} onOpenChange={() => setDetailsId(null)}>
         <DialogContent className="max-w-[95vw] sm:max-w-2xl">
           <DialogHeader>
-            <DialogTitle className="font-heading">Détails Approvisionnement</DialogTitle>
+            <DialogTitle className="font-heading text-base sm:text-lg">Détails Approvisionnement</DialogTitle>
           </DialogHeader>
           {approvisionnementDetails && (
-            <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4 text-sm">
+            <div className="space-y-3 sm:space-y-4">
+              <div className="grid grid-cols-2 gap-2 sm:gap-4 text-xs sm:text-sm">
                 <div>
-                  <p className="text-muted-foreground">Numéro</p>
-                  <p className="font-semibold">{approvisionnementDetails.numero}</p>
+                  <p className="text-muted-foreground text-[10px] sm:text-xs">Numéro</p>
+                  <p className="font-semibold truncate">{approvisionnementDetails.numero}</p>
                 </div>
                 <div>
-                  <p className="text-muted-foreground">Fournisseur</p>
-                  <p className="font-semibold">{approvisionnementDetails.fournisseurNom}</p>
+                  <p className="text-muted-foreground text-[10px] sm:text-xs">Fournisseur</p>
+                  <p className="font-semibold truncate">{approvisionnementDetails.fournisseurNom}</p>
                 </div>
                 <div>
-                  <p className="text-muted-foreground">Date livraison</p>
+                  <p className="text-muted-foreground text-[10px] sm:text-xs">Date livraison</p>
                   <p className="font-semibold">{formatDate(approvisionnementDetails.dateLivraison)}</p>
                 </div>
                 <div>
-                  <p className="text-muted-foreground">Numéro facture</p>
-                  <p className="font-semibold">{approvisionnementDetails.numeroFacture || '-'}</p>
+                  <p className="text-muted-foreground text-[10px] sm:text-xs">Numéro facture</p>
+                  <p className="font-semibold truncate">{approvisionnementDetails.numeroFacture || '-'}</p>
                 </div>
               </div>
 
               <div>
-                <p className="text-sm text-muted-foreground mb-2">Articles</p>
-                <div className="space-y-2">
+                <p className="text-xs sm:text-sm text-muted-foreground mb-1.5 sm:mb-2">Articles</p>
+                <div className="space-y-1.5 sm:space-y-2">
                   {approvisionnementDetails.lignes.map((ligne: any, index: number) => (
-                    <div key={index} className="flex justify-between items-center p-3 bg-secondary/30 rounded-lg text-sm">
-                      <div>
-                        <p className="font-semibold">{ligne.nom}</p>
-                        <p className="text-xs text-muted-foreground">
+                    <div key={index} className="flex justify-between items-center p-2 sm:p-3 bg-secondary/30 rounded-lg text-xs sm:text-sm">
+                      <div className="flex-1 min-w-0 mr-2">
+                        <p className="font-semibold truncate">{ligne.nom}</p>
+                        <p className="text-[10px] sm:text-xs text-muted-foreground">
                           {ligne.quantite} × {formatPrix(ligne.prixUnitaire)}
                         </p>
                       </div>
-                      <p className="font-bold">{formatPrix(ligne.sousTotal)}</p>
+                      <p className="font-bold text-xs sm:text-sm whitespace-nowrap">{formatPrix(ligne.sousTotal)}</p>
                     </div>
                   ))}
                 </div>
               </div>
 
-              <div className="bg-primary/5 p-4 rounded-lg space-y-2">
-                <div className="flex justify-between text-sm">
+              <div className="bg-primary/5 p-3 sm:p-4 rounded-lg space-y-1.5 sm:space-y-2">
+                <div className="flex justify-between text-xs sm:text-sm">
                   <span className="text-muted-foreground">Total</span>
-                  <span className="font-bold text-lg">{formatPrix(approvisionnementDetails.total)}</span>
+                  <span className="font-bold text-base sm:text-lg">{formatPrix(approvisionnementDetails.total)}</span>
                 </div>
-                <div className="flex justify-between text-sm">
+                <div className="flex justify-between text-xs sm:text-sm">
                   <span className="text-muted-foreground">Montant payé</span>
                   <span className="font-semibold text-success">{formatPrix(approvisionnementDetails.montantPaye)}</span>
                 </div>
-                <div className="flex justify-between text-sm">
+                <div className="flex justify-between text-xs sm:text-sm">
                   <span className="text-muted-foreground">Montant restant</span>
                   <span className="font-semibold text-destructive">{formatPrix(approvisionnementDetails.montantRestant)}</span>
                 </div>
@@ -276,8 +276,8 @@ const Approvisionnements = () => {
 
               {approvisionnementDetails.note && (
                 <div>
-                  <p className="text-sm text-muted-foreground mb-1">Note</p>
-                  <p className="text-sm p-3 bg-secondary/30 rounded-lg">{approvisionnementDetails.note}</p>
+                  <p className="text-xs sm:text-sm text-muted-foreground mb-1">Note</p>
+                  <p className="text-xs sm:text-sm p-2 sm:p-3 bg-secondary/30 rounded-lg">{approvisionnementDetails.note}</p>
                 </div>
               )}
             </div>
@@ -287,55 +287,55 @@ const Approvisionnements = () => {
 
       {/* Articles à Réapprovisionner */}
       {articlesAReapprovisionner.length > 0 && (
-        <div className="bg-gradient-to-r from-warning/10 via-destructive/10 to-warning/10 border border-warning rounded-xl p-5 mb-6">
-          <div className="flex items-center justify-between mb-4">
+        <div className="bg-gradient-to-r from-warning/10 via-destructive/10 to-warning/10 border border-warning rounded-xl p-3 sm:p-4 lg:p-5 mb-6">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-3 sm:mb-4">
             <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-lg bg-warning flex items-center justify-center">
-                <Package className="w-4 h-4 text-white" />
+              <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-warning flex items-center justify-center flex-shrink-0">
+                <Package className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-white" />
               </div>
               <div>
-                <h3 className="font-semibold text-foreground">Articles à Réapprovisionner</h3>
-                <p className="text-xs text-muted-foreground">{totalArticlesEnAlerte} articles nécessitent une attention</p>
+                <h3 className="text-sm sm:text-base font-semibold text-foreground">Articles à Réapprovisionner</h3>
+                <p className="text-[10px] sm:text-xs text-muted-foreground">{totalArticlesEnAlerte} articles nécessitent une attention</p>
               </div>
             </div>
             <CanAccess permissions={['approvisionnements.create']}>
               <button
                 onClick={() => setFormOpen(true)}
-                className="text-xs px-3 py-1.5 rounded-lg bg-warning text-white hover:bg-warning/90 transition-colors font-medium"
+                className="text-[10px] sm:text-xs px-2.5 sm:px-3 py-1.5 rounded-lg bg-warning text-white hover:bg-warning/90 transition-colors font-medium w-full sm:w-auto whitespace-nowrap"
               >
                 Créer Approvisionnement
               </button>
             </CanAccess>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-3">
             {articlesAReapprovisionner.map((article: any) => {
               const isRupture = article.stock === 0;
               const isCritique = article.stock > 0 && article.stock <= article.seuilAlerte * 0.3;
 
               return (
-                <div key={article.id} className="bg-card border border-border rounded-lg p-3 hover:shadow-md transition-shadow">
-                  <div className="flex items-start justify-between mb-2">
+                <div key={article.id} className="bg-card border border-border rounded-lg p-2.5 sm:p-3 hover:shadow-md transition-shadow">
+                  <div className="flex items-start justify-between mb-1.5 sm:mb-2">
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-semibold text-foreground truncate">{article.nom}</p>
-                      <p className="text-xs text-muted-foreground">Zone {article.zone}</p>
+                      <p className="text-xs sm:text-sm font-semibold text-foreground truncate">{article.nom}</p>
+                      <p className="text-[10px] sm:text-xs text-muted-foreground">Zone {article.zone}</p>
                     </div>
                     {isRupture ? (
-                      <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-destructive text-destructive-foreground whitespace-nowrap ml-2">
+                      <span className="px-1.5 sm:px-2 py-0.5 rounded-full text-[9px] sm:text-[10px] font-bold bg-destructive text-destructive-foreground whitespace-nowrap ml-2">
                         RUPTURE
                       </span>
                     ) : isCritique ? (
-                      <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-destructive/20 text-destructive whitespace-nowrap ml-2">
+                      <span className="px-1.5 sm:px-2 py-0.5 rounded-full text-[9px] sm:text-[10px] font-bold bg-destructive/20 text-destructive whitespace-nowrap ml-2">
                         CRITIQUE
                       </span>
                     ) : (
-                      <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-warning/20 text-warning whitespace-nowrap ml-2">
+                      <span className="px-1.5 sm:px-2 py-0.5 rounded-full text-[9px] sm:text-[10px] font-bold bg-warning/20 text-warning whitespace-nowrap ml-2">
                         FAIBLE
                       </span>
                     )}
                   </div>
 
-                  <div className="grid grid-cols-2 gap-2 text-xs">
+                  <div className="grid grid-cols-2 gap-1.5 sm:gap-2 text-[10px] sm:text-xs">
                     <div>
                       <p className="text-muted-foreground">Stock actuel</p>
                       <p className={`font-bold ${isRupture ? 'text-destructive' : isCritique ? 'text-destructive' : 'text-warning'}`}>
@@ -348,9 +348,9 @@ const Approvisionnements = () => {
                     </div>
                   </div>
 
-                  <div className="mt-2 pt-2 border-t border-border">
-                    <p className="text-[10px] text-muted-foreground mb-1">Suggestion</p>
-                    <p className="text-xs font-semibold text-success">
+                  <div className="mt-1.5 sm:mt-2 pt-1.5 sm:pt-2 border-t border-border">
+                    <p className="text-[9px] sm:text-[10px] text-muted-foreground mb-0.5 sm:mb-1">Suggestion</p>
+                    <p className="text-[10px] sm:text-xs font-semibold text-success">
                       Commander: {Math.max(article.seuilAlerte * 2 - article.stock, article.seuilAlerte)} unités
                     </p>
                   </div>
@@ -360,7 +360,7 @@ const Approvisionnements = () => {
           </div>
 
           {(totalArticlesEnAlerte) > 6 && (
-            <p className="text-xs text-muted-foreground text-center mt-3">
+            <p className="text-[10px] sm:text-xs text-muted-foreground text-center mt-2 sm:mt-3">
               + {(totalArticlesEnAlerte) - 6} autres articles nécessitent un réapprovisionnement
             </p>
           )}
@@ -368,39 +368,39 @@ const Approvisionnements = () => {
       )}
 
       {/* Statistiques */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
-        <div className="bg-card border border-border rounded-lg p-4 shadow-card">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
-              <Truck className="w-5 h-5 text-primary" />
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 mb-6">
+        <div className="bg-card border border-border rounded-lg p-3 sm:p-4 shadow-card">
+          <div className="flex items-center gap-2 sm:gap-3">
+            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+              <Truck className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
             </div>
-            <div>
-              <p className="text-xs text-muted-foreground">Total Approvisionnements</p>
-              <p className="text-xl font-bold text-foreground">{totalApprovisionnements}</p>
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-card border border-border rounded-lg p-4 shadow-card">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-success/10 flex items-center justify-center">
-              <Package className="w-5 h-5 text-success" />
-            </div>
-            <div>
-              <p className="text-xs text-muted-foreground">Montant Total</p>
-              <p className="text-lg font-bold text-foreground">{formatPrix(montantTotal)}</p>
+            <div className="min-w-0">
+              <p className="text-[11px] sm:text-xs text-muted-foreground">Total Approvisionnements</p>
+              <p className="text-lg sm:text-xl font-bold text-foreground">{totalApprovisionnements}</p>
             </div>
           </div>
         </div>
 
-        <div className="bg-card border border-border rounded-lg p-4 shadow-card">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-warning/10 flex items-center justify-center">
-              <CreditCard className="w-5 h-5 text-warning" />
+        <div className="bg-card border border-border rounded-lg p-3 sm:p-4 shadow-card">
+          <div className="flex items-center gap-2 sm:gap-3">
+            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-lg bg-success/10 flex items-center justify-center flex-shrink-0">
+              <Package className="w-4 h-4 sm:w-5 sm:h-5 text-success" />
             </div>
-            <div>
-              <p className="text-xs text-muted-foreground">Total Payé</p>
-              <p className="text-lg font-bold text-foreground">{formatPrix(montantTotalPaye)}</p>
+            <div className="min-w-0 flex-1">
+              <p className="text-[11px] sm:text-xs text-muted-foreground">Montant Total</p>
+              <p className="text-base sm:text-lg font-bold text-foreground truncate">{formatPrix(montantTotal)}</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-card border border-border rounded-lg p-3 sm:p-4 shadow-card">
+          <div className="flex items-center gap-2 sm:gap-3">
+            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-lg bg-warning/10 flex items-center justify-center flex-shrink-0">
+              <CreditCard className="w-4 h-4 sm:w-5 sm:h-5 text-warning" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="text-[11px] sm:text-xs text-muted-foreground">Total Payé</p>
+              <p className="text-base sm:text-lg font-bold text-foreground truncate">{formatPrix(montantTotalPaye)}</p>
             </div>
           </div>
         </div>

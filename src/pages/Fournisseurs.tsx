@@ -364,26 +364,26 @@ const Fournisseurs = () => {
         </div>
       ) : (
         <>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 lg:gap-5">
             {fournisseurs.map((f: any) => (
-              <div key={f.id} className="bg-card border border-border rounded-xl p-5 shadow-card hover:shadow-elevated transition-shadow animate-fade-in">
-                <div className="flex items-start justify-between mb-3">
+              <div key={f.id} className="bg-card border border-border rounded-xl p-4 sm:p-5 shadow-card hover:shadow-elevated transition-shadow animate-fade-in">
+                <div className="flex items-start justify-between mb-3 gap-2">
                   <div className="flex-1 min-w-0">
-                    <h3 className="font-heading font-semibold text-foreground truncate">{f.nom}</h3>
+                    <h3 className="font-heading font-semibold text-sm sm:text-base text-foreground truncate">{f.nom}</h3>
                     {f.adresse && (
-                      <div className="flex items-center gap-1 text-xs text-muted-foreground mt-0.5">
+                      <div className="flex items-center gap-1 text-xs text-muted-foreground mt-1">
                         <MapPin className="w-3 h-3 flex-shrink-0" />
                         <span className="truncate">{f.adresse}</span>
                       </div>
                     )}
                   </div>
-                  <div className="flex items-center gap-2 ml-2">
-                    <span className={`text-xs px-2 py-0.5 rounded-full font-medium whitespace-nowrap ${
+                  <div className="flex items-center gap-1.5 sm:gap-2 flex-shrink-0">
+                    <span className={`text-[10px] sm:text-xs px-1.5 sm:px-2 py-0.5 rounded-full font-medium whitespace-nowrap ${
                       f.statut === "actif" ? "bg-success/10 text-success" :
                       f.statut === "en_attente" ? "bg-warning/10 text-warning" :
                       "bg-secondary text-secondary-foreground"
                     }`}>
-                      {f.statut === "actif" ? "Actif" : f.statut === "en_attente" ? "En attente" : "Inactif"}
+                      {f.statut === "actif" ? "Actif" : f.statut === "en_attente" ? "En att." : "Inactif"}
                     </span>
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
@@ -445,17 +445,17 @@ const Fournisseurs = () => {
                 </div>
 
                 {f.produits && f.produits.length > 0 && (
-                  <div className="mb-4">
+                  <div className="mb-3 sm:mb-4">
                     <p className="text-[10px] text-muted-foreground uppercase tracking-wide mb-1.5">Produits</p>
                     <div className="flex flex-wrap gap-1">
-                      {f.produits.slice(0, 3).map((p: string, i: number) => (
+                      {f.produits.slice(0, 2).map((p: string, i: number) => (
                         <span key={i} className="text-[10px] px-2 py-0.5 rounded-full bg-primary/10 text-primary font-medium">
                           {p}
                         </span>
                       ))}
-                      {f.produits.length > 3 && (
+                      {f.produits.length > 2 && (
                         <span className="text-[10px] px-2 py-0.5 rounded-full bg-secondary text-secondary-foreground">
-                          +{f.produits.length - 3}
+                          +{f.produits.length - 2}
                         </span>
                       )}
                     </div>
@@ -463,20 +463,20 @@ const Fournisseurs = () => {
                 )}
 
                 <div className="pt-3 border-t border-border">
-                  <div className="grid grid-cols-2 gap-2 text-xs">
+                  <div className="grid grid-cols-2 gap-2 sm:gap-3 text-xs">
                     <div>
-                      <p className="text-muted-foreground mb-0.5">Total achats</p>
-                      <p className="font-semibold text-foreground">{formatPrix(f.totalAchats || 0)}</p>
+                      <p className="text-muted-foreground mb-1 text-[11px] sm:text-xs">Total achats</p>
+                      <p className="font-semibold text-foreground text-sm sm:text-base">{formatPrix(f.totalAchats || 0)}</p>
                     </div>
                     <div>
-                      <p className="text-muted-foreground mb-0.5">Dette</p>
-                      <p className={`font-semibold ${f.dette > 0 ? 'text-destructive' : 'text-success'}`}>
+                      <p className="text-muted-foreground mb-1 text-[11px] sm:text-xs">Dette</p>
+                      <p className={`font-semibold text-sm sm:text-base ${f.dette > 0 ? 'text-destructive' : 'text-success'}`}>
                         {formatPrix(f.dette || 0)}
                       </p>
                     </div>
                   </div>
                   {f.dette > 0 && (
-                    <div className="mt-2 flex items-center gap-1 text-[10px] text-destructive">
+                    <div className="mt-2 flex items-center gap-1 text-[10px] sm:text-xs text-destructive">
                       <AlertCircle className="w-3 h-3" />
                       <span>Dette en cours</span>
                     </div>

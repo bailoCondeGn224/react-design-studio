@@ -174,39 +174,39 @@ const Clients = () => {
       </AlertDialog>
 
       {/* Statistiques */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
-        <div className="bg-card border border-border rounded-lg p-4 shadow-card">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
-              <UserCheck className="w-5 h-5 text-primary" />
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 mb-6">
+        <div className="bg-card border border-border rounded-lg p-3 sm:p-4 shadow-card">
+          <div className="flex items-center gap-2 sm:gap-3">
+            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+              <UserCheck className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
             </div>
-            <div>
-              <p className="text-xs text-muted-foreground">Total Clients</p>
-              <p className="text-xl font-bold text-foreground">{totalClients}</p>
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-card border border-border rounded-lg p-4 shadow-card">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-warning/10 flex items-center justify-center">
-              <CreditCard className="w-5 h-5 text-warning" />
-            </div>
-            <div>
-              <p className="text-xs text-muted-foreground">Avec Crédits</p>
-              <p className="text-xl font-bold text-foreground">{clientsAvecCredits}</p>
+            <div className="min-w-0">
+              <p className="text-[11px] sm:text-xs text-muted-foreground">Total Clients</p>
+              <p className="text-lg sm:text-xl font-bold text-foreground">{totalClients}</p>
             </div>
           </div>
         </div>
 
-        <div className="bg-card border border-border rounded-lg p-4 shadow-card">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-destructive/10 flex items-center justify-center">
-              <CreditCard className="w-5 h-5 text-destructive" />
+        <div className="bg-card border border-border rounded-lg p-3 sm:p-4 shadow-card">
+          <div className="flex items-center gap-2 sm:gap-3">
+            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-lg bg-warning/10 flex items-center justify-center flex-shrink-0">
+              <CreditCard className="w-4 h-4 sm:w-5 sm:h-5 text-warning" />
             </div>
-            <div>
-              <p className="text-xs text-muted-foreground">Total Crédits</p>
-              <p className="text-lg font-bold text-foreground">{formatPrix(totalCreditsEnCours)}</p>
+            <div className="min-w-0">
+              <p className="text-[11px] sm:text-xs text-muted-foreground">Avec Crédits</p>
+              <p className="text-lg sm:text-xl font-bold text-foreground">{clientsAvecCredits}</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-card border border-border rounded-lg p-3 sm:p-4 shadow-card">
+          <div className="flex items-center gap-2 sm:gap-3">
+            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-lg bg-destructive/10 flex items-center justify-center flex-shrink-0">
+              <CreditCard className="w-4 h-4 sm:w-5 sm:h-5 text-destructive" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="text-[11px] sm:text-xs text-muted-foreground">Total Crédits</p>
+              <p className="text-base sm:text-lg font-bold text-foreground truncate">{formatPrix(totalCreditsEnCours)}</p>
             </div>
           </div>
         </div>
@@ -224,10 +224,10 @@ const Clients = () => {
             className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-border bg-card text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring/30"
           />
         </div>
-        <div className="flex gap-1.5">
+        <div className="flex gap-1.5 sm:gap-2">
           <button
             onClick={() => setFiltre("all")}
-            className={`px-4 py-2 rounded-lg text-xs font-medium transition-colors ${
+            className={`px-3 sm:px-4 py-2 rounded-lg text-[11px] sm:text-xs font-medium transition-colors whitespace-nowrap ${
               filtre === "all" ? "gradient-gold text-primary-foreground" : "bg-secondary text-secondary-foreground hover:bg-accent hover:text-accent-foreground"
             }`}
           >
@@ -235,7 +235,7 @@ const Clients = () => {
           </button>
           <button
             onClick={() => setFiltre("credits")}
-            className={`px-4 py-2 rounded-lg text-xs font-medium transition-colors ${
+            className={`px-3 sm:px-4 py-2 rounded-lg text-[11px] sm:text-xs font-medium transition-colors whitespace-nowrap ${
               filtre === "credits" ? "gradient-gold text-primary-foreground" : "bg-secondary text-secondary-foreground hover:bg-accent hover:text-accent-foreground"
             }`}
           >

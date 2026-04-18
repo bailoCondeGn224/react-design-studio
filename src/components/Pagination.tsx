@@ -48,28 +48,33 @@ const Pagination = ({ meta, onPageChange }: PaginationProps) => {
   const pageNumbers = getPageNumbers();
 
   return (
-    <div className="flex items-center justify-between px-4 py-3 border-t border-border">
-      {/* Info texte */}
-      <div className="text-sm text-muted-foreground">
+    <div className="flex flex-col sm:flex-row items-center justify-between gap-3 px-3 sm:px-4 py-3 border-t border-border">
+      {/* Info texte - Version desktop */}
+      <div className="hidden sm:block text-sm text-muted-foreground">
         Affichage de <span className="font-medium">{((page - 1) * meta.limit) + 1}</span> à{' '}
         <span className="font-medium">{Math.min(page * meta.limit, meta.total)}</span> sur{' '}
         <span className="font-medium">{meta.total}</span> résultats
       </div>
 
+      {/* Info texte - Version mobile (compacte) */}
+      <div className="sm:hidden text-xs text-muted-foreground">
+        {((page - 1) * meta.limit) + 1}-{Math.min(page * meta.limit, meta.total)} sur {meta.total}
+      </div>
+
       {/* Boutons de navigation */}
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-1.5 sm:gap-2">
         {/* Bouton Précédent */}
         <button
           onClick={() => onPageChange(page - 1)}
           disabled={!hasPreviousPage}
-          className="px-3 py-1.5 rounded-lg border border-border text-sm font-medium text-foreground hover:bg-secondary transition-colors disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-transparent flex items-center gap-1"
+          className="px-2 sm:px-3 py-1.5 rounded-lg border border-border text-sm font-medium text-foreground hover:bg-secondary transition-colors disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-transparent flex items-center gap-1"
         >
           <ChevronLeft className="w-4 h-4" />
-          <span className="hidden sm:inline">Précédent</span>
+          <span className="hidden md:inline">Précédent</span>
         </button>
 
-        {/* Numéros de page */}
-        <div className="hidden sm:flex items-center gap-1">
+        {/* Numéros de page - Desktop */}
+        <div className="hidden md:flex items-center gap-1">
           {pageNumbers.map((pageNum, index) => {
             if (pageNum === '...') {
               return (
@@ -95,18 +100,18 @@ const Pagination = ({ meta, onPageChange }: PaginationProps) => {
           })}
         </div>
 
-        {/* Page courante (mobile) */}
-        <div className="sm:hidden text-sm text-muted-foreground">
-          Page {page} / {totalPages}
+        {/* Page courante (mobile/tablette) */}
+        <div className="md:hidden px-2 sm:px-3 py-1.5 text-sm font-medium text-muted-foreground">
+          <span className="text-primary">{page}</span> / {totalPages}
         </div>
 
         {/* Bouton Suivant */}
         <button
           onClick={() => onPageChange(page + 1)}
           disabled={!hasNextPage}
-          className="px-3 py-1.5 rounded-lg border border-border text-sm font-medium text-foreground hover:bg-secondary transition-colors disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-transparent flex items-center gap-1"
+          className="px-2 sm:px-3 py-1.5 rounded-lg border border-border text-sm font-medium text-foreground hover:bg-secondary transition-colors disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-transparent flex items-center gap-1"
         >
-          <span className="hidden sm:inline">Suivant</span>
+          <span className="hidden md:inline">Suivant</span>
           <ChevronRight className="w-4 h-4" />
         </button>
       </div>
