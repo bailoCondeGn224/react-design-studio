@@ -10,20 +10,22 @@ import { useVersements, useCreateVersement, useUpdateVersement, useMontantsMois 
 import { useFournisseurs, useStatsFournisseurs } from "@/hooks/useFournisseurs";
 import { Versement } from "@/types";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { useDebounce } from "@/hooks/useDebounce";
 
 const Versements = () => {
-  const [search, setSearch] = useState("");
+  const [searchInput, setSearchInput] = useState("");
+  const debouncedSearch = useDebounce(searchInput, 500);
   const [formOpen, setFormOpen] = useState(false);
   const [page, setPage] = useState(1);
   const [limit] = useState(15);
   const [selectedVersement, setSelectedVersement] = useState<Versement | null>(null);
   const [detailsOpen, setDetailsOpen] = useState(false);
 
-  // Utiliser le filtre backend
+  // Utiliser le filtre backend avec recherche débouncée
   const { data: versementsResponse, isLoading: loadingVersements } = useVersements({
     page,
     limit,
-    search: search || undefined,
+    search: debouncedSearch || undefined,
   });
   const versements = versementsResponse?.data || [];
   const metaVersements = versementsResponse?.meta;
@@ -99,7 +101,7 @@ const Versements = () => {
   // Réinitialiser la page quand le filtre change
   useEffect(() => {
     setPage(1);
-  }, [search]);
+  }, [debouncedSearch]);
 
   // Utiliser les statistiques depuis le backend
   const totalDette = statsFournisseurs?.totalDette || 0;
@@ -282,8 +284,8 @@ const Versements = () => {
         <input
           type="text"
           placeholder="Rechercher..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
+          value={searchInput}
+          onChange={(e) => setSearchInput(e.target.value)}
           className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-border bg-card text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring/30"
         />
       </div>

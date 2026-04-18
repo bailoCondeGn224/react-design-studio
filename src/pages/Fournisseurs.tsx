@@ -24,9 +24,11 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useFournisseurs, useFournisseurDetails, useCreateFournisseur, useUpdateFournisseur, useDeleteFournisseur } from "@/hooks/useFournisseurs";
+import { useDebounce } from "@/hooks/useDebounce";
 
 const Fournisseurs = () => {
-  const [search, setSearch] = useState("");
+  const [searchInput, setSearchInput] = useState("");
+  const debouncedSearch = useDebounce(searchInput, 500);
   const [formOpen, setFormOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<any>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);
@@ -34,11 +36,11 @@ const Fournisseurs = () => {
   const [page, setPage] = useState(1);
   const [limit] = useState(15);
 
-  // Utiliser le filtre backend
+  // Utiliser le filtre backend avec recherche débouncée
   const { data: fournisseursResponse, isLoading } = useFournisseurs({
     page,
     limit,
-    search: search || undefined,
+    search: debouncedSearch || undefined,
   });
   const fournisseurs = fournisseursResponse?.data || [];
   const meta = fournisseursResponse?.meta;
@@ -81,7 +83,7 @@ const Fournisseurs = () => {
   // Réinitialiser la page quand le filtre change
   useEffect(() => {
     setPage(1);
-  }, [search]);
+  }, [debouncedSearch]);
 
   const formatPrix = (prix: number) => {
     return new Intl.NumberFormat('fr-GN', {
@@ -350,8 +352,8 @@ const Fournisseurs = () => {
         <input
           type="text"
           placeholder="Rechercher un fournisseur..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
+          value={searchInput}
+          onChange={(e) => setSearchInput(e.target.value)}
           className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-border bg-card text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring/30"
         />
       </div>

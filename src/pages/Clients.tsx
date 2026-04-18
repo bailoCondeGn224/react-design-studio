@@ -24,12 +24,14 @@ import {
   AlertDialogTitle
 } from "@/components/ui/alert-dialog";
 import { useClients, useStatsClients, useCreateClient, useUpdateClient, useDeleteClient } from "@/hooks/useClients";
+import { useDebounce } from "@/hooks/useDebounce";
 
 type Filtre = "all" | "credits";
 
 const Clients = () => {
   const [filtre, setFiltre] = useState<Filtre>("all");
-  const [search, setSearch] = useState("");
+  const [searchInput, setSearchInput] = useState("");
+  const debouncedSearch = useDebounce(searchInput, 500);
   const [formOpen, setFormOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<any>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);
@@ -38,11 +40,11 @@ const Clients = () => {
   const [page, setPage] = useState(1);
   const [limit] = useState(15);
 
-  // Utiliser les filtres backend
+  // Utiliser les filtres backend avec la recherche débouncée
   const { data: clientsResponse, isLoading } = useClients({
     page,
     limit,
-    search: search || undefined,
+    search: debouncedSearch || undefined,
     hasCredits: filtre === "credits" ? true : undefined,
   });
   const clients = clientsResponse?.data || [];
@@ -92,7 +94,7 @@ const Clients = () => {
   // Réinitialiser la page quand les filtres changent
   useEffect(() => {
     setPage(1);
-  }, [search, filtre]);
+  }, [debouncedSearch, filtre]);
 
   const formatPrix = (prix: number) => {
     return new Intl.NumberFormat('fr-GN', {
@@ -217,8 +219,8 @@ const Clients = () => {
           <input
             type="text"
             placeholder="Rechercher un client..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            value={searchInput}
+            onChange={(e) => setSearchInput(e.target.value)}
             className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-border bg-card text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring/30"
           />
         </div>

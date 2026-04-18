@@ -5,6 +5,7 @@ import Pagination from "@/components/Pagination";
 import CanAccess from "@/components/CanAccess";
 import { Truck, Package, CreditCard, Search, Plus, Edit, Trash, MoreVertical, Eye, Printer } from "lucide-react";
 import { useState, useEffect } from "react";
+import { useDebounce } from "@/hooks/useDebounce";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -32,7 +33,8 @@ import { parametresApi } from "@/api/parametres";
 import { toast } from "sonner";
 
 const Approvisionnements = () => {
-  const [search, setSearch] = useState("");
+  const [searchInput, setSearchInput] = useState("");
+  const debouncedSearch = useDebounce(searchInput, 500);
   const [formOpen, setFormOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<any>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);
@@ -40,11 +42,11 @@ const Approvisionnements = () => {
   const [page, setPage] = useState(1);
   const [limit] = useState(15);
 
-  // Utiliser le filtre backend
+  // Utiliser le filtre backend avec recherche débouncée
   const { data: approvisionnementsResponse, isLoading } = useApprovisionnements({
     page,
     limit,
-    search: search || undefined,
+    search: debouncedSearch || undefined,
   });
   const approvisionnements = approvisionnementsResponse?.data || [];
   const meta = approvisionnementsResponse?.meta;
@@ -135,7 +137,7 @@ const Approvisionnements = () => {
   // Réinitialiser la page quand le filtre change
   useEffect(() => {
     setPage(1);
-  }, [search]);
+  }, [debouncedSearch]);
 
   const formatPrix = (prix: number) => {
     return new Intl.NumberFormat('fr-GN', {
@@ -411,8 +413,8 @@ const Approvisionnements = () => {
           <input
             type="text"
             placeholder="Rechercher par numéro, fournisseur, facture..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            value={searchInput}
+            onChange={(e) => setSearchInput(e.target.value)}
             className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-border bg-card text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring/30"
           />
         </div>

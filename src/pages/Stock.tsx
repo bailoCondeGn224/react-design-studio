@@ -28,10 +28,12 @@ import {
 } from "@/components/ui/alert-dialog";
 import { useStock, useStockStats, useCreateArticle, useUpdateArticle, useDeleteArticle } from "@/hooks/useStock";
 import { useCategoriesActive } from "@/hooks/useCategories";
+import { useDebounce } from "@/hooks/useDebounce";
 
 const Stock = () => {
   const [selectedCategorieId, setSelectedCategorieId] = useState<string>("all");
-  const [search, setSearch] = useState("");
+  const [searchInput, setSearchInput] = useState("");
+  const debouncedSearch = useDebounce(searchInput, 500);
   const [formOpen, setFormOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<any>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);
@@ -39,11 +41,11 @@ const Stock = () => {
   const [page, setPage] = useState(1);
   const [limit] = useState(10);
 
-  // Hooks React Query avec filtres backend
+  // Hooks React Query avec filtres backend et recherche débouncée
   const { data: stockResponse, isLoading } = useStock({
     page,
     limit,
-    search: search || undefined,
+    search: debouncedSearch || undefined,
     categorieId: selectedCategorieId !== "all" ? selectedCategorieId : undefined,
   });
   const articles = stockResponse?.data || [];
@@ -96,7 +98,7 @@ const Stock = () => {
   // Réinitialiser la page quand les filtres changent
   useEffect(() => {
     setPage(1);
-  }, [search, selectedCategorieId]);
+  }, [debouncedSearch, selectedCategorieId]);
 
   // Statistiques d'alerte (depuis le backend)
   const articlesEnRupture = stockStats?.articlesEnRupture || 0;
@@ -493,7 +495,7 @@ const Stock = () => {
       <div className="flex flex-col sm:flex-row gap-3 mb-6">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-          <input type="text" placeholder="Rechercher un article..." value={search} onChange={(e) => setSearch(e.target.value)}
+          <input type="text" placeholder="Rechercher un article..." value={searchInput} onChange={(e) => setSearchInput(e.target.value)}
             className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-border bg-card text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring/30" />
         </div>
         <div className="flex gap-1.5 flex-wrap">

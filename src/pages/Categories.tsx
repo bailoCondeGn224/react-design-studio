@@ -7,6 +7,16 @@ import CanAccess from "@/components/CanAccess";
 import { useCategories, useCreateCategorie, useUpdateCategorie, useDeleteCategorie } from "@/hooks/useCategories";
 import { Categorie } from "@/types";
 import { FolderTree, Plus, Pencil, Trash2, CheckCircle, XCircle } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle
+} from "@/components/ui/alert-dialog";
 
 const Categories = () => {
   const [page, setPage] = useState(1);
@@ -22,6 +32,7 @@ const Categories = () => {
   const [formOpen, setFormOpen] = useState(false);
   const [editingCategorie, setEditingCategorie] = useState<Categorie | null>(null);
   const [formMode, setFormMode] = useState<'create' | 'edit'>('create');
+  const [deleteId, setDeleteId] = useState<string | null>(null);
 
   const handleCreate = () => {
     setFormMode('create');
@@ -35,9 +46,10 @@ const Categories = () => {
     setFormOpen(true);
   };
 
-  const handleDelete = async (id: string) => {
-    if (window.confirm('Êtes-vous sûr de vouloir supprimer cette catégorie ?')) {
-      deleteMutation.mutate(id);
+  const handleDelete = () => {
+    if (deleteId) {
+      deleteMutation.mutate(deleteId);
+      setDeleteId(null);
     }
   };
 
@@ -168,7 +180,7 @@ const Categories = () => {
                         </CanAccess>
                         <CanAccess permissions={['categories.delete']}>
                           <button
-                            onClick={() => handleDelete(categorie.id)}
+                            onClick={() => setDeleteId(categorie.id)}
                             className="p-2 hover:bg-destructive/10 rounded-lg text-destructive transition-colors"
                             title="Supprimer"
                           >
@@ -198,6 +210,27 @@ const Categories = () => {
         initialData={editingCategorie}
         mode={formMode}
       />
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={deleteId !== null} onOpenChange={() => setDeleteId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Supprimer la catégorie</AlertDialogTitle>
+            <AlertDialogDescription>
+              Êtes-vous sûr de vouloir supprimer cette catégorie ? Cette action est irréversible.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Annuler</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDelete}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Supprimer
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
       </div>
     </AppLayout>
   );

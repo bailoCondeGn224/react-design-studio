@@ -4,6 +4,7 @@ import Pagination from "@/components/Pagination";
 import { Search, ArrowUpCircle, ArrowDownCircle, Filter, Calendar, Package, TrendingUp, TrendingDown } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useMouvements, useStatsMouvements } from "@/hooks/useMouvements";
+import { useDebounce } from "@/hooks/useDebounce";
 
 const motifLabels: Record<string, string> = {
   vente: "Vente",
@@ -26,17 +27,18 @@ const motifColors: Record<string, string> = {
 };
 
 const MouvementsStock = () => {
-  const [search, setSearch] = useState("");
+  const [searchInput, setSearchInput] = useState("");
+  const debouncedSearch = useDebounce(searchInput, 500);
   const [typeFilter, setTypeFilter] = useState<string>("all");
   const [motifFilter, setMotifFilter] = useState<string>("all");
   const [page, setPage] = useState(1);
   const [limit] = useState(20);
 
-  // Utiliser les filtres backend au lieu du filtrage côté client
+  // Utiliser les filtres backend avec recherche débouncée
   const { data: mouvementsResponse, isLoading } = useMouvements({
     page,
     limit,
-    search: search || undefined,
+    search: debouncedSearch || undefined,
     type: typeFilter !== "all" ? typeFilter as 'entree' | 'sortie' : undefined,
     motif: motifFilter !== "all" ? motifFilter as any : undefined,
   });
@@ -47,7 +49,7 @@ const MouvementsStock = () => {
   // Réinitialiser la page quand les filtres changent
   useEffect(() => {
     setPage(1);
-  }, [search, typeFilter, motifFilter]);
+  }, [debouncedSearch, typeFilter, motifFilter]);
 
   const formatPrix = (prix: number) => {
     return new Intl.NumberFormat('fr-GN', {
@@ -164,8 +166,8 @@ const MouvementsStock = () => {
           <input
             type="text"
             placeholder="Rechercher un article..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            value={searchInput}
+            onChange={(e) => setSearchInput(e.target.value)}
             className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-border bg-card text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring/30"
           />
         </div>
