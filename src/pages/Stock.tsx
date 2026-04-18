@@ -349,10 +349,10 @@ const Stock = () => {
       )}
 
       {/* Section Analyse de Rotation */}
-      {statsRotation && (statsRotation.articlesRapides.length > 0 || statsRotation.articlesDormants.length > 0) && (
+      {statsRotation && (statsRotation.topVentes?.length > 0 || statsRotation.stockMort?.length > 0) && (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4 lg:gap-6 mb-6">
           {/* Top Produits à Rotation Rapide */}
-          {statsRotation.articlesRapides.length > 0 && (
+          {statsRotation.topVentes && statsRotation.topVentes.length > 0 && (
             <div className="bg-gradient-to-br from-success/5 via-card to-card border border-success/20 rounded-xl p-3 sm:p-4 lg:p-5 shadow-card">
               <div className="flex items-center gap-2 mb-3 sm:mb-4">
                 <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-success/20 flex items-center justify-center flex-shrink-0">
@@ -365,21 +365,21 @@ const Stock = () => {
               </div>
 
               <div className="space-y-1.5 sm:space-y-2">
-                {statsRotation.articlesRapides.slice(0, 5).map((article: any, index: number) => (
-                  <div key={article.id} className="flex items-center gap-2 sm:gap-3 p-2 sm:p-3 bg-card border border-border rounded-lg hover:shadow-md transition-shadow">
+                {statsRotation.topVentes.slice(0, 5).map((article: any, index: number) => (
+                  <div key={article.articleId} className="flex items-center gap-2 sm:gap-3 p-2 sm:p-3 bg-card border border-border rounded-lg hover:shadow-md transition-shadow">
                     <div className="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-success/20 flex items-center justify-center flex-shrink-0">
                       <span className="text-[10px] sm:text-xs font-bold text-success">#{index + 1}</span>
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-xs sm:text-sm font-semibold text-foreground truncate">{article.nom}</p>
                       <p className="text-[10px] sm:text-xs text-muted-foreground">
-                        {article.quantiteVendue30j || 0} vendus (30j) • Stock: {article.stock}
+                        {article.totalVendu || 0} vendus (30j) • Stock: {article.stockActuel}
                       </p>
                     </div>
                     <div className="flex items-center gap-0.5 sm:gap-1">
                       <Flame className="w-3 h-3 sm:w-4 sm:h-4 text-success" />
                       <span className="text-xs sm:text-sm font-bold text-success whitespace-nowrap">
-                        {article.tauxRotation?.toFixed(1) || 0}×
+                        {article.tauxRotation !== 'N/A' ? parseFloat(article.tauxRotation).toFixed(1) : 'N/A'}×
                       </span>
                     </div>
                   </div>
@@ -389,42 +389,39 @@ const Stock = () => {
           )}
 
           {/* Produits Dormants */}
-          {statsRotation.articlesDormants.length > 0 && (
+          {statsRotation.stockMort && statsRotation.stockMort.length > 0 && (
             <div className="bg-gradient-to-br from-warning/5 via-card to-card border border-warning/20 rounded-xl p-3 sm:p-4 lg:p-5 shadow-card">
               <div className="flex items-center gap-2 mb-3 sm:mb-4">
                 <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-warning/20 flex items-center justify-center flex-shrink-0">
                   <Snowflake className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-warning" />
                 </div>
                 <div>
-                  <h3 className="text-sm sm:text-base font-semibold text-foreground">Produits Dormants</h3>
-                  <p className="text-[10px] sm:text-xs text-muted-foreground">Sans vente depuis +90 jours</p>
+                  <h3 className="text-sm sm:text-base font-semibold text-foreground">Stock à Rotation Lente</h3>
+                  <p className="text-[10px] sm:text-xs text-muted-foreground">Articles avec faible rotation</p>
                 </div>
               </div>
 
               <div className="space-y-1.5 sm:space-y-2">
-                {statsRotation.articlesDormants.slice(0, 5).map((article: any) => (
-                  <div key={article.id} className="flex items-center gap-2 sm:gap-3 p-2 sm:p-3 bg-card border border-border rounded-lg hover:shadow-md transition-shadow">
+                {statsRotation.stockMort.slice(0, 5).map((article: any) => (
+                  <div key={article.articleId} className="flex items-center gap-2 sm:gap-3 p-2 sm:p-3 bg-card border border-border rounded-lg hover:shadow-md transition-shadow">
                     <Snowflake className="w-4 h-4 sm:w-5 sm:h-5 text-warning flex-shrink-0" />
                     <div className="flex-1 min-w-0">
                       <p className="text-xs sm:text-sm font-semibold text-foreground truncate">{article.nom}</p>
                       <p className="text-[10px] sm:text-xs text-muted-foreground">
-                        {article.joursSansVente || 0} jours sans vente • Stock: {article.stock}
+                        {article.joursCouverture || 0} jours couverture • Stock: {article.stockActuel}
                       </p>
                     </div>
                     <span className="text-[10px] sm:text-xs font-semibold text-warning whitespace-nowrap">
-                      {formatPrix((article.stock || 0) * (article.prixAchat || 0))}
+                      {formatPrix(article.valeurStock || 0)}
                     </span>
                   </div>
                 ))}
               </div>
 
-              {statsRotation.valeurStockDormant > 0 && (
+              {statsRotation.resume?.valeurStockImmobilise > 0 && (
                 <div className="mt-3 sm:mt-4 pt-3 sm:pt-4 border-t border-border">
                   <p className="text-[10px] sm:text-xs text-muted-foreground mb-1">Valeur immobilisée</p>
-                  <p className="text-base sm:text-lg font-bold text-warning">{formatPrix(statsRotation.valeurStockDormant)}</p>
-                  <p className="text-[10px] sm:text-xs text-muted-foreground">
-                    {statsRotation.pourcentageDormant?.toFixed(1)}% du stock total
-                  </p>
+                  <p className="text-base sm:text-lg font-bold text-warning">{formatPrix(statsRotation.resume.valeurStockImmobilise)}</p>
                 </div>
               )}
             </div>
