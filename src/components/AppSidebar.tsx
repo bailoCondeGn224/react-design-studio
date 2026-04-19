@@ -1,6 +1,6 @@
 import { NavLink, useLocation } from "react-router-dom";
 import {
-  LayoutDashboard, Users, UserCheck, Package, FolderTree, Truck, ShoppingCart, Wallet,
+  LayoutDashboard, Users, UserCheck, Package, FolderTree, MapPin, Truck, ShoppingCart, Wallet,
   ChevronLeft, ChevronRight, Sparkles, ArrowDownRight, ArrowDownLeft, Menu, LogOut, History, BarChart3,
   Shield, UserCog, Settings
 } from "lucide-react";
@@ -19,6 +19,7 @@ const navItems = [
   { to: "/clients", icon: UserCheck, label: "Clients", permissions: ["clients.read"] },
   { to: "/stock", icon: Package, label: "Stock", permissions: ["stock.read"] },
   { to: "/categories", icon: FolderTree, label: "Catégories", permissions: ["categories.read"] },
+  { to: "/zones", icon: MapPin, label: "Zones", permissions: ["zones.read"] },
   { to: "/approvisionnements", icon: Truck, label: "Approvisionnements", permissions: ["approvisionnements.read"] },
   { to: "/ventes", icon: ShoppingCart, label: "Ventes", permissions: ["ventes.read"] },
   { to: "/versements", icon: ArrowDownRight, label: "Versements", permissions: ["versements.read"] },
