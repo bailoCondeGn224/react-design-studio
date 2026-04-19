@@ -385,6 +385,14 @@ const Stock = () => {
                   </div>
                 ))}
               </div>
+
+              {statsRotation.topVentes.length > 5 && (
+                <div className="mt-3 sm:mt-4 pt-3 sm:pt-4 border-t border-border text-center">
+                  <p className="text-[10px] sm:text-xs text-muted-foreground">
+                    Top 5 sur <span className="font-semibold text-foreground">{statsRotation.topVentes.length}</span> articles à forte rotation
+                  </p>
+                </div>
+              )}
             </div>
           )}
 
@@ -417,6 +425,14 @@ const Stock = () => {
                   </div>
                 ))}
               </div>
+
+              {statsRotation.stockMort.length > 5 && (
+                <div className="mt-3 sm:mt-4 pt-3 sm:pt-4 border-t border-border text-center">
+                  <p className="text-[10px] sm:text-xs text-muted-foreground">
+                    Top 5 sur <span className="font-semibold text-foreground">{statsRotation.stockMort.length}</span> articles à rotation lente
+                  </p>
+                </div>
+              )}
 
               {statsRotation.resume?.valeurStockImmobilise > 0 && (
                 <div className="mt-3 sm:mt-4 pt-3 sm:pt-4 border-t border-border">
