@@ -146,7 +146,7 @@ const Parametres = () => {
 
   return (
     <AppLayout>
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-4 sm:mb-6">
         <PageHeader
           title="Paramètres de l'Entreprise"
           description="Configurez les informations de votre entreprise pour les factures et reçus"
@@ -155,7 +155,7 @@ const Parametres = () => {
           <button
             type="button"
             onClick={() => setIsEditing(true)}
-            className="gradient-gold text-primary-foreground px-6 py-3 rounded-lg text-sm font-semibold flex items-center gap-2 shadow-elevated hover:opacity-90 transition-opacity"
+            className="gradient-gold text-primary-foreground px-4 sm:px-6 py-2.5 sm:py-3 rounded-lg text-sm font-semibold flex items-center gap-2 shadow-elevated hover:opacity-90 transition-opacity w-full sm:w-auto whitespace-nowrap"
           >
             <Edit className="w-4 h-4" />
             Modifier
@@ -163,17 +163,17 @@ const Parametres = () => {
         )}
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-6">
+      <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
         {/* Informations Générales */}
-        <div className="bg-card border border-border rounded-xl p-6 shadow-card">
-          <div className="flex items-center gap-2 mb-6">
-            <Building2 className="w-5 h-5 text-primary" />
-            <h2 className="text-lg font-semibold text-foreground">Informations Générales</h2>
+        <div className="bg-card border border-border rounded-xl p-4 sm:p-5 md:p-6 shadow-card">
+          <div className="flex items-center gap-1.5 sm:gap-2 mb-4 sm:mb-5 md:mb-6">
+            <Building2 className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
+            <h2 className="text-base sm:text-lg font-semibold text-foreground">Informations Générales</h2>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
             <div>
-              <label className="block text-sm font-medium text-foreground mb-2">
+              <label className="block text-xs sm:text-sm font-medium text-foreground mb-1.5 sm:mb-2">
                 Nom Complet <span className="text-destructive">*</span>
               </label>
               <input
@@ -183,14 +183,14 @@ const Parametres = () => {
                 onChange={handleChange}
                 placeholder="Ex: Walli Industrie SARL"
                 disabled={!isEditing}
-                className="w-full px-4 py-2.5 rounded-lg border border-border bg-card text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring/30 disabled:opacity-60 disabled:cursor-not-allowed"
+                className="w-full px-3 sm:px-4 py-2 sm:py-2.5 rounded-lg border border-border bg-card text-sm sm:text-base text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring/30 disabled:opacity-60 disabled:cursor-not-allowed"
                 required
               />
-              <p className="text-xs text-muted-foreground mt-1">Utilisé sur les factures et documents officiels</p>
+              <p className="text-[10px] sm:text-xs text-muted-foreground mt-1">Utilisé sur les factures et documents officiels</p>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-foreground mb-2">
+              <label className="block text-xs sm:text-sm font-medium text-foreground mb-1.5 sm:mb-2">
                 Nom Court <span className="text-destructive">*</span>
               </label>
               <input
@@ -200,14 +200,14 @@ const Parametres = () => {
                 onChange={handleChange}
                 placeholder="Ex: Walli"
                 disabled={!isEditing}
-                className="w-full px-4 py-2.5 rounded-lg border border-border bg-card text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring/30 disabled:opacity-60 disabled:cursor-not-allowed"
+                className="w-full px-3 sm:px-4 py-2 sm:py-2.5 rounded-lg border border-border bg-card text-sm sm:text-base text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring/30 disabled:opacity-60 disabled:cursor-not-allowed"
                 required
               />
-              <p className="text-xs text-muted-foreground mt-1">Affiché dans le menu latéral</p>
+              <p className="text-[10px] sm:text-xs text-muted-foreground mt-1">Affiché dans le menu latéral</p>
             </div>
 
             <div className="md:col-span-2">
-              <label className="block text-sm font-medium text-foreground mb-2">Slogan</label>
+              <label className="block text-xs sm:text-sm font-medium text-foreground mb-1.5 sm:mb-2">Slogan</label>
               <input
                 type="text"
                 name="slogan"
@@ -215,17 +215,17 @@ const Parametres = () => {
                 onChange={handleChange}
                 placeholder="Ex: Mode & Tradition"
                 disabled={!isEditing}
-                className="w-full px-4 py-2.5 rounded-lg border border-border bg-card text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring/30 disabled:opacity-60 disabled:cursor-not-allowed"
+                className="w-full px-3 sm:px-4 py-2 sm:py-2.5 rounded-lg border border-border bg-card text-sm sm:text-base text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring/30 disabled:opacity-60 disabled:cursor-not-allowed"
               />
             </div>
 
             <div className="md:col-span-2">
-              <label className="block text-sm font-medium text-foreground mb-2">Logo de l'entreprise</label>
-              <div className="flex items-start gap-4">
+              <label className="block text-xs sm:text-sm font-medium text-foreground mb-1.5 sm:mb-2">Logo de l'entreprise</label>
+              <div className="flex flex-col sm:flex-row items-start gap-3 sm:gap-4">
                 {/* Preview area */}
                 <div className="flex-shrink-0">
                   {logoPreview || parametres?.logo ? (
-                    <div className="relative w-32 h-32 rounded-lg border-2 border-border overflow-hidden bg-muted">
+                    <div className="relative w-24 h-24 sm:w-32 sm:h-32 rounded-lg border-2 border-border overflow-hidden bg-muted">
                       <img
                         src={logoPreview || parametresApi.getLogoUrl()}
                         alt="Logo preview"
@@ -233,14 +233,14 @@ const Parametres = () => {
                       />
                     </div>
                   ) : (
-                    <div className="w-32 h-32 rounded-lg border-2 border-dashed border-border bg-muted flex items-center justify-center">
-                      <ImageIcon className="w-12 h-12 text-muted-foreground" />
+                    <div className="w-24 h-24 sm:w-32 sm:h-32 rounded-lg border-2 border-dashed border-border bg-muted flex items-center justify-center">
+                      <ImageIcon className="w-10 h-10 sm:w-12 sm:h-12 text-muted-foreground" />
                     </div>
                   )}
                 </div>
 
                 {/* Upload button */}
-                <div className="flex-1">
+                <div className="flex-1 w-full sm:w-auto">
                   <input
                     type="file"
                     ref={fileInputRef}
@@ -252,12 +252,12 @@ const Parametres = () => {
                     type="button"
                     onClick={handleLogoClick}
                     disabled={!isEditing || uploadLogo.isPending}
-                    className="px-4 py-2.5 rounded-lg border border-border bg-card text-foreground hover:bg-accent hover:text-accent-foreground transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="w-full sm:w-auto px-3 sm:px-4 py-2 sm:py-2.5 rounded-lg border border-border bg-card text-sm sm:text-base text-foreground hover:bg-accent hover:text-accent-foreground transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     <Upload className="w-4 h-4" />
                     {uploadLogo.isPending ? 'Téléchargement...' : 'Choisir un fichier'}
                   </button>
-                  <p className="text-xs text-muted-foreground mt-2">
+                  <p className="text-[10px] sm:text-xs text-muted-foreground mt-2">
                     Formats acceptés: JPG, PNG, GIF, WebP, SVG (max 5MB)
                   </p>
                 </div>
@@ -267,15 +267,15 @@ const Parametres = () => {
         </div>
 
         {/* Coordonnées */}
-        <div className="bg-card border border-border rounded-xl p-6 shadow-card">
-          <div className="flex items-center gap-2 mb-6">
-            <Mail className="w-5 h-5 text-primary" />
-            <h2 className="text-lg font-semibold text-foreground">Coordonnées</h2>
+        <div className="bg-card border border-border rounded-xl p-4 sm:p-5 md:p-6 shadow-card">
+          <div className="flex items-center gap-1.5 sm:gap-2 mb-4 sm:mb-5 md:mb-6">
+            <Mail className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
+            <h2 className="text-base sm:text-lg font-semibold text-foreground">Coordonnées</h2>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
             <div>
-              <label className="block text-sm font-medium text-foreground mb-2">
+              <label className="block text-xs sm:text-sm font-medium text-foreground mb-1.5 sm:mb-2">
                 Email <span className="text-destructive">*</span>
               </label>
               <input
@@ -285,13 +285,13 @@ const Parametres = () => {
                 onChange={handleChange}
                 placeholder="contact@entreprise.com"
                 disabled={!isEditing}
-                className="w-full px-4 py-2.5 rounded-lg border border-border bg-card text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring/30 disabled:opacity-60 disabled:cursor-not-allowed"
+                className="w-full px-3 sm:px-4 py-2 sm:py-2.5 rounded-lg border border-border bg-card text-sm sm:text-base text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring/30 disabled:opacity-60 disabled:cursor-not-allowed"
                 required
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-foreground mb-2">
+              <label className="block text-xs sm:text-sm font-medium text-foreground mb-1.5 sm:mb-2">
                 Téléphone <span className="text-destructive">*</span>
               </label>
               <input
@@ -301,13 +301,13 @@ const Parametres = () => {
                 onChange={handleChange}
                 placeholder="+224 XXX XX XX XX"
                 disabled={!isEditing}
-                className="w-full px-4 py-2.5 rounded-lg border border-border bg-card text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring/30 disabled:opacity-60 disabled:cursor-not-allowed"
+                className="w-full px-3 sm:px-4 py-2 sm:py-2.5 rounded-lg border border-border bg-card text-sm sm:text-base text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring/30 disabled:opacity-60 disabled:cursor-not-allowed"
                 required
               />
             </div>
 
             <div className="md:col-span-2">
-              <label className="block text-sm font-medium text-foreground mb-2">
+              <label className="block text-xs sm:text-sm font-medium text-foreground mb-1.5 sm:mb-2">
                 Adresse <span className="text-destructive">*</span>
               </label>
               <textarea
@@ -317,13 +317,13 @@ const Parametres = () => {
                 placeholder="Adresse complète de l'entreprise"
                 rows={2}
                 disabled={!isEditing}
-                className="w-full px-4 py-2.5 rounded-lg border border-border bg-card text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring/30 disabled:opacity-60 disabled:cursor-not-allowed"
+                className="w-full px-3 sm:px-4 py-2 sm:py-2.5 rounded-lg border border-border bg-card text-sm sm:text-base text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring/30 disabled:opacity-60 disabled:cursor-not-allowed"
                 required
               />
             </div>
 
             <div className="md:col-span-2">
-              <label className="block text-sm font-medium text-foreground mb-2">Site Web</label>
+              <label className="block text-xs sm:text-sm font-medium text-foreground mb-1.5 sm:mb-2">Site Web</label>
               <input
                 type="url"
                 name="siteWeb"
@@ -331,22 +331,22 @@ const Parametres = () => {
                 onChange={handleChange}
                 placeholder="www.entreprise.com"
                 disabled={!isEditing}
-                className="w-full px-4 py-2.5 rounded-lg border border-border bg-card text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring/30 disabled:opacity-60 disabled:cursor-not-allowed"
+                className="w-full px-3 sm:px-4 py-2 sm:py-2.5 rounded-lg border border-border bg-card text-sm sm:text-base text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring/30 disabled:opacity-60 disabled:cursor-not-allowed"
               />
             </div>
           </div>
         </div>
 
         {/* Informations Légales */}
-        <div className="bg-card border border-border rounded-xl p-6 shadow-card">
-          <div className="flex items-center gap-2 mb-6">
-            <FileText className="w-5 h-5 text-primary" />
-            <h2 className="text-lg font-semibold text-foreground">Informations Légales</h2>
+        <div className="bg-card border border-border rounded-xl p-4 sm:p-5 md:p-6 shadow-card">
+          <div className="flex items-center gap-1.5 sm:gap-2 mb-4 sm:mb-5 md:mb-6">
+            <FileText className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
+            <h2 className="text-base sm:text-lg font-semibold text-foreground">Informations Légales</h2>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-4">
             <div>
-              <label className="block text-sm font-medium text-foreground mb-2">RCCM</label>
+              <label className="block text-xs sm:text-sm font-medium text-foreground mb-1.5 sm:mb-2">RCCM</label>
               <input
                 type="text"
                 name="rccm"
@@ -354,12 +354,12 @@ const Parametres = () => {
                 onChange={handleChange}
                 placeholder="Numéro RCCM"
                 disabled={!isEditing}
-                className="w-full px-4 py-2.5 rounded-lg border border-border bg-card text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring/30 disabled:opacity-60 disabled:cursor-not-allowed"
+                className="w-full px-3 sm:px-4 py-2 sm:py-2.5 rounded-lg border border-border bg-card text-sm sm:text-base text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring/30 disabled:opacity-60 disabled:cursor-not-allowed"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-foreground mb-2">NIF</label>
+              <label className="block text-xs sm:text-sm font-medium text-foreground mb-1.5 sm:mb-2">NIF</label>
               <input
                 type="text"
                 name="nif"
@@ -367,12 +367,12 @@ const Parametres = () => {
                 onChange={handleChange}
                 placeholder="Numéro NIF"
                 disabled={!isEditing}
-                className="w-full px-4 py-2.5 rounded-lg border border-border bg-card text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring/30 disabled:opacity-60 disabled:cursor-not-allowed"
+                className="w-full px-3 sm:px-4 py-2 sm:py-2.5 rounded-lg border border-border bg-card text-sm sm:text-base text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring/30 disabled:opacity-60 disabled:cursor-not-allowed"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-foreground mb-2">Registre de Commerce</label>
+              <label className="block text-xs sm:text-sm font-medium text-foreground mb-1.5 sm:mb-2">Registre de Commerce</label>
               <input
                 type="text"
                 name="registreCommerce"
@@ -380,22 +380,22 @@ const Parametres = () => {
                 onChange={handleChange}
                 placeholder="Numéro registre"
                 disabled={!isEditing}
-                className="w-full px-4 py-2.5 rounded-lg border border-border bg-card text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring/30 disabled:opacity-60 disabled:cursor-not-allowed"
+                className="w-full px-3 sm:px-4 py-2 sm:py-2.5 rounded-lg border border-border bg-card text-sm sm:text-base text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring/30 disabled:opacity-60 disabled:cursor-not-allowed"
               />
             </div>
           </div>
         </div>
 
         {/* Paramètres de Facturation */}
-        <div className="bg-card border border-border rounded-xl p-6 shadow-card">
-          <div className="flex items-center gap-2 mb-6">
-            <DollarSign className="w-5 h-5 text-primary" />
-            <h2 className="text-lg font-semibold text-foreground">Paramètres de Facturation</h2>
+        <div className="bg-card border border-border rounded-xl p-4 sm:p-5 md:p-6 shadow-card">
+          <div className="flex items-center gap-1.5 sm:gap-2 mb-4 sm:mb-5 md:mb-6">
+            <DollarSign className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
+            <h2 className="text-base sm:text-lg font-semibold text-foreground">Paramètres de Facturation</h2>
           </div>
 
-          <div className="grid grid-cols-1 gap-4">
+          <div className="grid grid-cols-1 gap-3 sm:gap-4">
             <div>
-              <label className="block text-sm font-medium text-foreground mb-2">Devise</label>
+              <label className="block text-xs sm:text-sm font-medium text-foreground mb-1.5 sm:mb-2">Devise</label>
               <input
                 type="text"
                 name="devise"
@@ -403,12 +403,12 @@ const Parametres = () => {
                 onChange={handleChange}
                 placeholder="GNF"
                 disabled={!isEditing}
-                className="w-full px-4 py-2.5 rounded-lg border border-border bg-card text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring/30 disabled:opacity-60 disabled:cursor-not-allowed"
+                className="w-full px-3 sm:px-4 py-2 sm:py-2.5 rounded-lg border border-border bg-card text-sm sm:text-base text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring/30 disabled:opacity-60 disabled:cursor-not-allowed"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-foreground mb-2">Mentions Légales</label>
+              <label className="block text-xs sm:text-sm font-medium text-foreground mb-1.5 sm:mb-2">Mentions Légales</label>
               <textarea
                 name="mentionsLegales"
                 value={formData.mentionsLegales}
@@ -416,7 +416,7 @@ const Parametres = () => {
                 placeholder="Mentions légales affichées sur les factures"
                 rows={3}
                 disabled={!isEditing}
-                className="w-full px-4 py-2.5 rounded-lg border border-border bg-card text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring/30 disabled:opacity-60 disabled:cursor-not-allowed"
+                className="w-full px-3 sm:px-4 py-2 sm:py-2.5 rounded-lg border border-border bg-card text-sm sm:text-base text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring/30 disabled:opacity-60 disabled:cursor-not-allowed"
               />
             </div>
           </div>
@@ -424,12 +424,12 @@ const Parametres = () => {
 
         {/* Boutons de soumission */}
         {isEditing && (
-          <div className="flex justify-end gap-3">
+          <div className="flex flex-col sm:flex-row justify-end gap-2 sm:gap-3">
             <button
               type="button"
               onClick={handleCancel}
               disabled={updateParametres.isPending}
-              className="px-6 py-3 rounded-lg text-sm font-semibold flex items-center gap-2 border border-border bg-card text-foreground hover:bg-accent hover:text-accent-foreground transition-colors disabled:opacity-50"
+              className="w-full sm:w-auto px-4 sm:px-6 py-2.5 sm:py-3 rounded-lg text-sm font-semibold flex items-center justify-center gap-2 border border-border bg-card text-foreground hover:bg-accent hover:text-accent-foreground transition-colors disabled:opacity-50"
             >
               <X className="w-4 h-4" />
               Annuler
@@ -437,7 +437,7 @@ const Parametres = () => {
             <button
               type="submit"
               disabled={updateParametres.isPending}
-              className="gradient-gold text-primary-foreground px-6 py-3 rounded-lg text-sm font-semibold flex items-center gap-2 shadow-elevated hover:opacity-90 transition-opacity disabled:opacity-50"
+              className="w-full sm:w-auto gradient-gold text-primary-foreground px-4 sm:px-6 py-2.5 sm:py-3 rounded-lg text-sm font-semibold flex items-center justify-center gap-2 shadow-elevated hover:opacity-90 transition-opacity disabled:opacity-50"
             >
               <Save className="w-4 h-4" />
               {updateParametres.isPending ? 'Enregistrement...' : 'Enregistrer'}
