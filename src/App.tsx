@@ -12,6 +12,7 @@ import Fournisseurs from "./pages/Fournisseurs.tsx";
 import Clients from "./pages/Clients.tsx";
 import Stock from "./pages/Stock.tsx";
 import Categories from "./pages/Categories.tsx";
+import Zones from "./pages/Zones.tsx";
 import Approvisionnements from "./pages/Approvisionnements.tsx";
 import Ventes from "./pages/Ventes.tsx";
 import Versements from "./pages/Versements.tsx";
@@ -73,6 +74,14 @@ const App = () => (
             element={
               <ProtectedRoute permissions={['categories.read']}>
                 <Categories />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/zones"
+            element={
+              <ProtectedRoute permissions={['zones.read']}>
+                <Zones />
               </ProtectedRoute>
             }
           />

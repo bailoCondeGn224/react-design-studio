@@ -3,6 +3,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import FormField from "@/components/FormField";
 import { toast } from "sonner";
 import { Categorie } from "@/types";
+import { useZonesActive } from "@/hooks/useZones";
 
 interface CategorieFormProps {
   open: boolean;
@@ -13,6 +14,8 @@ interface CategorieFormProps {
 }
 
 const CategorieForm = ({ open, onOpenChange, onSubmit, initialData = null, mode = 'create' }: CategorieFormProps) => {
+  const { data: zones = [], isLoading: loadingZones } = useZonesActive();
+
   const getInitialState = () => {
     if (mode === 'edit' && initialData) {
       return {
@@ -20,6 +23,7 @@ const CategorieForm = ({ open, onOpenChange, onSubmit, initialData = null, mode 
         code: initialData.code || '',
         description: initialData.description || '',
         actif: initialData.actif ?? true,
+        zoneId: (initialData as any).zoneId || '',
       };
     }
     return {
@@ -27,6 +31,7 @@ const CategorieForm = ({ open, onOpenChange, onSubmit, initialData = null, mode 
       code: '',
       description: '',
       actif: true,
+      zoneId: '',
     };
   };
 
@@ -55,6 +60,7 @@ const CategorieForm = ({ open, onOpenChange, onSubmit, initialData = null, mode 
       code: form.code.trim().toUpperCase(),
       description: form.description.trim() || undefined,
       actif: form.actif,
+      zoneId: form.zoneId || undefined,
     };
 
     if (mode === 'edit' && initialData) {
@@ -103,6 +109,28 @@ const CategorieForm = ({ open, onOpenChange, onSubmit, initialData = null, mode 
             onChange={e => update("description", (e.target as HTMLTextAreaElement).value)}
             maxLength={500}
           />
+
+          <div>
+            <label className="block text-xs sm:text-sm font-medium text-foreground mb-1.5 sm:mb-2">
+              Zone (optionnel)
+            </label>
+            <select
+              value={form.zoneId}
+              onChange={e => update("zoneId", e.target.value)}
+              className="w-full px-3 sm:px-4 py-2 sm:py-2.5 rounded-lg border border-border bg-card text-sm sm:text-base text-foreground focus:outline-none focus:ring-2 focus:ring-ring/30"
+              disabled={loadingZones}
+            >
+              <option value="">Aucune zone</option>
+              {zones.map((zone: any) => (
+                <option key={zone.id} value={zone.id}>
+                  {zone.code} — {zone.nom}
+                </option>
+              ))}
+            </select>
+            <p className="text-[10px] sm:text-xs text-muted-foreground mt-1">
+              Associez cette catégorie à une zone d'entreposage
+            </p>
+          </div>
 
           <div className="flex items-center gap-2">
             <input
