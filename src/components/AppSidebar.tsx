@@ -19,7 +19,7 @@ const navItems = [
   { to: "/clients", icon: UserCheck, label: "Clients", permissions: ["clients.read"] },
   { to: "/stock", icon: Package, label: "Stock", permissions: ["stock.read"] },
   { to: "/categories", icon: FolderTree, label: "Catégories", permissions: ["categories.read"] },
-  { to: "/zones", icon: MapPin, label: "Zones", permissions: ["zones.read"] },
+  { to: "/zones", icon: MapPin, label: "Zones", permissions: [] },
   { to: "/approvisionnements", icon: Truck, label: "Approvisionnements", permissions: ["approvisionnements.read"] },
   { to: "/ventes", icon: ShoppingCart, label: "Ventes", permissions: ["ventes.read"] },
   { to: "/versements", icon: ArrowDownRight, label: "Versements", permissions: ["versements.read"] },
