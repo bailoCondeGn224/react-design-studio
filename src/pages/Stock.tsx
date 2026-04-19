@@ -480,14 +480,19 @@ const Stock = () => {
         </div>
       </div>
 
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2 sm:gap-3 mb-4 sm:mb-6">
-        {["A — Abayas", "B — Foulards", "C — Bazin", "D — Autres", "E — Sécurité"].map((zone, i) => (
-          <div key={i} className="bg-card border border-border rounded-lg p-2 sm:p-3 text-center shadow-card">
-            <p className="text-[10px] sm:text-xs text-muted-foreground">Zone</p>
-            <p className="text-xs sm:text-sm font-semibold text-foreground">{zone}</p>
-          </div>
-        ))}
-      </div>
+      {/* Catégories */}
+      {categories.length > 0 && (
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2 sm:gap-3 mb-4 sm:mb-6">
+          {categories.filter(c => c.actif).map((categorie) => (
+            <div key={categorie.id} className="bg-card border border-border rounded-lg p-2 sm:p-3 text-center shadow-card">
+              <p className="text-[10px] sm:text-xs text-muted-foreground">Catégorie</p>
+              <p className="text-xs sm:text-sm font-semibold text-foreground truncate" title={categorie.nom}>
+                {categorie.code} — {categorie.nom}
+              </p>
+            </div>
+          ))}
+        </div>
+      )}
 
       <div className="flex flex-col sm:flex-row gap-3 mb-6">
         <div className="relative flex-1">
