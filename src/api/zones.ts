@@ -1,4 +1,4 @@
-import api from './axios';
+import { apiClient } from '@/lib/api-client';
 
 export interface Zone {
   id: string;
@@ -34,37 +34,37 @@ export interface ZoneFilterParams {
 export const zonesApi = {
   // Récupérer toutes les zones avec pagination
   getAll: async (params?: ZoneFilterParams) => {
-    const response = await api.get('/zones', { params });
+    const response = await apiClient.get('/zones', { params });
     return response.data;
   },
 
   // Récupérer uniquement les zones actives
   getActives: async () => {
-    const response = await api.get('/zones/actives');
+    const response = await apiClient.get('/zones/actives');
     return response.data;
   },
 
   // Récupérer une zone par ID
   getById: async (id: string) => {
-    const response = await api.get(`/zones/${id}`);
+    const response = await apiClient.get(`/zones/${id}`);
     return response.data;
   },
 
   // Créer une zone
   create: async (data: CreateZoneDto) => {
-    const response = await api.post('/zones', data);
+    const response = await apiClient.post('/zones', data);
     return response.data;
   },
 
   // Modifier une zone
   update: async (id: string, data: UpdateZoneDto) => {
-    const response = await api.patch(`/zones/${id}`, data);
+    const response = await apiClient.patch(`/zones/${id}`, data);
     return response.data;
   },
 
   // Supprimer une zone
   delete: async (id: string) => {
-    const response = await api.delete(`/zones/${id}`);
+    const response = await apiClient.delete(`/zones/${id}`);
     return response.data;
   },
 };

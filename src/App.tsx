@@ -80,7 +80,7 @@ const App = () => (
           <Route
             path="/zones"
             element={
-              <ProtectedRoute permissions={['zones.read']}>
+              <ProtectedRoute>
                 <Zones />
               </ProtectedRoute>
             }

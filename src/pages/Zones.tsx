@@ -6,7 +6,7 @@ import Pagination from "@/components/Pagination";
 import CanAccess from "@/components/CanAccess";
 import { useZones, useCreateZone, useUpdateZone, useDeleteZone } from "@/hooks/useZones";
 import { Zone } from "@/api/zones";
-import { MapPin, Plus, Edit, Trash, CheckCircle, XCircle } from "lucide-react";
+import { Plus, Edit, Trash, CheckCircle, XCircle } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -63,12 +63,6 @@ const Zones = () => {
     setEditingZone(null);
   };
 
-  const stats = {
-    total: zones.length,
-    actives: zones.filter(z => z.actif).length,
-    inactives: zones.filter(z => !z.actif).length,
-  };
-
   return (
     <AppLayout>
       <div className="space-y-4 sm:space-y-6">
@@ -76,50 +70,15 @@ const Zones = () => {
           title="Zones"
           description="Gestion des zones d'entreposage"
           action={
-            <CanAccess permissions={['zones.create']}>
-              <button
-                onClick={handleCreate}
-                className="gradient-gold text-primary-foreground px-4 py-2.5 rounded-lg text-sm font-semibold flex items-center gap-2 shadow-elevated hover:opacity-90 transition-opacity w-full sm:w-auto"
-              >
-                <Plus className="w-4 h-4" />
-                Nouvelle Zone
-              </button>
-            </CanAccess>
+            <button
+              onClick={handleCreate}
+              className="gradient-gold text-primary-foreground px-4 py-2.5 rounded-lg text-sm font-semibold flex items-center gap-2 shadow-elevated hover:opacity-90 transition-opacity w-full sm:w-auto"
+            >
+              <Plus className="w-4 h-4" />
+              Nouvelle Zone
+            </button>
           }
         />
-
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
-        <div className="bg-card border border-border rounded-lg p-3 sm:p-4 shadow-card">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-[11px] sm:text-sm text-muted-foreground">Total</p>
-              <p className="text-xl sm:text-2xl font-bold">{stats.total}</p>
-            </div>
-            <MapPin className="w-6 h-6 sm:w-8 sm:h-8 text-primary/40" />
-          </div>
-        </div>
-
-        <div className="bg-card border border-border rounded-lg p-3 sm:p-4 shadow-card">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-[11px] sm:text-sm text-muted-foreground">Actives</p>
-              <p className="text-xl sm:text-2xl font-bold text-green-600">{stats.actives}</p>
-            </div>
-            <CheckCircle className="w-6 h-6 sm:w-8 sm:h-8 text-green-600/40" />
-          </div>
-        </div>
-
-        <div className="bg-card border border-border rounded-lg p-3 sm:p-4 shadow-card">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-[11px] sm:text-sm text-muted-foreground">Inactives</p>
-              <p className="text-xl sm:text-2xl font-bold text-muted-foreground">{stats.inactives}</p>
-            </div>
-            <XCircle className="w-6 h-6 sm:w-8 sm:h-8 text-muted-foreground/40" />
-          </div>
-        </div>
-      </div>
 
       {/* Zones Table */}
       <div className="bg-card border border-border rounded-xl shadow-card overflow-hidden">
