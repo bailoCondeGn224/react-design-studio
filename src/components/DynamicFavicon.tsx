@@ -1,15 +1,15 @@
 import { useEffect } from 'react';
-import { useParametres } from '@/hooks/useParametres';
-import { parametresApi } from '@/api/parametres';
+import { useCurrentUser } from '@/hooks/useAuth';
 
 const DynamicFavicon = () => {
-  const { data: parametres } = useParametres();
+  const user = useCurrentUser();
+  const organization = user?.organization;
 
   useEffect(() => {
-    // Si on a des paramètres et un logo
-    if (parametres?.logo) {
-      // Récupérer l'URL du logo (même logique que la sidebar)
-      const logoUrl = parametresApi.getLogoUrl();
+    // Si on a une organization et un logo
+    if (organization?.logo && organization?.id) {
+      // Récupérer l'URL du logo depuis organization
+      const logoUrl = `${import.meta.env.VITE_API_URL}/organizations/logo/${organization.id}`;
 
       // Chercher l'élément link existant pour le favicon
       let link = document.querySelector("link[rel*='icon']") as HTMLLinkElement;
@@ -24,7 +24,7 @@ const DynamicFavicon = () => {
       // Mettre à jour le href avec l'URL du logo
       link.href = logoUrl;
     }
-  }, [parametres]);
+  }, [organization]);
 
   // Ce composant ne rend rien visuellement
   return null;

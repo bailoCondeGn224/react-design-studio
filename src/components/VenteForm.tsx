@@ -1,10 +1,10 @@
 import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import FormField from "@/components/FormField";
+import ArticleCombobox from "@/components/ArticleCombobox";
 import { toast } from "sonner";
 import { Plus, Trash2 } from "lucide-react";
 import { useClients } from "@/hooks/useClients";
-import { useStock } from "@/hooks/useStock";
 import { formatPrixInput, handlePrixChange } from "@/utils/format-prix";
 
 interface VenteFormProps {
@@ -18,8 +18,6 @@ interface VenteFormProps {
 const VenteForm = ({ open, onOpenChange, onSubmit, initialData = null, mode = 'create' }: VenteFormProps) => {
   const { data: clientsResponse } = useClients({ page: 1, limit: 100 });
   const clients = clientsResponse?.data || [];
-  const { data: articlesResponse } = useStock({ page: 1, limit: 100 });
-  const articles = articlesResponse?.data || [];
 
   const getInitialState = () => {
     if (mode === 'edit' && initialData) {
@@ -103,27 +101,14 @@ const VenteForm = ({ open, onOpenChange, onSubmit, initialData = null, mode = 'c
     setForm(prev => {
       const newLignes = [...prev.lignes];
 
-      // Garder la valeur telle quelle (comme pour le formulaire d'approvisionnement)
+      // Garder la valeur telle quelle
       newLignes[index] = { ...newLignes[index], [field]: value };
 
-      // Si on change l'article, pré-remplir le nom et le prix
-      if (field === 'articleId') {
-        const article = articles.find((a: any) => a.id === value);
-        if (article) {
-          newLignes[index].nom = article.nom;
-          newLignes[index].prixUnitaire = Number(article.prixVente) || 0;
-          newLignes[index].stockDisponible = article.stock;
-        }
-      }
-
       // Vérifier le stock si on modifie la quantité
-      if (field === 'quantite') {
-        const article = articles.find((a: any) => a.id === newLignes[index].articleId);
-        if (article) {
-          const quantiteDemandee = Number(value) || 0;
-          if (quantiteDemandee > article.stock) {
-            toast.warning(`Stock insuffisant ! Disponible: ${article.stock}`);
-          }
+      if (field === 'quantite' && newLignes[index].stockDisponible !== undefined) {
+        const quantiteDemandee = Number(value) || 0;
+        if (quantiteDemandee > newLignes[index].stockDisponible) {
+          toast.warning(`Stock insuffisant ! Disponible: ${newLignes[index].stockDisponible}`);
         }
       }
 
@@ -175,14 +160,13 @@ const VenteForm = ({ open, onOpenChange, onSubmit, initialData = null, mode = 'c
 
     // VALIDATION STOCK CRITIQUE : Vérifier le stock disponible
     for (const ligne of form.lignes) {
-      const article = articles.find((a: any) => a.id === ligne.articleId);
-      if (article) {
-        if (ligne.quantite > article.stock) {
-          toast.error(`Stock insuffisant pour "${article.nom}" ! Disponible: ${article.stock}`);
+      if (ligne.stockDisponible !== undefined) {
+        if (ligne.quantite > ligne.stockDisponible) {
+          toast.error(`Stock insuffisant pour "${ligne.nom}" ! Disponible: ${ligne.stockDisponible}`);
           return;
         }
-        if (article.stock === 0) {
-          toast.error(`"${article.nom}" est en rupture de stock !`);
+        if (ligne.stockDisponible === 0) {
+          toast.error(`"${ligne.nom}" est en rupture de stock !`);
           return;
         }
       }
@@ -295,61 +279,55 @@ const VenteForm = ({ open, onOpenChange, onSubmit, initialData = null, mode = 'c
                 {form.lignes.map((ligne: any, index: number) => (
                   <div key={index} className="grid grid-cols-12 gap-2 p-3 bg-secondary/30 rounded-lg">
                     <div className="col-span-5">
-                      <select
-                        className="w-full px-3 py-2 rounded-lg border border-border bg-card text-sm text-foreground"
+                      <ArticleCombobox
                         value={ligne.articleId}
-                        onChange={e => updateLigne(index, "articleId", e.target.value)}
-                      >
-                        <option value="">-- Article --</option>
-                        {articles.map((a: any) => {
-                          const enRupture = a.stock === 0;
-                          const stockFaible = a.stock > 0 && a.stock <= a.seuilAlerte;
-                          return (
-                            <option key={a.id} value={a.id} disabled={enRupture}>
-                              {a.nom} - {formatPrix(a.prixVente)}
-                              {enRupture ? ' ⚠️ RUPTURE' : stockFaible ? ` (Stock: ${a.stock} ⚠️)` : ` (Stock: ${a.stock})`}
-                            </option>
-                          );
-                        })}
-                      </select>
-                      {ligne.articleId && (() => {
-                        const article = articles.find((a: any) => a.id === ligne.articleId);
-                        if (article && article.stock <= article.seuilAlerte) {
-                          return (
-                            <p className="text-xs text-warning mt-1 flex items-center gap-1">
-                              ⚠️ Stock faible: {article.stock} unités restantes
-                            </p>
-                          );
-                        }
-                        return null;
-                      })()}
+                        onChange={(article) => {
+                          if (article) {
+                            setForm(prev => {
+                              const newLignes = [...prev.lignes];
+                              newLignes[index] = {
+                                ...newLignes[index],
+                                articleId: article.id,
+                                nom: article.nom,
+                                prixUnitaire: Number(article.prixVente) || 0,
+                                stockDisponible: article.stock,
+                                sousTotal: Number(newLignes[index].quantite || 1) * (Number(article.prixVente) || 0)
+                              };
+                              return { ...prev, lignes: newLignes };
+                            });
+                          }
+                        }}
+                        placeholder="Sélectionner un article..."
+                        showPrice={true}
+                        priceType="vente"
+                        checkStock={true}
+                        excludeIds={form.lignes
+                          .filter((l: any, i: number) => i !== index && l.articleId)
+                          .map((l: any) => l.articleId)}
+                      />
+                      {ligne.stockDisponible !== undefined && ligne.stockDisponible <= (ligne.seuilAlerte || 0) && (
+                        <p className="text-xs text-warning mt-1 flex items-center gap-1">
+                          Stock faible: {ligne.stockDisponible} unités restantes
+                        </p>
+                      )}
                     </div>
                     <div className="col-span-2">
                       <input
                         type="number"
                         className={`w-full px-3 py-2 rounded-lg border bg-card text-sm text-foreground ${
-                          ligne.articleId && (() => {
-                            const article = articles.find((a: any) => a.id === ligne.articleId);
-                            return article && ligne.quantite > article.stock ? 'border-destructive' : 'border-border';
-                          })()
+                          ligne.stockDisponible !== undefined && ligne.quantite > ligne.stockDisponible ? 'border-destructive' : 'border-border'
                         }`}
                         placeholder="Qté"
                         min="1"
-                        max={ligne.articleId ? articles.find((a: any) => a.id === ligne.articleId)?.stock : undefined}
+                        max={ligne.stockDisponible !== undefined ? ligne.stockDisponible : undefined}
                         value={ligne.quantite}
                         onChange={e => updateLigne(index, "quantite", e.target.value)}
                       />
-                      {ligne.articleId && ligne.quantite > 0 && (() => {
-                        const article = articles.find((a: any) => a.id === ligne.articleId);
-                        if (article && ligne.quantite > article.stock) {
-                          return (
-                            <p className="text-xs text-destructive mt-1">
-                              Max: {article.stock}
-                            </p>
-                          );
-                        }
-                        return null;
-                      })()}
+                      {ligne.stockDisponible !== undefined && ligne.quantite > ligne.stockDisponible && (
+                        <p className="text-xs text-destructive mt-1">
+                          Max: {ligne.stockDisponible}
+                        </p>
+                      )}
                     </div>
                     <div className="col-span-3">
                       <input

@@ -17,7 +17,15 @@ export const useLogin = () => {
       localStorage.setItem('access_token', data.access_token);
       localStorage.setItem('user', JSON.stringify(data.user));
       toast.success(`Bienvenue ${data.user.nom}!`);
-      navigate('/');
+
+      // Redirection intelligente selon le rôle
+      if (data.user.isSuperAdmin) {
+        navigate('/super-admin/dashboard');
+      } else if (data.user.role?.nom === 'ADMIN') {
+        navigate('/admin/dashboard');
+      } else {
+        navigate('/');
+      }
     },
     onError: (error: any) => {
       console.error('❌ Erreur de connexion:', error);
@@ -54,9 +62,15 @@ export const useIsAuthenticated = (): boolean => {
  * Hook pour vérifier si l'utilisateur a une ou plusieurs permissions
  * @param requiredPermissions - Code(s) de permission à vérifier (ex: 'ventes.create')
  * @returns true si l'utilisateur a AU MOINS UNE des permissions requises
+ * Note: Les super admins ont accès à tout automatiquement
  */
 export const useHasPermission = (...requiredPermissions: string[]): boolean => {
   const user = useCurrentUser();
+
+  // Les super admins ont accès à tout
+  if (user?.isSuperAdmin) {
+    return true;
+  }
 
   if (!user || !user.role || !user.role.permissions) {
     return false;
@@ -104,4 +118,14 @@ export const useUserPermissions = (): string[] => {
 export const useUserRole = (): string | null => {
   const user = useCurrentUser();
   return user?.role?.nom || null;
+};
+
+/**
+ * Hook pour vérifier si l'utilisateur est un super admin
+ * Les super admins n'ont pas de role ni de permissions, ils ont accès à tout
+ * @returns true si l'utilisateur est super admin
+ */
+export const useIsSuperAdmin = (): boolean => {
+  const user = useCurrentUser();
+  return user?.isSuperAdmin ?? false;
 };

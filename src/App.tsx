@@ -6,6 +6,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import ProtectedRoute from "./components/ProtectedRoute.tsx";
 import DynamicFavicon from "./components/DynamicFavicon.tsx";
 import { SidebarProvider } from "./contexts/SidebarContext";
+import { AuthProvider } from "./contexts/AuthContext";
 import Login from "./pages/Login.tsx";
 import Index from "./pages/Index.tsx";
 import Fournisseurs from "./pages/Fournisseurs.tsx";
@@ -15,27 +16,35 @@ import Categories from "./pages/Categories.tsx";
 import Zones from "./pages/Zones.tsx";
 import Approvisionnements from "./pages/Approvisionnements.tsx";
 import Ventes from "./pages/Ventes.tsx";
+import Commandes from "./pages/Commandes.tsx";
 import Versements from "./pages/Versements.tsx";
 import VersementsClient from "./pages/VersementsClient.tsx";
-import Finances from "./pages/Finances.tsx";
+import RetoursClients from "./pages/RetoursClients.tsx";
+import RetoursFournisseurs from "./pages/RetoursFournisseurs.tsx";
 import MouvementsStock from "./pages/MouvementsStock.tsx";
 import Analytics from "./pages/Analytics.tsx";
 import Utilisateurs from "./pages/Utilisateurs.tsx";
 import Roles from "./pages/Roles.tsx";
-import Parametres from "./pages/Parametres.tsx";
 import NotFound from "./pages/NotFound.tsx";
+// Pages Super Admin (SUPER_ADMIN only)
+import SuperAdminDashboard from "./pages/admin/SuperAdminDashboard.tsx";
+import Organizations from "./pages/admin/Organizations.tsx";
+import Plans from "./pages/admin/Plans.tsx";
+// Page Admin Dashboard (pour role ADMIN)
+import AdminDashboard from "./pages/AdminDashboard.tsx";
 
 const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <SidebarProvider>
-      <TooltipProvider>
-        <DynamicFavicon />
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-        <Routes>
+    <AuthProvider>
+      <SidebarProvider>
+        <TooltipProvider>
+          <DynamicFavicon />
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
+          <Routes>
           <Route path="/login" element={<Login />} />
           <Route
             path="/"
@@ -102,6 +111,14 @@ const App = () => (
             }
           />
           <Route
+            path="/commandes"
+            element={
+              <ProtectedRoute permissions={['commandes.read']}>
+                <Commandes />
+              </ProtectedRoute>
+            }
+          />
+          <Route
             path="/versements"
             element={
               <ProtectedRoute permissions={['versements.read']}>
@@ -118,10 +135,18 @@ const App = () => (
             }
           />
           <Route
-            path="/finances"
+            path="/retours-clients"
             element={
-              <ProtectedRoute permissions={['finances.read']}>
-                <Finances />
+              <ProtectedRoute permissions={['retours.create']}>
+                <RetoursClients />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/retours-fournisseurs"
+            element={
+              <ProtectedRoute permissions={['retours.create']}>
+                <RetoursFournisseurs />
               </ProtectedRoute>
             }
           />
@@ -157,11 +182,37 @@ const App = () => (
               </ProtectedRoute>
             }
           />
+          {/* Routes Super Admin (SUPER_ADMIN only) */}
           <Route
-            path="/parametres"
+            path="/super-admin/dashboard"
             element={
-              <ProtectedRoute permissions={['parametres.read']}>
-                <Parametres />
+              <ProtectedRoute requireSuperAdmin>
+                <SuperAdminDashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/super-admin/organizations"
+            element={
+              <ProtectedRoute requireSuperAdmin>
+                <Organizations />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/super-admin/plans"
+            element={
+              <ProtectedRoute requireSuperAdmin>
+                <Plans />
+              </ProtectedRoute>
+            }
+          />
+          {/* Route Admin Dashboard (pour role ADMIN) */}
+          <Route
+            path="/admin/dashboard"
+            element={
+              <ProtectedRoute roles={['ADMIN']}>
+                <AdminDashboard />
               </ProtectedRoute>
             }
           />
@@ -169,7 +220,8 @@ const App = () => (
         </Routes>
       </BrowserRouter>
     </TooltipProvider>
-    </SidebarProvider>
+      </SidebarProvider>
+    </AuthProvider>
   </QueryClientProvider>
 );
 

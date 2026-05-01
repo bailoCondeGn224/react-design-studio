@@ -63,6 +63,98 @@ export interface Role {
   updatedAt?: string;
 }
 
+// Types pour les Plans (Multi-tenant)
+export interface Plan {
+  id: string;
+  code: string; // Ex: FREE, STANDARD, PREMIUM, ENTERPRISE
+  nom: string; // Ex: "Plan Gratuit"
+  description?: string;
+  prixMensuel: number;
+  actif: boolean;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface CreatePlanDto {
+  code: string;
+  nom: string;
+  description?: string;
+  prixMensuel: number;
+  actif?: boolean;
+}
+
+export interface UpdatePlanDto {
+  nom?: string;
+  description?: string;
+  prixMensuel?: number;
+  actif?: boolean;
+}
+
+// Types pour les Organizations (Multi-tenant)
+export interface Organization {
+  id: string;
+  nom: string; // Nom complet de l'organisation
+  slug: string; // URL-friendly identifier (ex: walli-industrie)
+  actif: boolean;
+  planId: string;
+  plan?: Plan; // Relation optionnelle
+  // Limites héritées du plan ou personnalisées
+  maxUsers: number;
+  maxArticles: number;
+  abonnementExpire?: string; // Date d'expiration de l'abonnement
+  // Informations de l'entreprise
+  nomCourt?: string; // Ex: "Walli"
+  slogan?: string; // Ex: "Mode & Tradition"
+  logo?: string; // URL ou base64
+  email?: string;
+  telephone?: string;
+  adresse?: string;
+  siteWeb?: string;
+  rccm?: string; // Registre de Commerce
+  nif?: string; // Numéro d'Identification Fiscale
+  devise?: string; // Ex: "GNF", "XOF"
+  mentionsLegales?: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface CreateOrganizationDto {
+  nom: string;
+  slug: string;
+  planId: string;
+  actif?: boolean;
+  maxUsers?: number;
+  maxArticles?: number;
+  abonnementExpire?: string;
+  nomCourt?: string;
+  slogan?: string;
+  email?: string;
+  telephone?: string;
+  adresse?: string;
+  devise?: string;
+}
+
+export interface UpdateOrganizationDto {
+  nom?: string;
+  slug?: string;
+  planId?: string;
+  actif?: boolean;
+  maxUsers?: number;
+  maxArticles?: number;
+  abonnementExpire?: string;
+  nomCourt?: string;
+  slogan?: string;
+  logo?: string;
+  email?: string;
+  telephone?: string;
+  adresse?: string;
+  siteWeb?: string;
+  rccm?: string;
+  nif?: string;
+  devise?: string;
+  mentionsLegales?: string;
+}
+
 // Types pour l'authentification et Users
 export interface User {
   id: string;
@@ -70,6 +162,10 @@ export interface User {
   nom: string;
   roleId?: string;
   role?: Role;
+  organizationId?: string; // NULL pour SUPER_ADMIN
+  organization?: Organization; // Relation optionnelle
+  isSuperAdmin: boolean;
+  actif: boolean;
   createdAt?: string;
   updatedAt?: string;
 }
@@ -194,6 +290,66 @@ export interface CreateVenteDto {
   montantPaye: number;
   montantRestant: number;
   modePaiement: 'especes' | 'mobile_money' | 'virement' | 'credit' | 'acompte_50';
+}
+
+// Types pour les Commandes Client
+export interface LigneCommande {
+  articleId: string;
+  nom: string;
+  quantite: number;
+  prixUnitaire: number;
+  sousTotal: number;
+}
+
+export interface Commande {
+  id: string;
+  numero: string;
+  clientId: string;
+  lignes: LigneCommande[];
+  total: number;
+  acompte: number;
+  montantRestant: number;
+  statut: 'en_attente' | 'livree' | 'annulee';
+  dateLivraison?: string;
+  dateLivree?: string;
+  venteId?: string;
+  note?: string;
+  userId: string;
+  userNom: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface CreateCommandeDto {
+  clientId: string;
+  lignes: LigneCommande[];
+  total: number;
+  acompte?: number;
+  montantRestant?: number;
+  dateLivraison?: string;
+  note?: string;
+}
+
+export interface LivrerCommandeDto {
+  montantPaye: number;
+  modePaiement: 'especes' | 'mobile_money' | 'virement' | 'credit' | 'acompte_50';
+  note?: string;
+}
+
+export interface CommandeFilterParams extends PaginationParams {
+  statut?: 'en_attente' | 'livree' | 'annulee';
+  clientId?: string;
+  dateDebut?: string;
+  dateFin?: string;
+}
+
+export interface StatsCommandes {
+  total: number;
+  enAttente: number;
+  livrees: number;
+  annulees: number;
+  totalAcomptes: number;
+  valeurEnAttente: number;
 }
 
 // Types pour les Fournisseurs
@@ -581,38 +737,130 @@ export interface UpdateRoleDto {
   permissionIds?: string[];
 }
 
-// Types pour les Paramètres de l'entreprise
-export interface Parametres {
+// Types pour le Dashboard SUPER_ADMIN
+export interface GlobalStats {
+  totalOrganizations: number;
+  activeOrganizations: number;
+  inactiveOrganizations: number;
+  totalUsers: number; // Hors super admins
+  totalVentes: number;
+  totalClients: number;
+  totalArticles: number;
+}
+
+export interface OrganizationsByPlan {
+  plan: string;
+  planCode: string;
+  count: number;
+}
+
+export interface GrowthStats {
+  organizations: {
+    thisMonth: number;
+    lastMonth: number;
+    growth: number; // Pourcentage
+  };
+  users: {
+    thisMonth: number;
+    lastMonth: number;
+    growth: number; // Pourcentage
+  };
+}
+
+export interface OrganizationDetails {
+  organization: Organization;
+  stats: {
+    totalUsers: number;
+    totalVentes: number;
+    totalClients: number;
+    totalArticles: number;
+    chiffreAffaires: number;
+  };
+  recentVentes: Array<{
+    id: string;
+    numero: string;
+    date: string;
+    total: number;
+    clientNom?: string;
+  }>;
+}
+
+export interface RecentActivity {
+  recentOrganizations: Organization[];
+  recentUsers: Array<User & {
+    organizationNom?: string;
+    roleNom?: string;
+  }>;
+}
+
+// Types pour les Retours Clients
+export interface LigneRetourClient {
+  articleId: string;
+  nom: string;
+  quantite: number;
+  prixUnitaire: number;
+  sousTotal: number;
+  raison?: 'defectueux' | 'taille_incorrecte' | 'couleur_incorrecte' | 'erreur_commande' | 'non_conforme' | 'qualite_insuffisante' | 'changement_avis' | 'autre';
+  noteArticle?: string;
+}
+
+export interface RetourClient {
   id: string;
-  nomComplet: string; // Ex: "Walli Industrie SARL"
-  nomCourt: string; // Ex: "Walli" - affiché dans le sidebar
-  slogan?: string; // Ex: "Mode & Tradition"
-  logo?: string; // URL ou base64 du logo
-  email: string;
-  telephone: string;
-  adresse: string;
-  siteWeb?: string;
-  rccm?: string; // Registre de Commerce et du Crédit Mobilier
-  nif?: string; // Numéro d'Identification Fiscale
-  registreCommerce?: string;
-  devise: string;
-  mentionsLegales?: string;
+  numero?: string;
+  venteId: string;
+  venteNumero?: string;
+  clientId?: string;
+  clientNom?: string;
+  lignes: LigneRetourClient[];
+  total: number;
+  modeRemboursement: 'especes' | 'mobile_money' | 'virement' | 'credit_compte';
+  note?: string;
+  date?: string;
   createdAt?: string;
   updatedAt?: string;
 }
 
-export interface UpdateParametresDto {
-  nomComplet?: string;
-  nomCourt?: string;
-  slogan?: string;
-  logo?: string;
-  email?: string;
-  telephone?: string;
-  adresse?: string;
-  siteWeb?: string;
-  rccm?: string;
-  nif?: string;
-  registreCommerce?: string;
-  devise?: string;
-  mentionsLegales?: string;
+export interface CreateRetourClientDto {
+  venteId: string;
+  lignes: LigneRetourClient[];
+  total: number;
+  modeRemboursement: 'especes' | 'mobile_money' | 'virement' | 'credit_compte';
+  note?: string;
+}
+
+// Types pour les Retours Fournisseurs
+export interface LigneRetourFournisseur {
+  articleId: string;
+  nom: string;
+  quantite: number;
+  prixUnitaire: number;
+  sousTotal: number;
+  raison?: 'defectueux' | 'taille_incorrecte' | 'couleur_incorrecte' | 'erreur_commande' | 'non_conforme' | 'qualite_insuffisante' | 'changement_avis' | 'autre';
+  noteArticle?: string;
+}
+
+export interface RetourFournisseur {
+  id: string;
+  numero?: string;
+  approvisionnementId: string;
+  approvisionnementNumero?: string;
+  fournisseurId?: string;
+  fournisseurNom?: string;
+  lignes: LigneRetourFournisseur[];
+  total: number;
+  remboursementRecu?: boolean;
+  montantRembourse?: number;
+  note?: string;
+  date?: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface CreateRetourFournisseurDto {
+  approvisionnementId: string;
+  lignes: LigneRetourFournisseur[];
+  total: number;
+  remboursementRecu?: boolean;
+  montantRembourse?: number;
+  note?: string;
 }

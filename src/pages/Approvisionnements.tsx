@@ -28,8 +28,7 @@ import { useApprovisionnements, useApprovisionnement, useCreateApprovisionnement
 import { useStockAlerts } from "@/hooks/useStock";
 import { approvisionnementsApi } from "@/api/approvisionnements";
 import { printInvoice } from "@/utils/invoice-generator";
-import { useParametres } from "@/hooks/useParametres";
-import { parametresApi } from "@/api/parametres";
+import { useCurrentUser } from "@/hooks/useAuth";
 import { toast } from "sonner";
 
 const Approvisionnements = () => {
@@ -52,7 +51,8 @@ const Approvisionnements = () => {
   const meta = approvisionnementsResponse?.meta;
   const { data: approvisionnementDetails } = useApprovisionnement(detailsId || '');
   const { data: articlesAlerts = [] } = useStockAlerts();
-  const { data: parametres } = useParametres();
+  const user = useCurrentUser();
+  const organization = user?.organization;
   const createApprovisionnement = useCreateApprovisionnement();
   const updateApprovisionnement = useUpdateApprovisionnement();
   const deleteApprovisionnement = useDeleteApprovisionnement();
@@ -100,21 +100,21 @@ const Approvisionnements = () => {
     try {
       const details = await approvisionnementsApi.getById(id);
 
-      // Préparer les informations de l'entreprise
-      const companyInfo = parametres ? {
-        nomComplet: parametres.nomComplet,
-        nomCourt: parametres.nomCourt,
-        slogan: parametres.slogan,
-        logo: parametres.logo ? parametresApi.getLogoUrl() : undefined,
-        email: parametres.email,
-        telephone: parametres.telephone,
-        adresse: parametres.adresse,
-        siteWeb: parametres.siteWeb,
-        rccm: parametres.rccm,
-        nif: parametres.nif,
-        registreCommerce: parametres.registreCommerce,
-        devise: parametres.devise,
-        mentionsLegales: parametres.mentionsLegales,
+      // Préparer les informations de l'entreprise depuis organization
+      const companyInfo = organization ? {
+        nomComplet: organization.nom,
+        nomCourt: organization.nomCourt || organization.nom,
+        slogan: organization.slogan || '',
+        logo: organization.logo ? `${import.meta.env.VITE_API_URL}/organizations/logo/${organization.id}` : undefined,
+        email: organization.email || '',
+        telephone: organization.telephone || '',
+        adresse: organization.adresse || '',
+        siteWeb: organization.siteWeb || '',
+        rccm: organization.rccm || '',
+        nif: organization.nif || '',
+        registreCommerce: organization.registreCommerce || '',
+        devise: organization.devise || 'GNF',
+        mentionsLegales: organization.mentionsLegales || '',
       } : undefined;
 
       printInvoice({
@@ -420,7 +420,7 @@ const Approvisionnements = () => {
         </div>
       </div>
 
-      {/* Tableau */}
+      {/* Tableau - Chaque article sur une ligne séparée */}
       <div className="bg-card border border-border rounded-xl shadow-card overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full min-w-[700px]">
@@ -428,90 +428,105 @@ const Approvisionnements = () => {
               <tr className="bg-secondary border-b border-border">
                 <th className="text-left text-[10px] sm:text-xs font-bold uppercase tracking-wide text-foreground px-4 sm:px-6 py-3 sm:py-4">Numéro</th>
                 <th className="text-left text-[10px] sm:text-xs font-bold uppercase tracking-wide text-foreground px-4 sm:px-6 py-3 sm:py-4">Fournisseur</th>
-                <th className="text-left text-[10px] sm:text-xs font-bold uppercase tracking-wide text-foreground px-4 sm:px-6 py-3 sm:py-4 hidden md:table-cell">Date</th>
-                <th className="text-right text-[10px] sm:text-xs font-bold uppercase tracking-wide text-foreground px-4 sm:px-6 py-3 sm:py-4">Total</th>
-                <th className="text-right text-[10px] sm:text-xs font-bold uppercase tracking-wide text-foreground px-4 sm:px-6 py-3 sm:py-4 hidden sm:table-cell">Payé</th>
-                <th className="text-center text-[10px] sm:text-xs font-bold uppercase tracking-wide text-foreground px-4 sm:px-6 py-3 sm:py-4">Statut</th>
+                <th className="text-left text-[10px] sm:text-xs font-bold uppercase tracking-wide text-foreground px-4 sm:px-6 py-3 sm:py-4">Article</th>
+                <th className="text-center text-[10px] sm:text-xs font-bold uppercase tracking-wide text-foreground px-4 sm:px-6 py-3 sm:py-4">Quantité</th>
+                <th className="text-right text-[10px] sm:text-xs font-bold uppercase tracking-wide text-foreground px-4 sm:px-6 py-3 sm:py-4 hidden md:table-cell">Prix Unit.</th>
+                <th className="text-right text-[10px] sm:text-xs font-bold uppercase tracking-wide text-foreground px-4 sm:px-6 py-3 sm:py-4">Sous-total</th>
+                <th className="text-left text-[10px] sm:text-xs font-bold uppercase tracking-wide text-foreground px-4 sm:px-6 py-3 sm:py-4 hidden lg:table-cell">Date</th>
                 <th className="text-center text-[10px] sm:text-xs font-bold uppercase tracking-wide text-foreground px-4 sm:px-6 py-3 sm:py-4">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border">
               {approvisionnements.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="px-6 py-12 text-center text-muted-foreground">
+                  <td colSpan={8} className="px-6 py-12 text-center text-muted-foreground">
                     Aucun approvisionnement trouvé
                   </td>
                 </tr>
               ) : (
-                approvisionnements.map((item: any) => (
-                  <tr key={item.id} className="hover:bg-secondary/30 transition-colors">
-                    <td className="px-4 sm:px-6 py-3 sm:py-4">
-                      <p className="text-sm font-semibold text-foreground">{item.numero}</p>
-                      {item.numeroFacture && (
-                        <p className="text-xs text-muted-foreground">Fact. {item.numeroFacture}</p>
-                      )}
-                    </td>
-                    <td className="px-4 sm:px-6 py-3 sm:py-4">
-                      <p className="text-sm font-medium text-foreground">{item.fournisseurNom}</p>
-                    </td>
-                    <td className="px-4 sm:px-6 py-3 sm:py-4 text-sm text-muted-foreground hidden md:table-cell">
-                      {formatDate(item.dateLivraison)}
-                    </td>
-                    <td className="px-4 sm:px-6 py-3 sm:py-4 text-right text-sm font-bold text-foreground">
-                      {formatPrix(item.total)}
-                    </td>
-                    <td className="px-4 sm:px-6 py-3 sm:py-4 text-right text-sm font-semibold text-success hidden sm:table-cell">
-                      {formatPrix(item.montantPaye)}
-                    </td>
-                    <td className="px-4 sm:px-6 py-3 sm:py-4 text-center">
-                      {item.montantRestant > 0 ? (
-                        <span className="inline-flex items-center text-[10px] sm:text-xs px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-full font-semibold bg-warning/10 text-warning">
-                          Partiel
-                        </span>
-                      ) : (
-                        <span className="inline-flex items-center text-[10px] sm:text-xs px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-full font-semibold bg-success/10 text-success">
-                          Payé
-                        </span>
-                      )}
-                    </td>
-                    <td className="px-4 sm:px-6 py-4 text-center">
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <button className="text-muted-foreground hover:text-foreground transition-colors">
-                            <MoreVertical className="w-4 h-4" />
-                          </button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem onClick={() => setDetailsId(item.id)}>
-                            <Eye className="w-4 h-4 mr-2" />
-                            Voir détails
-                          </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => handlePrintReceipt(item.id)}>
-                            <Printer className="w-4 h-4 mr-2" />
-                            Imprimer Reçu
-                          </DropdownMenuItem>
-                          <CanAccess permissions={['approvisionnements.update']}>
-                            <DropdownMenuSeparator />
-                            <DropdownMenuItem onClick={() => handleEdit(item)}>
-                              <Edit className="w-4 h-4 mr-2" />
-                              Modifier
-                            </DropdownMenuItem>
-                          </CanAccess>
-                          <CanAccess permissions={['approvisionnements.delete']}>
-                            <DropdownMenuSeparator />
-                            <DropdownMenuItem
-                              onClick={() => setDeleteId(item.id)}
-                              className="text-destructive focus:text-destructive"
-                            >
-                              <Trash className="w-4 h-4 mr-2" />
-                              Annuler
-                            </DropdownMenuItem>
-                          </CanAccess>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </td>
-                  </tr>
-                ))
+                approvisionnements.flatMap((item: any) =>
+                  item.lignes && item.lignes.length > 0 ? (
+                    item.lignes.map((ligne: any, idx: number) => (
+                      <tr key={`${item.id}-${idx}`} className="hover:bg-secondary/30 transition-colors">
+                        <td className="px-4 sm:px-6 py-3 sm:py-4">
+                          <p className="text-sm font-semibold text-foreground">{item.numero}</p>
+                          {item.numeroFacture && idx === 0 && (
+                            <p className="text-xs text-muted-foreground">Fact. {item.numeroFacture}</p>
+                          )}
+                        </td>
+                        <td className="px-4 sm:px-6 py-3 sm:py-4">
+                          <p className="text-sm font-medium text-foreground">{item.fournisseurNom}</p>
+                        </td>
+                        <td className="px-4 sm:px-6 py-3 sm:py-4">
+                          <p className="text-sm font-medium text-foreground">{ligne.nom}</p>
+                        </td>
+                        <td className="px-4 sm:px-6 py-3 sm:py-4 text-center">
+                          <p className="text-sm font-semibold text-foreground">×{ligne.quantite}</p>
+                        </td>
+                        <td className="px-4 sm:px-6 py-3 sm:py-4 text-right text-sm text-muted-foreground hidden md:table-cell">
+                          {formatPrix(ligne.prixUnitaire)}
+                        </td>
+                        <td className="px-4 sm:px-6 py-3 sm:py-4 text-right text-sm font-bold text-foreground">
+                          {formatPrix(ligne.sousTotal)}
+                        </td>
+                        <td className="px-4 sm:px-6 py-3 sm:py-4 text-sm text-muted-foreground hidden lg:table-cell">
+                          {formatDate(item.dateLivraison)}
+                        </td>
+                        <td className="px-4 sm:px-6 py-4 text-center">
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <button className="text-muted-foreground hover:text-foreground transition-colors">
+                                <MoreVertical className="w-4 h-4" />
+                              </button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                              <DropdownMenuItem onClick={() => setDetailsId(item.id)}>
+                                <Eye className="w-4 h-4 mr-2" />
+                                Voir détails
+                              </DropdownMenuItem>
+                              <DropdownMenuItem onClick={() => handlePrintReceipt(item.id)}>
+                                <Printer className="w-4 h-4 mr-2" />
+                                Imprimer Reçu
+                              </DropdownMenuItem>
+                              <CanAccess permissions={['approvisionnements.update']}>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem onClick={() => handleEdit(item)}>
+                                  <Edit className="w-4 h-4 mr-2" />
+                                  Modifier
+                                </DropdownMenuItem>
+                              </CanAccess>
+                              <CanAccess permissions={['approvisionnements.delete']}>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem
+                                  onClick={() => setDeleteId(item.id)}
+                                  className="text-destructive focus:text-destructive"
+                                >
+                                  <Trash className="w-4 h-4 mr-2" />
+                                  Annuler
+                                </DropdownMenuItem>
+                              </CanAccess>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr key={item.id} className="hover:bg-secondary/30 transition-colors">
+                      <td className="px-4 sm:px-6 py-3 sm:py-4">
+                        <p className="text-sm font-semibold text-foreground">{item.numero}</p>
+                        {item.numeroFacture && (
+                          <p className="text-xs text-muted-foreground">Fact. {item.numeroFacture}</p>
+                        )}
+                      </td>
+                      <td className="px-4 sm:px-6 py-3 sm:py-4">
+                        <p className="text-sm font-medium text-foreground">{item.fournisseurNom}</p>
+                      </td>
+                      <td colSpan={6} className="px-4 sm:px-6 py-3 sm:py-4 text-center text-sm text-muted-foreground">
+                        Aucun article
+                      </td>
+                    </tr>
+                  )
+                )
               )}
             </tbody>
           </table>

@@ -26,8 +26,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { useVentes, useVente, useVentesStats, useCreateVente, useUpdateVente, useDeleteVente } from "@/hooks/useVentes";
 import { ventesApi } from "@/api/ventes";
 import { printInvoice } from "@/utils/invoice-generator";
-import { useParametres } from "@/hooks/useParametres";
-import { parametresApi } from "@/api/parametres";
+import { useCurrentUser } from "@/hooks/useAuth";
 import { toast } from "sonner";
 
 const paymentIcons: Record<string, typeof Banknote> = {
@@ -59,7 +58,8 @@ const Ventes = () => {
   const meta = ventesResponse?.meta;
   const { data: venteDetails } = useVente(detailsId || '');
   const { data: statsVentes } = useVentesStats();
-  const { data: parametres } = useParametres();
+  const user = useCurrentUser();
+  const organization = user?.organization;
   const createVente = useCreateVente();
   const updateVente = useUpdateVente();
   const deleteVente = useDeleteVente();
@@ -98,21 +98,21 @@ const Ventes = () => {
     try {
       const details = await ventesApi.getById(id);
 
-      // Préparer les informations de l'entreprise
-      const companyInfo = parametres ? {
-        nomComplet: parametres.nomComplet,
-        nomCourt: parametres.nomCourt,
-        slogan: parametres.slogan,
-        logo: parametres.logo ? parametresApi.getLogoUrl() : undefined,
-        email: parametres.email,
-        telephone: parametres.telephone,
-        adresse: parametres.adresse,
-        siteWeb: parametres.siteWeb,
-        rccm: parametres.rccm,
-        nif: parametres.nif,
-        registreCommerce: parametres.registreCommerce,
-        devise: parametres.devise,
-        mentionsLegales: parametres.mentionsLegales,
+      // Préparer les informations de l'entreprise depuis organization
+      const companyInfo = organization ? {
+        nomComplet: organization.nom,
+        nomCourt: organization.nomCourt || organization.nom,
+        slogan: organization.slogan || '',
+        logo: organization.logo ? `${import.meta.env.VITE_API_URL}/organizations/logo/${organization.id}` : undefined,
+        email: organization.email || '',
+        telephone: organization.telephone || '',
+        adresse: organization.adresse || '',
+        siteWeb: organization.siteWeb || '',
+        rccm: organization.rccm || '',
+        nif: organization.nif || '',
+        registreCommerce: organization.registreCommerce || '',
+        devise: organization.devise || 'GNF',
+        mentionsLegales: organization.mentionsLegales || '',
       } : undefined;
 
       printInvoice({
@@ -253,8 +253,12 @@ const Ventes = () => {
 
               <div className="bg-primary/5 p-4 rounded-lg space-y-2">
                 <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Mode de paiement</span>
+                  <span className="text-muted-foreground">Mode de paiement initial</span>
                   <span className="font-semibold">{paymentLabels[venteDetails.modePaiement] || venteDetails.modePaiement}</span>
+                </div>
+                <div className="flex justify-between text-sm pt-2 border-t border-border">
+                  <span className="text-muted-foreground">Total</span>
+                  <span className="font-bold text-lg">{formatPrix(venteDetails.total)}</span>
                 </div>
                 <div className="flex justify-between text-sm">
                   <span className="text-muted-foreground">Montant payé</span>
@@ -266,11 +270,38 @@ const Ventes = () => {
                     <span className="font-semibold text-destructive">{formatPrix(venteDetails.montantRestant)}</span>
                   </div>
                 )}
-                <div className="flex justify-between text-sm pt-2 border-t border-border">
-                  <span className="text-muted-foreground">Total</span>
-                  <span className="font-bold text-lg">{formatPrix(venteDetails.total)}</span>
-                </div>
               </div>
+
+              {/* Historique des paiements */}
+              {venteDetails.versements && venteDetails.versements.length > 0 && (
+                <div>
+                  <p className="text-sm font-semibold text-foreground mb-2">Historique des Paiements</p>
+                  <div className="space-y-2">
+                    {venteDetails.versements.map((versement: any, index: number) => (
+                      <div key={index} className="flex justify-between items-center p-3 bg-success/10 border border-success/20 rounded-lg text-sm">
+                        <div>
+                          <p className="font-semibold text-success">{formatPrix(versement.montant)}</p>
+                          <p className="text-xs text-muted-foreground">
+                            {formatDate(versement.date)} • {paymentLabels[versement.modePaiement] || versement.modePaiement}
+                          </p>
+                          {versement.reference && (
+                            <p className="text-xs text-muted-foreground">Réf: {versement.reference}</p>
+                          )}
+                          {versement.note && (
+                            <p className="text-xs text-muted-foreground italic mt-1">{versement.note}</p>
+                          )}
+                        </div>
+                        <div className="text-right">
+                          <p className="text-xs text-muted-foreground">Par: {versement.userNom || 'N/A'}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="mt-2 p-2 bg-secondary/30 rounded text-xs text-muted-foreground text-center">
+                    {venteDetails.versements.length} paiement(s) enregistré(s)
+                  </div>
+                </div>
+              )}
 
               {venteDetails.note && (
                 <div>
@@ -334,6 +365,7 @@ const Ventes = () => {
               <tr className="bg-secondary border-b border-border">
                 <th className="text-left text-[10px] sm:text-xs font-bold uppercase tracking-wide text-foreground px-4 sm:px-6 py-3 sm:py-4">Numéro</th>
                 <th className="text-left text-[10px] sm:text-xs font-bold uppercase tracking-wide text-foreground px-4 sm:px-6 py-3 sm:py-4">Client</th>
+                <th className="text-left text-[10px] sm:text-xs font-bold uppercase tracking-wide text-foreground px-4 sm:px-6 py-3 sm:py-4 hidden lg:table-cell">Articles</th>
                 <th className="text-right text-[10px] sm:text-xs font-bold uppercase tracking-wide text-foreground px-4 sm:px-6 py-3 sm:py-4">Total</th>
                 <th className="text-center text-[10px] sm:text-xs font-bold uppercase tracking-wide text-foreground px-4 sm:px-6 py-3 sm:py-4 hidden md:table-cell">Paiement</th>
                 <th className="text-center text-[10px] sm:text-xs font-bold uppercase tracking-wide text-foreground px-4 sm:px-6 py-3 sm:py-4 hidden sm:table-cell">Date</th>
@@ -343,7 +375,7 @@ const Ventes = () => {
             <tbody className="divide-y divide-border">
               {ventes.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="px-6 py-12 text-center text-muted-foreground">
+                  <td colSpan={7} className="px-6 py-12 text-center text-muted-foreground">
                     Aucune vente enregistrée
                   </td>
                 </tr>
@@ -374,6 +406,20 @@ const Ventes = () => {
                             </span>
                           )}
                         </div>
+                      </td>
+                      <td className="px-4 sm:px-6 py-3 sm:py-4 hidden lg:table-cell">
+                        {item.lignes && item.lignes.length > 0 ? (
+                          <div className="text-sm text-foreground">
+                            {item.lignes.map((ligne: any, idx: number) => (
+                              <div key={idx} className="flex items-center justify-between gap-2 py-0.5">
+                                <span className="truncate">{ligne.nom}</span>
+                                <span className="text-xs text-muted-foreground whitespace-nowrap">×{ligne.quantite}</span>
+                              </div>
+                            ))}
+                          </div>
+                        ) : (
+                          <span className="text-sm text-muted-foreground">-</span>
+                        )}
                       </td>
                       <td className="px-4 sm:px-6 py-3 sm:py-4 text-right">
                         <p className="text-sm font-bold text-foreground">{formatPrix(item.total)}</p>

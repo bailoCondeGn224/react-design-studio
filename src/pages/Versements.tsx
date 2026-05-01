@@ -4,13 +4,14 @@ import StatCard from "@/components/StatCard";
 import VersementForm from "@/components/VersementForm";
 import Pagination from "@/components/Pagination";
 import CanAccess from "@/components/CanAccess";
-import { Plus, Wallet, AlertCircle, Search, ArrowDownRight, CheckCircle, Eye, Edit2, X } from "lucide-react";
+import { Plus, Wallet, AlertCircle, Search, ArrowDownRight, CheckCircle, Eye, Edit2, X, Trash2 } from "lucide-react";
 import { useState, useEffect } from "react";
-import { useVersements, useCreateVersement, useUpdateVersement, useMontantsMois } from "@/hooks/useVersements";
+import { useVersements, useCreateVersement, useUpdateVersement, useDeleteVersement, useMontantsMois } from "@/hooks/useVersements";
 import { useFournisseurs, useStatsFournisseurs } from "@/hooks/useFournisseurs";
 import { Versement } from "@/types";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useDebounce } from "@/hooks/useDebounce";
+import { versementsApi } from "@/api/versements";
 
 const Versements = () => {
   const [searchInput, setSearchInput] = useState("");
@@ -20,18 +21,16 @@ const Versements = () => {
   const [limit] = useState(15);
   const [selectedVersement, setSelectedVersement] = useState<Versement | null>(null);
   const [detailsOpen, setDetailsOpen] = useState(false);
+  const [historyDialogOpen, setHistoryDialogOpen] = useState(false);
+  const [selectedFournisseur, setSelectedFournisseur] = useState<any>(null);
+  const [fournisseurVersements, setFournisseurVersements] = useState<any[]>([]);
 
-  // Utiliser le filtre backend avec recherche débouncée
-  const { data: versementsResponse, isLoading: loadingVersements } = useVersements({
-    page,
-    limit,
+  // Charger les fournisseurs avec recherche
+  const { data: fournisseursResponse, isLoading: loadingFournisseurs } = useFournisseurs({
+    page: 1,
+    limit: 100,
     search: debouncedSearch || undefined,
   });
-  const versements = versementsResponse?.data || [];
-  const metaVersements = versementsResponse?.meta;
-
-  // Charger les fournisseurs pour afficher la liste avec dettes (TODO: créer endpoint /fournisseurs/top-dettes)
-  const { data: fournisseursResponse } = useFournisseurs({ page: 1, limit: 100 });
   const fournisseurs = fournisseursResponse?.data || [];
 
   // Utiliser les stats depuis le backend
@@ -39,6 +38,7 @@ const Versements = () => {
   const { data: montantsMois } = useMontantsMois();
   const createVersement = useCreateVersement();
   const updateVersement = useUpdateVersement();
+  const deleteVersement = useDeleteVersement();
 
   const handleSubmitVersement = (data: any) => {
     if (selectedVersement) {
@@ -48,10 +48,12 @@ const Versements = () => {
     }
     setFormOpen(false);
     setSelectedVersement(null);
+    setSelectedFournisseur(null);
   };
 
   const handleEdit = (versement: Versement) => {
     setSelectedVersement(versement);
+    setSelectedFournisseur(null);
     setFormOpen(true);
   };
 
@@ -63,6 +65,39 @@ const Versements = () => {
   const handleCloseForm = () => {
     setFormOpen(false);
     setSelectedVersement(null);
+    setSelectedFournisseur(null);
+  };
+
+  const handleShowHistory = async (fournisseur: any) => {
+    setSelectedFournisseur(fournisseur);
+    try {
+      // Charger tous les versements du fournisseur
+      const response = await versementsApi.getAll({ fournisseurId: fournisseur.id, limit: 100 });
+      setFournisseurVersements(response.data || []);
+      setHistoryDialogOpen(true);
+    } catch (error) {
+      console.error('Erreur lors du chargement des versements:', error);
+      setFournisseurVersements([]);
+      setHistoryDialogOpen(true);
+    }
+  };
+
+  const handleDeleteVersement = (versementId: string) => {
+    if (confirm('Êtes-vous sûr de vouloir supprimer ce paiement ?')) {
+      deleteVersement.mutate(versementId, {
+        onSuccess: () => {
+          // Recharger l'historique du fournisseur
+          if (selectedFournisseur) {
+            handleShowHistory(selectedFournisseur);
+          }
+        },
+      });
+    }
+  };
+
+  const handlePayFournisseur = (fournisseur: any) => {
+    setSelectedFournisseur(fournisseur);
+    setFormOpen(true);
   };
 
   const getModeLabel = (mode: string) => {
@@ -107,7 +142,7 @@ const Versements = () => {
   const totalDette = statsFournisseurs?.totalDette || 0;
   const fournisseursEnDette = statsFournisseurs?.fournisseursEnDette || 0;
 
-  if (loadingVersements || loadingStatsFournisseurs) {
+  if (loadingFournisseurs || loadingStatsFournisseurs) {
     return (
       <AppLayout>
         <div className="flex items-center justify-center h-96">
@@ -142,6 +177,7 @@ const Versements = () => {
         onOpenChange={handleCloseForm}
         onSubmit={handleSubmitVersement}
         versement={selectedVersement || undefined}
+        fournisseurId={selectedFournisseur?.id}
       />
 
       {/* Dialog Détails */}
@@ -290,109 +326,230 @@ const Versements = () => {
         />
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Fournisseurs avec dettes */}
-        <div className="bg-card border border-border rounded-xl p-5 shadow-card">
-          <h3 className="font-heading font-semibold text-base text-foreground mb-4 flex items-center gap-2">
-            <AlertCircle className="w-5 h-5 text-destructive" />
-            Fournisseurs avec Dettes
-          </h3>
-          <div className="space-y-3">
-            {fournisseurs
-              .filter((f: any) => f.dette > 0)
-              .sort((a: any, b: any) => b.dette - a.dette)
-              .slice(0, 5)
-              .map((f: any) => (
-                <div key={f.id} className="flex items-center justify-between py-3 border-b border-border last:border-0">
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold text-foreground truncate">{f.nom}</p>
-                    <div className="flex items-center gap-3 text-xs text-muted-foreground mt-1">
-                      <span>Total: {formatPrix(f.totalAchats)}</span>
-                      <span>•</span>
-                      <span>Versé: {formatPrix(f.totalPaye)}</span>
-                    </div>
-                  </div>
-                  <div className="text-right ml-3">
-                    <p className="text-sm font-bold text-destructive whitespace-nowrap">{formatPrix(f.dette)}</p>
-                    <p className="text-xs text-muted-foreground">Dette</p>
-                  </div>
-                </div>
-              ))}
-            {fournisseurs.filter((f: any) => f.dette > 0).length === 0 && (
-              <p className="text-sm text-muted-foreground text-center py-8">
-                Tous les fournisseurs sont à jour ! ✅
-              </p>
-            )}
-          </div>
+      {/* Tableau unifié des fournisseurs */}
+      <div className="bg-card border border-border rounded-xl shadow-card overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead className="bg-secondary/50 border-b border-border">
+              <tr>
+                <th className="text-left py-3 px-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                  Fournisseur
+                </th>
+                <th className="text-left py-3 px-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                  Total Achats
+                </th>
+                <th className="text-left py-3 px-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                  Dette Actuelle
+                </th>
+                <th className="text-left py-3 px-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                  Statut
+                </th>
+                <th className="text-right py-3 px-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                  Actions
+                </th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-border">
+              {fournisseurs
+                .sort((a: any, b: any) => b.dette - a.dette)
+                .map((fournisseur: any) => {
+                  const hasDebt = fournisseur.dette > 0;
+                  return (
+                    <tr key={fournisseur.id} className="hover:bg-secondary/30 transition-colors">
+                      <td className="py-3 px-4">
+                        <p className="text-sm font-semibold text-foreground">{fournisseur.nom}</p>
+                        {fournisseur.telephone && (
+                          <p className="text-xs text-muted-foreground mt-0.5">{fournisseur.telephone}</p>
+                        )}
+                      </td>
+                      <td className="py-3 px-4">
+                        <p className="text-sm text-foreground font-medium">{formatPrix(fournisseur.totalAchats || 0)}</p>
+                        <p className="text-xs text-muted-foreground mt-0.5">
+                          Payé: {formatPrix(fournisseur.totalPaye || 0)}
+                        </p>
+                      </td>
+                      <td className="py-3 px-4">
+                        <p className={`text-sm font-bold ${hasDebt ? 'text-destructive' : 'text-success'}`}>
+                          {formatPrix(fournisseur.dette)}
+                        </p>
+                      </td>
+                      <td className="py-3 px-4">
+                        {hasDebt ? (
+                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-destructive/10 text-destructive border border-destructive/20">
+                            <AlertCircle className="w-3 h-3" />
+                            En Dette
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-success/10 text-success border border-success/20">
+                            <CheckCircle className="w-3 h-3" />
+                            À Jour
+                          </span>
+                        )}
+                      </td>
+                      <td className="py-3 px-4">
+                        <div className="flex items-center justify-end gap-2">
+                          {hasDebt && (
+                            <CanAccess permissions={['versements.create']}>
+                              <button
+                                onClick={() => handlePayFournisseur(fournisseur)}
+                                className="p-2 rounded-lg hover:bg-primary/10 text-primary transition-colors"
+                                title="Enregistrer un paiement"
+                              >
+                                <Wallet className="w-4 h-4" />
+                              </button>
+                            </CanAccess>
+                          )}
+                          <button
+                            onClick={() => handleShowHistory(fournisseur)}
+                            className="p-2 rounded-lg hover:bg-primary/10 text-primary transition-colors"
+                            title="Voir l'historique"
+                          >
+                            <Eye className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+              {fournisseurs.length === 0 && (
+                <tr>
+                  <td colSpan={5} className="py-12 text-center">
+                    <p className="text-sm text-muted-foreground">Aucun fournisseur trouvé</p>
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
         </div>
+      </div>
 
-        {/* Historique des versements */}
-        <div className="bg-card border border-border rounded-xl shadow-card overflow-hidden">
-          <div className="p-5 border-b border-border">
-            <h3 className="font-heading font-semibold text-base text-foreground flex items-center gap-2">
-              <ArrowDownRight className="w-5 h-5 text-success" />
-              Historique des Versements
-            </h3>
-          </div>
-          <div className="p-5 space-y-3">
-            {versements.map((v: any) => (
-              <div key={v.id} className="flex items-center justify-between py-3 border-b border-border last:border-0 hover:bg-secondary/30 transition-colors rounded-lg px-2">
-                <div className="flex items-center gap-3 flex-1 min-w-0">
-                  <div className="w-10 h-10 flex items-center justify-center text-2xl flex-shrink-0 bg-secondary/50 rounded-lg">
-                    {getModeIcon(v.modePaiement)}
+      {/* Dialog Historique Fournisseur */}
+      <Dialog open={historyDialogOpen} onOpenChange={setHistoryDialogOpen}>
+        <DialogContent className="max-w-[95vw] sm:max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="font-heading">Historique des Paiements</DialogTitle>
+          </DialogHeader>
+          {selectedFournisseur && (
+            <div className="space-y-4">
+              {/* Info Fournisseur */}
+              <div className="bg-secondary/50 border border-border rounded-lg p-4">
+                <p className="text-sm font-semibold text-foreground mb-3">{selectedFournisseur.nom}</p>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-xs text-muted-foreground mb-1">Total Achats</p>
+                    <p className="text-lg font-heading font-bold text-foreground">
+                      {formatPrix(selectedFournisseur.totalAchats || 0)}
+                    </p>
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold text-foreground truncate">{v.fournisseurNom}</p>
-                    <div className="flex items-center gap-2 text-xs text-muted-foreground mt-0.5">
-                      <span>{getModeLabel(v.modePaiement)}</span>
-                      {v.reference && (
-                        <>
-                          <span>•</span>
-                          <span className="truncate">{v.reference}</span>
-                        </>
-                      )}
-                    </div>
+                  <div>
+                    <p className="text-xs text-muted-foreground mb-1">Total Payé</p>
+                    <p className="text-lg font-heading font-bold text-success">
+                      {formatPrix(selectedFournisseur.totalPaye || 0)}
+                    </p>
                   </div>
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="text-right">
-                    <p className="text-sm font-bold text-success whitespace-nowrap">{formatPrix(v.montant)}</p>
-                    <p className="text-xs text-muted-foreground whitespace-nowrap">{formatDate(v.date)}</p>
+                  <div>
+                    <p className="text-xs text-muted-foreground mb-1">Dette Actuelle</p>
+                    <p className={`text-lg font-heading font-bold ${selectedFournisseur.dette > 0 ? 'text-destructive' : 'text-success'}`}>
+                      {formatPrix(selectedFournisseur.dette)}
+                    </p>
                   </div>
-                  <div className="flex gap-1 ml-2">
-                    <button
-                      onClick={() => handleViewDetails(v)}
-                      className="p-1.5 rounded-lg hover:bg-primary/10 text-primary transition-colors"
-                      title="Voir détails"
-                    >
-                      <Eye className="w-4 h-4" />
-                    </button>
-                    <CanAccess permissions={['versements.update']}>
-                      <button
-                        onClick={() => handleEdit(v)}
-                        className="p-1.5 rounded-lg hover:bg-primary/10 text-primary transition-colors"
-                        title="Modifier"
-                      >
-                        <Edit2 className="w-4 h-4" />
-                      </button>
-                    </CanAccess>
+                  <div>
+                    <p className="text-xs text-muted-foreground mb-1">Statut</p>
+                    {selectedFournisseur.dette > 0 ? (
+                      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-destructive/10 text-destructive border border-destructive/20">
+                        <AlertCircle className="w-3 h-3" />
+                        En Dette
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-success/10 text-success border border-success/20">
+                        <CheckCircle className="w-3 h-3" />
+                        À Jour
+                      </span>
+                    )}
                   </div>
                 </div>
               </div>
-            ))}
-            {versements.length === 0 && (
-              <p className="text-sm text-muted-foreground text-center py-8">
-                Aucun versement enregistré
-              </p>
-            )}
-          </div>
 
-          {/* Pagination */}
-          {metaVersements && (
-            <Pagination meta={metaVersements} onPageChange={setPage} />
+              {/* Liste des paiements */}
+              <div>
+                <p className="text-sm font-semibold text-foreground mb-3">
+                  Paiements ({fournisseurVersements.length})
+                </p>
+                {fournisseurVersements.length > 0 ? (
+                  <div className="space-y-2">
+                    {fournisseurVersements.map((versement: any) => (
+                      <div
+                        key={versement.id}
+                        className="p-3 bg-success/10 border border-success/20 rounded-lg flex items-center justify-between"
+                      >
+                        <div className="flex-1">
+                          <p className="text-sm font-semibold text-success">
+                            {formatPrix(versement.montant)}
+                          </p>
+                          <p className="text-xs text-muted-foreground mt-1">
+                            {formatDate(versement.date)} • {getModeLabel(versement.modePaiement)}
+                          </p>
+                          {versement.reference && (
+                            <p className="text-xs text-muted-foreground font-mono mt-0.5">
+                              Réf: {versement.reference}
+                            </p>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-1 ml-3">
+                          <button
+                            onClick={() => {
+                              setHistoryDialogOpen(false);
+                              handleViewDetails(versement);
+                            }}
+                            className="p-1.5 rounded-lg hover:bg-primary/10 text-primary transition-colors"
+                            title="Voir détails"
+                          >
+                            <Eye className="w-4 h-4" />
+                          </button>
+                          <CanAccess permissions={['versements.update']}>
+                            <button
+                              onClick={() => {
+                                setHistoryDialogOpen(false);
+                                handleEdit(versement);
+                              }}
+                              className="p-1.5 rounded-lg hover:bg-primary/10 text-primary transition-colors"
+                              title="Modifier"
+                            >
+                              <Edit2 className="w-4 h-4" />
+                            </button>
+                          </CanAccess>
+                          <CanAccess permissions={['versements.delete']}>
+                            <button
+                              onClick={() => handleDeleteVersement(versement.id)}
+                              className="p-1.5 rounded-lg hover:bg-destructive/10 text-destructive transition-colors"
+                              title="Supprimer"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          </CanAccess>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-sm text-muted-foreground text-center py-8 bg-secondary/30 rounded-lg">
+                    Aucun paiement enregistré pour ce fournisseur
+                  </p>
+                )}
+              </div>
+
+              <div className="flex justify-end pt-2">
+                <button
+                  onClick={() => setHistoryDialogOpen(false)}
+                  className="py-2.5 px-4 rounded-lg border border-border text-sm font-medium text-muted-foreground hover:bg-secondary transition-colors"
+                >
+                  Fermer
+                </button>
+              </div>
+            </div>
           )}
-        </div>
-      </div>
+        </DialogContent>
+      </Dialog>
     </AppLayout>
   );
 };

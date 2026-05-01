@@ -11,9 +11,10 @@ interface VersementFormProps {
   onOpenChange: (open: boolean) => void;
   onSubmit: (data: any) => void;
   versement?: Versement;
+  fournisseurId?: string;
 }
 
-const VersementForm = ({ open, onOpenChange, onSubmit, versement }: VersementFormProps) => {
+const VersementForm = ({ open, onOpenChange, onSubmit, versement, fournisseurId }: VersementFormProps) => {
   const { data: fournisseursResponse } = useFournisseurs({ page: 1, limit: 100 });
   const fournisseurs = fournisseursResponse?.data || [];
 
@@ -29,7 +30,7 @@ const VersementForm = ({ open, onOpenChange, onSubmit, versement }: VersementFor
       };
     }
     return {
-      fournisseurId: "",
+      fournisseurId: fournisseurId || "",
       montant: "",
       modePaiement: "especes",
       reference: "",
@@ -47,11 +48,14 @@ const VersementForm = ({ open, onOpenChange, onSubmit, versement }: VersementFor
       if (versement) {
         const f = fournisseurs.find((x: any) => x.id === versement.fournisseurId);
         setSelectedFournisseur(f || null);
+      } else if (fournisseurId) {
+        const f = fournisseurs.find((x: any) => x.id === fournisseurId);
+        setSelectedFournisseur(f || null);
       } else {
         setSelectedFournisseur(null);
       }
     }
-  }, [open, versement]);
+  }, [open, versement, fournisseurId]);
 
   const update = (field: string, value: any) => {
     setForm(prev => ({ ...prev, [field]: value }));

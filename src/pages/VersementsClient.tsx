@@ -23,19 +23,23 @@ const VersementsClient = () => {
   const [detailsOpen, setDetailsOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [versementToDelete, setVersementToDelete] = useState<VersementClient | null>(null);
+  const [selectedClientForHistory, setSelectedClientForHistory] = useState<any>(null);
+  const [historyDialogOpen, setHistoryDialogOpen] = useState(false);
 
-  // Utiliser le filtre backend avec recherche débouncée
-  const { data: versementsResponse, isLoading: loadingVersements } = useVersementsClient({
-    page,
-    limit,
+  // Charger les clients avec recherche
+  const { data: clientsResponse, isLoading: loadingClients } = useClients({
+    page: 1,
+    limit: 100,
     search: debouncedSearch || undefined,
   });
-  const versements = versementsResponse?.data || [];
-  const metaVersements = versementsResponse?.meta;
-
-  // Charger les clients pour afficher la liste avec dettes
-  const { data: clientsResponse } = useClients({ page: 1, limit: 100 });
   const clients = clientsResponse?.data || [];
+
+  // Charger tous les versements pour les stats et l'historique (sans recherche)
+  const { data: versementsResponse, isLoading: loadingVersements } = useVersementsClient({
+    page: 1,
+    limit: 1000,
+  });
+  const versements = versementsResponse?.data || [];
 
   // Utiliser les stats depuis le backend
   const { data: statsClients, isLoading: loadingStatsClients } = useStatsClients();
@@ -134,7 +138,7 @@ const VersementsClient = () => {
   const totalCreditsEnCours = statsClients?.totalCreditsEnCours || 0;
   const clientsEnCredit = statsClients?.avecCredits || 0;
 
-  if (loadingVersements || loadingStatsClients) {
+  if (loadingClients || loadingVersements || loadingStatsClients) {
     return (
       <AppLayout>
         <div className="flex items-center justify-center h-96">
@@ -204,6 +208,160 @@ const VersementsClient = () => {
               </button>
             </div>
           </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Dialog Historique Client */}
+      <Dialog open={historyDialogOpen} onOpenChange={setHistoryDialogOpen}>
+        <DialogContent className="max-w-[95vw] sm:max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="font-heading">Historique des Paiements</DialogTitle>
+          </DialogHeader>
+          {selectedClientForHistory && (() => {
+            const clientVersements = versements.filter((v: any) => v.clientId === selectedClientForHistory.id);
+            const hasDebt = selectedClientForHistory.totalCredits > 0;
+
+            return (
+              <div className="space-y-4">
+                {/* Informations Client */}
+                <div className="bg-secondary/30 border border-border rounded-lg p-4">
+                  <div className="flex items-start justify-between mb-3">
+                    <div>
+                      <h3 className="text-lg font-semibold text-foreground">{selectedClientForHistory.nom}</h3>
+                      {selectedClientForHistory.telephone && (
+                        <p className="text-sm text-muted-foreground">{selectedClientForHistory.telephone}</p>
+                      )}
+                      {selectedClientForHistory.email && (
+                        <p className="text-sm text-muted-foreground">{selectedClientForHistory.email}</p>
+                      )}
+                    </div>
+                    {hasDebt ? (
+                      <span className="inline-flex items-center text-xs px-2.5 py-1 rounded-full font-semibold bg-destructive/10 text-destructive">
+                        <AlertCircle className="w-3 h-3 mr-1" />
+                        En Dette
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center text-xs px-2.5 py-1 rounded-full font-semibold bg-success/10 text-success">
+                        <CheckCircle className="w-3 h-3 mr-1" />
+                        À Jour
+                      </span>
+                    )}
+                  </div>
+
+                  <div className="grid grid-cols-3 gap-3">
+                    <div className="bg-card rounded p-3">
+                      <p className="text-xs text-muted-foreground mb-1">Total Achats</p>
+                      <p className="text-sm font-bold text-foreground">{formatPrix(selectedClientForHistory.totalAchats || 0)}</p>
+                    </div>
+                    <div className="bg-card rounded p-3">
+                      <p className="text-xs text-muted-foreground mb-1">Total Payé</p>
+                      <p className="text-sm font-bold text-success">
+                        {formatPrix((selectedClientForHistory.totalAchats || 0) - selectedClientForHistory.totalCredits)}
+                      </p>
+                    </div>
+                    <div className="bg-card rounded p-3">
+                      <p className="text-xs text-muted-foreground mb-1">Dette Actuelle</p>
+                      <p className={`text-sm font-bold ${hasDebt ? 'text-destructive' : 'text-success'}`}>
+                        {formatPrix(selectedClientForHistory.totalCredits)}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Liste des paiements */}
+                <div>
+                  <h4 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
+                    <ArrowDownLeft className="w-4 h-4 text-success" />
+                    Paiements Enregistrés ({clientVersements.length})
+                  </h4>
+
+                  {clientVersements.length > 0 ? (
+                    <div className="space-y-2">
+                      {clientVersements.map((versement: any) => (
+                        <div key={versement.id} className="flex items-center justify-between p-3 bg-success/5 border border-success/20 rounded-lg">
+                          <div className="flex items-center gap-3 flex-1">
+                            <div className="w-10 h-10 flex items-center justify-center text-2xl bg-success/10 rounded-lg">
+                              {getModeIcon(versement.modePaiement)}
+                            </div>
+                            <div className="flex-1">
+                              <p className="text-sm font-semibold text-success">{formatPrix(versement.montant)}</p>
+                              <p className="text-xs text-muted-foreground">
+                                {formatDate(versement.date)} • {getModeLabel(versement.modePaiement)}
+                              </p>
+                              {versement.venteNumero && (
+                                <p className="text-xs text-muted-foreground">Vente: {versement.venteNumero}</p>
+                              )}
+                              {versement.reference && (
+                                <p className="text-xs text-muted-foreground">Réf: {versement.reference}</p>
+                              )}
+                            </div>
+                          </div>
+                          <div className="flex gap-1">
+                            <button
+                              onClick={() => {
+                                setHistoryDialogOpen(false);
+                                handleViewDetails(versement);
+                              }}
+                              className="p-1.5 rounded-lg hover:bg-primary/10 text-primary transition-colors"
+                              title="Voir détails"
+                            >
+                              <Eye className="w-4 h-4" />
+                            </button>
+                            <CanAccess permissions={['versements-client.update']}>
+                              <button
+                                onClick={() => {
+                                  setHistoryDialogOpen(false);
+                                  handleEdit(versement);
+                                }}
+                                className="p-1.5 rounded-lg hover:bg-primary/10 text-primary transition-colors"
+                                title="Modifier"
+                              >
+                                <Edit2 className="w-4 h-4" />
+                              </button>
+                            </CanAccess>
+                            <CanAccess permissions={['versements-client.delete']}>
+                              <button
+                                onClick={() => {
+                                  setHistoryDialogOpen(false);
+                                  handleDelete(versement);
+                                }}
+                                className="p-1.5 rounded-lg hover:bg-destructive/10 text-destructive transition-colors"
+                                title="Supprimer"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </button>
+                            </CanAccess>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-center py-8 bg-secondary/20 rounded-lg">
+                      <p className="text-sm text-muted-foreground">Aucun paiement enregistré</p>
+                    </div>
+                  )}
+                </div>
+
+                {/* Actions */}
+                {hasDebt && (
+                  <div className="pt-2 border-t border-border">
+                    <CanAccess permissions={['versements-client.create']}>
+                      <button
+                        onClick={() => {
+                          setHistoryDialogOpen(false);
+                          setFormOpen(true);
+                        }}
+                        className="w-full py-2.5 rounded-lg gradient-gold text-primary-foreground text-sm font-semibold hover:opacity-90 transition-opacity flex items-center justify-center gap-2"
+                      >
+                        <Wallet className="w-4 h-4" />
+                        Enregistrer un Paiement
+                      </button>
+                    </CanAccess>
+                  </div>
+                )}
+              </div>
+            );
+          })()}
         </DialogContent>
       </Dialog>
 
@@ -364,114 +522,94 @@ const VersementsClient = () => {
         />
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Clients avec dettes */}
-        <div className="bg-card border border-border rounded-xl p-5 shadow-card">
-          <h3 className="font-heading font-semibold text-base text-foreground mb-4 flex items-center gap-2">
-            <AlertCircle className="w-5 h-5 text-destructive" />
-            Clients avec Dettes
-          </h3>
-          <div className="space-y-3">
-            {clients
-              .filter((c: any) => c.totalCredits > 0)
-              .sort((a: any, b: any) => b.totalCredits - a.totalCredits)
-              .slice(0, 5)
-              .map((c: any) => (
-                <div key={c.id} className="flex items-center justify-between py-3 border-b border-border last:border-0">
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold text-foreground truncate">{c.nom}</p>
-                    <div className="flex items-center gap-3 text-xs text-muted-foreground mt-1">
-                      <span>Total achats: {formatPrix(c.totalAchats)}</span>
-                    </div>
-                  </div>
-                  <div className="text-right ml-3">
-                    <p className="text-sm font-bold text-destructive whitespace-nowrap">{formatPrix(c.totalCredits)}</p>
-                    <p className="text-xs text-muted-foreground">Dette</p>
-                  </div>
-                </div>
-              ))}
-            {clients.filter((c: any) => c.totalCredits > 0).length === 0 && (
-              <p className="text-sm text-muted-foreground text-center py-8">
-                Tous les clients sont à jour !
-              </p>
-            )}
-          </div>
-        </div>
-
-        {/* Historique des paiements */}
-        <div className="bg-card border border-border rounded-xl shadow-card overflow-hidden">
-          <div className="p-5 border-b border-border">
-            <h3 className="font-heading font-semibold text-base text-foreground flex items-center gap-2">
-              <ArrowDownLeft className="w-5 h-5 text-success" />
-              Historique des Paiements
-            </h3>
-          </div>
-          <div className="p-5 space-y-3">
-            {versements.map((v: any) => (
-              <div key={v.id} className="flex items-center justify-between py-3 border-b border-border last:border-0 hover:bg-secondary/30 transition-colors rounded-lg px-2">
-                <div className="flex items-center gap-3 flex-1 min-w-0">
-                  <div className="w-10 h-10 flex items-center justify-center text-2xl flex-shrink-0 bg-secondary/50 rounded-lg">
-                    {getModeIcon(v.modePaiement)}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold text-foreground truncate">{v.clientNom}</p>
-                    <div className="flex items-center gap-2 text-xs text-muted-foreground mt-0.5">
-                      <span>{getModeLabel(v.modePaiement)}</span>
-                      {v.reference && (
-                        <>
-                          <span>•</span>
-                          <span className="truncate">{v.reference}</span>
-                        </>
-                      )}
-                    </div>
-                  </div>
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="text-right">
-                    <p className="text-sm font-bold text-success whitespace-nowrap">{formatPrix(v.montant)}</p>
-                    <p className="text-xs text-muted-foreground whitespace-nowrap">{formatDate(v.date)}</p>
-                  </div>
-                  <div className="flex gap-1 ml-2">
-                    <button
-                      onClick={() => handleViewDetails(v)}
-                      className="p-1.5 rounded-lg hover:bg-primary/10 text-primary transition-colors"
-                      title="Voir détails"
-                    >
-                      <Eye className="w-4 h-4" />
-                    </button>
-                    <CanAccess permissions={['versements-client.update']}>
-                      <button
-                        onClick={() => handleEdit(v)}
-                        className="p-1.5 rounded-lg hover:bg-primary/10 text-primary transition-colors"
-                        title="Modifier"
-                      >
-                        <Edit2 className="w-4 h-4" />
-                      </button>
-                    </CanAccess>
-                    <CanAccess permissions={['versements-client.delete']}>
-                      <button
-                        onClick={() => handleDelete(v)}
-                        className="p-1.5 rounded-lg hover:bg-destructive/10 text-destructive transition-colors"
-                        title="Annuler"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    </CanAccess>
-                  </div>
-                </div>
-              </div>
-            ))}
-            {versements.length === 0 && (
-              <p className="text-sm text-muted-foreground text-center py-8">
-                Aucun paiement enregistré
-              </p>
-            )}
-          </div>
-
-          {/* Pagination */}
-          {metaVersements && (
-            <Pagination meta={metaVersements} onPageChange={setPage} />
-          )}
+      {/* Tableau Unifié - Tous les Clients avec Statuts */}
+      <div className="bg-card border border-border rounded-xl shadow-card overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full min-w-[700px]">
+            <thead>
+              <tr className="bg-secondary border-b border-border">
+                <th className="text-left text-[10px] sm:text-xs font-bold uppercase tracking-wide text-foreground px-4 sm:px-6 py-3 sm:py-4">Client</th>
+                <th className="text-right text-[10px] sm:text-xs font-bold uppercase tracking-wide text-foreground px-4 sm:px-6 py-3 sm:py-4 hidden md:table-cell">Total Achats</th>
+                <th className="text-right text-[10px] sm:text-xs font-bold uppercase tracking-wide text-foreground px-4 sm:px-6 py-3 sm:py-4">Dette Actuelle</th>
+                <th className="text-center text-[10px] sm:text-xs font-bold uppercase tracking-wide text-foreground px-4 sm:px-6 py-3 sm:py-4">Statut</th>
+                <th className="text-center text-[10px] sm:text-xs font-bold uppercase tracking-wide text-foreground px-4 sm:px-6 py-3 sm:py-4">Actions</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-border">
+              {clients.length === 0 ? (
+                <tr>
+                  <td colSpan={5} className="px-6 py-12 text-center text-muted-foreground">
+                    Aucun client trouvé
+                  </td>
+                </tr>
+              ) : (
+                clients
+                  .sort((a: any, b: any) => b.totalCredits - a.totalCredits)
+                  .map((client: any) => {
+                    const hasDebt = client.totalCredits > 0;
+                    return (
+                      <tr key={client.id} className="hover:bg-secondary/30 transition-colors">
+                        <td className="px-4 sm:px-6 py-3 sm:py-4">
+                          <p className="text-sm font-semibold text-foreground">{client.nom}</p>
+                          {client.telephone && (
+                            <p className="text-xs text-muted-foreground">{client.telephone}</p>
+                          )}
+                        </td>
+                        <td className="px-4 sm:px-6 py-3 sm:py-4 text-right text-sm text-muted-foreground hidden md:table-cell">
+                          {formatPrix(client.totalAchats || 0)}
+                        </td>
+                        <td className="px-4 sm:px-6 py-3 sm:py-4 text-right">
+                          <p className={`text-sm font-bold ${hasDebt ? 'text-destructive' : 'text-success'}`}>
+                            {formatPrix(client.totalCredits)}
+                          </p>
+                        </td>
+                        <td className="px-4 sm:px-6 py-3 sm:py-4 text-center">
+                          {hasDebt ? (
+                            <span className="inline-flex items-center text-[10px] sm:text-xs px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-full font-semibold bg-destructive/10 text-destructive">
+                              <AlertCircle className="w-3 h-3 mr-1" />
+                              En Dette
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center text-[10px] sm:text-xs px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-full font-semibold bg-success/10 text-success">
+                              <CheckCircle className="w-3 h-3 mr-1" />
+                              À Jour
+                            </span>
+                          )}
+                        </td>
+                        <td className="px-4 sm:px-6 py-3 sm:py-4 text-center">
+                          <div className="flex items-center justify-center gap-1">
+                            {hasDebt && (
+                              <CanAccess permissions={['versements-client.create']}>
+                                <button
+                                  onClick={() => {
+                                    // Pré-remplir le formulaire avec le client sélectionné
+                                    setFormOpen(true);
+                                  }}
+                                  className="p-1.5 rounded-lg hover:bg-success/10 text-success transition-colors"
+                                  title="Enregistrer un paiement"
+                                >
+                                  <Wallet className="w-4 h-4" />
+                                </button>
+                              </CanAccess>
+                            )}
+                            <button
+                              onClick={() => {
+                                setSelectedClientForHistory(client);
+                                setHistoryDialogOpen(true);
+                              }}
+                              className="p-1.5 rounded-lg hover:bg-primary/10 text-primary transition-colors"
+                              title="Voir historique"
+                            >
+                              <Eye className="w-4 h-4" />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })
+              )}
+            </tbody>
+          </table>
         </div>
       </div>
     </AppLayout>

@@ -17,8 +17,8 @@ const StatCard = ({ title, value, subtitle, icon, trend, variant = "default" }: 
   const isColored = variant !== "default";
 
   return (
-    <div className={`rounded-xl p-4 sm:p-5 shadow-card animate-fade-in ${variants[variant]}`}>
-      <div className="flex items-start justify-between mb-2 sm:mb-3">
+    <div className={`rounded-xl p-4 sm:p-5 lg:p-6 shadow-card animate-fade-in ${variants[variant]}`}>
+      <div className="flex items-start justify-between mb-3 sm:mb-4">
         <div className={`w-9 h-9 sm:w-10 sm:h-10 rounded-lg flex items-center justify-center ${
           isColored ? "bg-primary-foreground/20" : "bg-secondary"
         }`}>
@@ -34,15 +34,17 @@ const StatCard = ({ title, value, subtitle, icon, trend, variant = "default" }: 
           </span>
         )}
       </div>
-      <p className={`text-xs sm:text-sm font-medium ${isColored ? "text-primary-foreground/80" : "text-muted-foreground"}`}>
-        {title}
-      </p>
-      <p className="text-xl sm:text-2xl font-heading font-bold mt-1 break-words">{value}</p>
-      {subtitle && (
-        <p className={`text-xs mt-1 ${isColored ? "text-primary-foreground/60" : "text-muted-foreground"}`}>
-          {subtitle}
+      <div className="space-y-0.5">
+        <p className={`text-[10px] sm:text-xs font-medium uppercase tracking-wide ${isColored ? "text-primary-foreground/80" : "text-muted-foreground"}`}>
+          {title}
         </p>
-      )}
+        <p className="text-xl sm:text-2xl lg:text-3xl font-heading font-bold leading-tight break-words">{value}</p>
+        {subtitle && (
+          <p className={`text-[10px] sm:text-xs ${isColored ? "text-primary-foreground/60" : "text-muted-foreground"}`}>
+            {subtitle}
+          </p>
+        )}
+      </div>
     </div>
   );
 };

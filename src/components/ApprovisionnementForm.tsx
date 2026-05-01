@@ -1,11 +1,11 @@
 import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import FormField from "@/components/FormField";
+import ArticleCombobox from "@/components/ArticleCombobox";
 import NouvelArticleModal from "@/components/NouvelArticleModal";
 import { toast } from "sonner";
-import { Plus, Trash2, TrendingUp, Package, DollarSign } from "lucide-react";
+import { Plus, Trash2, TrendingUp, Package } from "lucide-react";
 import { useFournisseurs } from "@/hooks/useFournisseurs";
-import { useStock } from "@/hooks/useStock";
 import { formatPrixInput, handlePrixChange } from "@/utils/format-prix";
 
 interface ApprovisionnementFormProps {
@@ -19,8 +19,6 @@ interface ApprovisionnementFormProps {
 const ApprovisionnementForm = ({ open, onOpenChange, onSubmit, initialData = null, mode = 'create' }: ApprovisionnementFormProps) => {
   const { data: fournisseursResponse } = useFournisseurs({ page: 1, limit: 100 });
   const fournisseurs = fournisseursResponse?.data || [];
-  const { data: articlesResponse } = useStock({ page: 1, limit: 100 });
-  const articles = articlesResponse?.data || [];
 
   const getInitialState = () => {
     if (mode === 'edit' && initialData) {
@@ -80,18 +78,8 @@ const ApprovisionnementForm = ({ open, onOpenChange, onSubmit, initialData = nul
     setForm(prev => {
       const newLignes = [...prev.lignes];
 
-      // Garder la valeur telle quelle (comme pour montantPaye)
+      // Garder la valeur telle quelle
       newLignes[index] = { ...newLignes[index], [field]: value };
-
-      // Si on change l'article, pré-remplir le nom et le prix d'achat
-      if (field === 'articleId') {
-        const article = articles.find((a: any) => a.id === value);
-        if (article) {
-          newLignes[index].nom = article.nom;
-          // Pré-remplir le prix d'achat avec le dernier prix connu (PMP)
-          newLignes[index].prixUnitaire = article.prixAchat || 0;
-        }
-      }
 
       // Calculer le sous-total (convertir en nombre seulement ici)
       const quantite = Number(newLignes[index].quantite) || 0;
@@ -116,9 +104,23 @@ const ApprovisionnementForm = ({ open, onOpenChange, onSubmit, initialData = nul
   };
 
   const handleArticleCreated = (newArticle: any) => {
-    // Sélectionner automatiquement le nouvel article dans la ligne
+    // Sélectionner automatiquement le nouvel article dans la ligne ET pré-remplir toutes les infos
     if (currentLigneIndex !== null) {
-      updateLigne(currentLigneIndex, 'articleId', newArticle.id);
+      setForm(prev => {
+        const newLignes = [...prev.lignes];
+        newLignes[currentLigneIndex] = {
+          ...newLignes[currentLigneIndex],
+          articleId: newArticle.id,
+          nom: newArticle.nom,
+          prixUnitaire: newArticle.prixAchat || 0, // ← PRÉ-REMPLIR le prix d'achat
+          stockActuel: newArticle.stock || 0,
+          seuilAlerte: newArticle.seuilAlerte,
+          ancienPMP: newArticle.prixAchat || 0,
+          fournisseurPrefereNom: newArticle.fournisseurPrefereNom,
+          sousTotal: Number(newLignes[currentLigneIndex].quantite || 1) * (Number(newArticle.prixAchat) || 0)
+        };
+        return { ...prev, lignes: newLignes };
+      });
     }
     setCurrentLigneIndex(null);
   };
@@ -129,22 +131,6 @@ const ApprovisionnementForm = ({ open, onOpenChange, onSubmit, initialData = nul
       currency: 'GNF',
       minimumFractionDigits: 0
     }).format(montant).replace('GNF', 'GNF');
-  };
-
-  // Calculer le nouveau PMP pour un article
-  const calculerNouveauPMP = (articleId: string, quantiteAjoutee: number, prixAchatUnitaire: number) => {
-    const article = articles.find((a: any) => a.id === articleId);
-    if (!article) return 0;
-
-    const stockActuel = article.stock || 0;
-    const pmpActuel = article.prixAchat || 0;
-    const nouveauStock = stockActuel + quantiteAjoutee;
-
-    if (nouveauStock === 0) return 0;
-
-    // Formule PMP : (Stock actuel × PMP actuel + Qté entrée × Prix achat) / Stock total
-    const nouveauPMP = (stockActuel * pmpActuel + quantiteAjoutee * prixAchatUnitaire) / nouveauStock;
-    return nouveauPMP;
   };
 
   // Calculer l'impact total sur le stock
@@ -279,52 +265,57 @@ const ApprovisionnementForm = ({ open, onOpenChange, onSubmit, initialData = nul
             ) : (
               <div className="space-y-2">
                 {form.lignes.map((ligne: any, index: number) => {
-                  const article = articles.find((a: any) => a.id === ligne.articleId);
-                  const stockActuel = article?.stock || 0;
+                  const stockActuel = ligne.stockActuel || 0;
                   const nouveauStock = stockActuel + (ligne.quantite || 0);
-                  const nouveauPMP = ligne.articleId && ligne.quantite > 0 && ligne.prixUnitaire > 0
-                    ? calculerNouveauPMP(ligne.articleId, ligne.quantite, ligne.prixUnitaire)
-                    : 0;
-                  const ancienPMP = article?.prixAchat || 0;
+                  const nouveauPMP = ligne.articleId && ligne.quantite > 0 && ligne.prixUnitaire > 0 && stockActuel >= 0
+                    ? (stockActuel * (ligne.ancienPMP || 0) + ligne.quantite * ligne.prixUnitaire) / nouveauStock
+                    : ligne.prixUnitaire || 0;
+                  const ancienPMP = ligne.ancienPMP || 0;
 
                   return (
                     <div key={index} className="p-3 bg-secondary/30 rounded-lg space-y-2">
                       <div className="grid grid-cols-12 gap-2">
                         <div className="col-span-4">
-                          <select
-                            className="w-full px-3 py-2 rounded-lg border border-border bg-card text-sm text-foreground"
+                          <ArticleCombobox
                             value={ligne.articleId}
-                            onChange={e => updateLigne(index, "articleId", e.target.value)}
-                          >
-                            <option value="">-- Article --</option>
-                            {articles.map((a: any) => {
-                              // Vérifier si l'article est déjà sélectionné dans une autre ligne
-                              const dejaSelectionne = form.lignes.some((l: any, i: number) =>
-                                i !== index && l.articleId === a.id
-                              );
-                              return (
-                                <option
-                                  key={a.id}
-                                  value={a.id}
-                                  disabled={dejaSelectionne}
-                                >
-                                  {a.nom} (Stock: {a.stock}) {dejaSelectionne ? '✓ Déjà ajouté' : ''}
-                                </option>
-                              );
-                            })}
-                          </select>
-                          {article && (
+                            onChange={(article) => {
+                              if (article) {
+                                setForm(prev => {
+                                  const newLignes = [...prev.lignes];
+                                  newLignes[index] = {
+                                    ...newLignes[index],
+                                    articleId: article.id,
+                                    nom: article.nom,
+                                    prixUnitaire: article.prixAchat || 0,
+                                    stockActuel: article.stock,
+                                    seuilAlerte: article.seuilAlerte,
+                                    ancienPMP: article.prixAchat || 0,
+                                    fournisseurPrefereNom: article.fournisseurPrefereNom,
+                                    sousTotal: Number(newLignes[index].quantite || 1) * (Number(article.prixAchat) || 0)
+                                  };
+                                  return { ...prev, lignes: newLignes };
+                                });
+                              }
+                            }}
+                            placeholder="Sélectionner un article..."
+                            showPrice={true}
+                            priceType="achat"
+                            checkStock={false}
+                            excludeIds={form.lignes
+                              .filter((l: any, i: number) => i !== index && l.articleId)
+                              .map((l: any) => l.articleId)}
+                          />
+                          {ligne.articleId && (
                             <div className="mt-1 space-y-0.5">
                               <div className="text-[10px] text-muted-foreground flex items-center gap-2">
                                 <span>Stock actuel: <strong>{stockActuel}</strong></span>
-                                {article.stock <= article.seuilAlerte && (
-                                  <span className="text-warning">⚠️ Faible</span>
+                                {ligne.seuilAlerte && stockActuel <= ligne.seuilAlerte && (
+                                  <span className="text-warning">Faible</span>
                                 )}
                               </div>
-                              {article.fournisseurPrefereNom && (
+                              {ligne.fournisseurPrefereNom && (
                                 <div className="text-[10px] text-primary flex items-center gap-1">
-                                  <span>⭐</span>
-                                  <span>Fournisseur préféré: {article.fournisseurPrefereNom}</span>
+                                  <span>Fournisseur préféré: {ligne.fournisseurPrefereNom}</span>
                                 </div>
                               )}
                             </div>

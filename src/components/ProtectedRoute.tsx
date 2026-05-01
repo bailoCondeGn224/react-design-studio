@@ -1,5 +1,5 @@
 import { Navigate } from 'react-router-dom';
-import { useIsAuthenticated, useHasPermission, useHasRole } from '@/hooks/useAuth';
+import { useIsAuthenticated, useHasPermission, useHasRole, useIsSuperAdmin } from '@/hooks/useAuth';
 import { toast } from 'sonner';
 import { useEffect, useRef } from 'react';
 
@@ -8,6 +8,7 @@ interface ProtectedRouteProps {
   permissions?: string[]; // Permissions requises pour accéder à la route
   roles?: string[]; // Rôles requis pour accéder à la route
   requireAll?: boolean; // Si true, toutes les permissions/rôles sont requis
+  requireSuperAdmin?: boolean; // Si true, seuls les super admins peuvent accéder
 }
 
 /**
@@ -29,9 +30,11 @@ const ProtectedRoute = ({
   children,
   permissions = [],
   roles = [],
-  requireAll = false
+  requireAll = false,
+  requireSuperAdmin = false
 }: ProtectedRouteProps) => {
   const isAuthenticated = useIsAuthenticated();
+  const isSuperAdmin = useIsSuperAdmin();
   const hasPermission = useHasPermission(...permissions);
   const hasRole = useHasRole(...roles);
   const hasShownToast = useRef(false);
@@ -39,7 +42,10 @@ const ProtectedRoute = ({
   // Calculer hasAccess avant tout return
   let hasAccess = false;
 
-  if (permissions.length === 0 && roles.length === 0) {
+  // Si la route nécessite super admin
+  if (requireSuperAdmin) {
+    hasAccess = isSuperAdmin;
+  } else if (permissions.length === 0 && roles.length === 0) {
     hasAccess = true; // Si aucune permission/rôle n'est spécifié, l'utilisateur authentifié a accès
   } else if (permissions.length > 0 && roles.length === 0) {
     hasAccess = hasPermission;
@@ -55,11 +61,15 @@ const ProtectedRoute = ({
 
   // Afficher un message d'erreur si pas d'accès (useEffect toujours appelé)
   useEffect(() => {
-    if (isAuthenticated && !hasAccess && !hasShownToast.current && (permissions.length > 0 || roles.length > 0)) {
-      toast.error('Vous n\'avez pas les permissions nécessaires pour accéder à cette page');
+    if (isAuthenticated && !hasAccess && !hasShownToast.current) {
+      if (requireSuperAdmin) {
+        toast.error('Accès réservé aux super administrateurs');
+      } else if (permissions.length > 0 || roles.length > 0) {
+        toast.error('Vous n\'avez pas les permissions nécessaires pour accéder à cette page');
+      }
       hasShownToast.current = true;
     }
-  }, [isAuthenticated, hasAccess, permissions.length, roles.length]);
+  }, [isAuthenticated, hasAccess, permissions.length, roles.length, requireSuperAdmin]);
 
   // Vérifications conditionnelles après tous les hooks
   if (!isAuthenticated) {
