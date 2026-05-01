@@ -1,5 +1,5 @@
-import { Navigate } from 'react-router-dom';
-import { useIsAuthenticated, useHasPermission, useHasRole, useIsSuperAdmin } from '@/hooks/useAuth';
+import { Navigate, useLocation } from 'react-router-dom';
+import { useIsAuthenticated, useHasPermission, useHasRole, useIsSuperAdmin, useCurrentUser } from '@/hooks/useAuth';
 import { toast } from 'sonner';
 import { useEffect, useRef } from 'react';
 
@@ -38,6 +38,8 @@ const ProtectedRoute = ({
   const hasPermission = useHasPermission(...permissions);
   const hasRole = useHasRole(...roles);
   const hasShownToast = useRef(false);
+  const currentUser = useCurrentUser();
+  const location = useLocation();
 
   // Calculer hasAccess avant tout return
   let hasAccess = false;
@@ -74,6 +76,12 @@ const ProtectedRoute = ({
   // Vérifications conditionnelles après tous les hooks
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
+  }
+
+  // Vérifier si l'utilisateur doit changer son mot de passe
+  // Ne pas rediriger si on est déjà sur /change-password
+  if (currentUser?.mustChangePassword && location.pathname !== '/change-password') {
+    return <Navigate to="/change-password" replace />;
   }
 
   if (!hasAccess) {

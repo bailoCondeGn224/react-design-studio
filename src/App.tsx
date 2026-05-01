@@ -8,6 +8,7 @@ import DynamicFavicon from "./components/DynamicFavicon.tsx";
 import { SidebarProvider } from "./contexts/SidebarContext";
 import { AuthProvider } from "./contexts/AuthContext";
 import Login from "./pages/Login.tsx";
+import ChangePassword from "./pages/ChangePassword.tsx";
 import Index from "./pages/Index.tsx";
 import Fournisseurs from "./pages/Fournisseurs.tsx";
 import Clients from "./pages/Clients.tsx";
@@ -46,6 +47,7 @@ const App = () => (
           <BrowserRouter>
           <Routes>
           <Route path="/login" element={<Login />} />
+          <Route path="/change-password" element={<ChangePassword />} />
           <Route
             path="/"
             element={

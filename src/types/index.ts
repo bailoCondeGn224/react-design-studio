@@ -165,6 +165,7 @@ export interface User {
   organizationId?: string; // NULL pour SUPER_ADMIN
   organization?: Organization; // Relation optionnelle
   isSuperAdmin: boolean;
+  mustChangePassword?: boolean; // Forcer le changement de mot de passe
   actif: boolean;
   createdAt?: string;
   updatedAt?: string;

@@ -18,6 +18,13 @@ export const useLogin = () => {
       localStorage.setItem('user', JSON.stringify(data.user));
       toast.success(`Bienvenue ${data.user.nom}!`);
 
+      // Vérifier si le changement de mot de passe est requis
+      if (data.user.mustChangePassword) {
+        toast.warning('Veuillez changer votre mot de passe pour continuer');
+        navigate('/change-password');
+        return;
+      }
+
       // Redirection intelligente selon le rôle
       if (data.user.isSuperAdmin) {
         navigate('/super-admin/dashboard');
@@ -32,6 +39,41 @@ export const useLogin = () => {
       console.error('Response data:', error.response?.data);
       console.error('Response status:', error.response?.status);
       const message = error.response?.data?.message || 'Email ou mot de passe incorrect';
+      toast.error(message);
+    },
+  });
+};
+
+export const useChangePassword = () => {
+  const navigate = useNavigate();
+
+  return useMutation({
+    mutationFn: (data: { currentPassword: string; newPassword: string }) => {
+      return authApi.changePassword(data);
+    },
+    onSuccess: () => {
+      toast.success('Mot de passe modifié avec succès !');
+
+      // Mettre à jour le user dans localStorage
+      const userStr = localStorage.getItem('user');
+      let user = null;
+      if (userStr) {
+        user = JSON.parse(userStr);
+        user.mustChangePassword = false;
+        localStorage.setItem('user', JSON.stringify(user));
+      }
+
+      // Rediriger vers le dashboard approprié
+      if (user?.isSuperAdmin) {
+        navigate('/super-admin/dashboard');
+      } else if (user?.role?.nom === 'ADMIN') {
+        navigate('/admin/dashboard');
+      } else {
+        navigate('/');
+      }
+    },
+    onError: (error: any) => {
+      const message = error.response?.data?.message || 'Erreur lors du changement de mot de passe';
       toast.error(message);
     },
   });
