@@ -515,3 +515,58 @@ export const printInvoice = (data: InvoiceData, companyInfo?: any) => {
     alert('Veuillez autoriser les pop-ups pour imprimer la facture');
   }
 };
+
+export const shareInvoiceWhatsApp = (data: InvoiceData, companyInfo?: CompanyInfo) => {
+  const formatPrix = (prix: number) => {
+    return new Intl.NumberFormat('fr-GN', {
+      style: 'currency',
+      currency: 'GNF',
+      minimumFractionDigits: 0
+    }).format(prix).replace('GNF', 'FG');
+  };
+
+  // Créer le message formaté pour WhatsApp
+  const message = `*FACTURE DE VENTE*
+*${companyInfo?.nomCourt || 'WALLI INDUSTRIE'} - Boutique Abayas*
+
+*Numero:* ${data.numero}
+*Date:* ${data.date}${data.heure ? ` a ${data.heure}` : ''}
+
+*CLIENT*
+Nom: ${data.clientNom}
+${data.clientTelephone ? `Tel: ${data.clientTelephone}` : ''}
+
+*ARTICLES VENDUS*
+${data.lignes.map((ligne, idx) =>
+  `${idx + 1}. ${ligne.nom}
+   Qte: ${ligne.quantite} x ${formatPrix(ligne.prixUnitaire)}
+   Sous-total: ${formatPrix(ligne.sousTotal)}`
+).join('\n\n')}
+
+---------------------------
+*MONTANT TOTAL:* ${formatPrix(data.total)}
+${data.montantPaye ? `*Montant paye:* ${formatPrix(data.montantPaye)}` : ''}
+${data.montantRestant ? `*RESTE A PAYER:* ${formatPrix(data.montantRestant)}` : ''}
+---------------------------
+
+*Mode de paiement:* ${paymentLabels[data.typePaiement] || data.typePaiement}
+${data.note ? `\n*Note:* ${data.note}` : ''}
+
+Merci de votre confiance!
+${companyInfo?.telephone ? `Contact: ${companyInfo.telephone}` : ''}`;
+
+  // Encoder le message pour l'URL
+  const encodedMessage = encodeURIComponent(message);
+
+  // Construire l'URL WhatsApp
+  let whatsappUrl;
+  if (data.clientTelephone) {
+    const cleanPhone = data.clientTelephone.replace(/\D/g, '');
+    whatsappUrl = `https://wa.me/${cleanPhone}?text=${encodedMessage}`;
+  } else {
+    whatsappUrl = `https://wa.me/?text=${encodedMessage}`;
+  }
+
+  // Ouvrir WhatsApp
+  window.open(whatsappUrl, '_blank');
+};

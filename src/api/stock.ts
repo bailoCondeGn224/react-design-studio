@@ -12,12 +12,42 @@ export const stockApi = {
     return response.data;
   },
 
-  create: async (data: CreateArticleDto): Promise<Article> => {
+  create: async (data: CreateArticleDto, photo?: File): Promise<Article> => {
+    if (photo) {
+      const formData = new FormData();
+      Object.entries(data).forEach(([key, value]) => {
+        if (value !== undefined && value !== null) {
+          formData.append(key, value.toString());
+        }
+      });
+      formData.append('photo', photo);
+
+      const response = await apiClient.post<Article>('/stock', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+      return response.data;
+    }
+
     const response = await apiClient.post<Article>('/stock', data);
     return response.data;
   },
 
-  update: async (id: string, data: Partial<CreateArticleDto>): Promise<Article> => {
+  update: async (id: string, data: Partial<CreateArticleDto>, photo?: File): Promise<Article> => {
+    if (photo) {
+      const formData = new FormData();
+      Object.entries(data).forEach(([key, value]) => {
+        if (value !== undefined && value !== null) {
+          formData.append(key, value.toString());
+        }
+      });
+      formData.append('photo', photo);
+
+      const response = await apiClient.patch<Article>(`/stock/${id}`, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+      return response.data;
+    }
+
     const response = await apiClient.patch<Article>(`/stock/${id}`, data);
     return response.data;
   },

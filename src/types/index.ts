@@ -213,6 +213,7 @@ export interface Article {
   prixVente: number;
   prixAchat?: number;
   description?: string;
+  photo?: string; // Chemin relatif de la photo
   // Statistiques de rotation
   tauxRotation?: number; // Nombre de fois que le stock se renouvelle
   derniereVente?: string; // Date de la dernière vente
@@ -252,6 +253,7 @@ export interface CreateArticleDto {
   prixVente: number;
   prixAchat?: number;
   description?: string;
+  photo?: string;
 }
 
 // Types pour les Ventes

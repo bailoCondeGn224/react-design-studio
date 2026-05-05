@@ -37,3 +37,14 @@ apiClient.interceptors.response.use(
     return Promise.reject(error);
   }
 );
+
+/**
+ * Construit l'URL complète pour une photo
+ * @param relativePath Chemin relatif depuis le dossier uploads (ex: articles/org-id/photo.jpg)
+ * @returns URL complète ou null si pas de chemin
+ */
+export function getPhotoUrl(relativePath?: string): string | null {
+  if (!relativePath) return null;
+  const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000';
+  return `${baseUrl}/uploads/${relativePath}`;
+}

@@ -3,7 +3,7 @@ import PageHeader from "@/components/PageHeader";
 import VenteForm from "@/components/VenteForm";
 import Pagination from "@/components/Pagination";
 import CanAccess from "@/components/CanAccess";
-import { Plus, Receipt, CreditCard, Banknote, Smartphone, Edit, Trash, MoreVertical, AlertCircle, Printer, Eye, TrendingUp, DollarSign } from "lucide-react";
+import { Plus, Receipt, CreditCard, Banknote, Smartphone, Edit, Trash, MoreVertical, AlertCircle, Printer, Eye, TrendingUp, DollarSign, MessageCircle } from "lucide-react";
 import { useState } from "react";
 import {
   DropdownMenu,
@@ -25,7 +25,7 @@ import {
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useVentes, useVente, useVentesStats, useCreateVente, useUpdateVente, useDeleteVente } from "@/hooks/useVentes";
 import { ventesApi } from "@/api/ventes";
-import { printInvoice } from "@/utils/invoice-generator";
+import { printInvoice, shareInvoiceWhatsApp } from "@/utils/invoice-generator";
 import { useCurrentUser } from "@/hooks/useAuth";
 import { toast } from "sonner";
 
@@ -116,6 +116,36 @@ const Ventes = () => {
       } : undefined;
 
       printInvoice({
+        numero: details.numero,
+        date: details.date,
+        heure: details.heure,
+        clientNom: `${details.nom} ${details.prenom}`,
+        clientTelephone: details.tel,
+        lignes: details.lignes || [],
+        total: details.total,
+        typePaiement: details.modePaiement,
+        montantPaye: details.montantPaye,
+        montantRestant: details.montantRestant,
+        note: details.note,
+      }, companyInfo);
+    } catch (error) {
+      toast.error('Erreur lors du chargement des détails');
+    }
+  };
+
+  const handleShareWhatsApp = async (id: string) => {
+    // Charger les détails complets avant de partager
+    try {
+      const details = await ventesApi.getById(id);
+
+      // Préparer les informations de l'entreprise
+      const companyInfo = organization ? {
+        nomComplet: organization.nom,
+        nomCourt: organization.nomCourt || organization.nom,
+        telephone: organization.telephone || '',
+      } : undefined;
+
+      shareInvoiceWhatsApp({
         numero: details.numero,
         date: details.date,
         heure: details.heure,
@@ -366,6 +396,7 @@ const Ventes = () => {
                 <th className="text-left text-[10px] sm:text-xs font-bold uppercase tracking-wide text-foreground px-4 sm:px-6 py-3 sm:py-4">Numéro</th>
                 <th className="text-left text-[10px] sm:text-xs font-bold uppercase tracking-wide text-foreground px-4 sm:px-6 py-3 sm:py-4">Client</th>
                 <th className="text-left text-[10px] sm:text-xs font-bold uppercase tracking-wide text-foreground px-4 sm:px-6 py-3 sm:py-4 hidden lg:table-cell">Articles</th>
+                <th className="text-center text-[10px] sm:text-xs font-bold uppercase tracking-wide text-foreground px-4 sm:px-6 py-3 sm:py-4 hidden md:table-cell">Quantité</th>
                 <th className="text-right text-[10px] sm:text-xs font-bold uppercase tracking-wide text-foreground px-4 sm:px-6 py-3 sm:py-4">Total</th>
                 <th className="text-center text-[10px] sm:text-xs font-bold uppercase tracking-wide text-foreground px-4 sm:px-6 py-3 sm:py-4 hidden md:table-cell">Paiement</th>
                 <th className="text-center text-[10px] sm:text-xs font-bold uppercase tracking-wide text-foreground px-4 sm:px-6 py-3 sm:py-4 hidden sm:table-cell">Date</th>
@@ -375,7 +406,7 @@ const Ventes = () => {
             <tbody className="divide-y divide-border">
               {ventes.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="px-6 py-12 text-center text-muted-foreground">
+                  <td colSpan={8} className="px-6 py-12 text-center text-muted-foreground">
                     Aucune vente enregistrée
                   </td>
                 </tr>
@@ -421,6 +452,15 @@ const Ventes = () => {
                           <span className="text-sm text-muted-foreground">-</span>
                         )}
                       </td>
+                      <td className="px-4 sm:px-6 py-3 sm:py-4 text-center hidden md:table-cell">
+                        <div className="inline-flex items-center justify-center w-10 h-10 rounded-lg bg-primary/10 text-primary">
+                          <span className="text-sm font-bold">
+                            {item.lignes && item.lignes.length > 0
+                              ? item.lignes.reduce((sum: number, ligne: any) => sum + (ligne.quantite || 0), 0)
+                              : 0}
+                          </span>
+                        </div>
+                      </td>
                       <td className="px-4 sm:px-6 py-3 sm:py-4 text-right">
                         <p className="text-sm font-bold text-foreground">{formatPrix(item.total)}</p>
                         {item.montantPaye < item.total && (
@@ -454,6 +494,10 @@ const Ventes = () => {
                             <DropdownMenuItem onClick={() => handlePrintInvoice(item.id)}>
                               <Printer className="w-4 h-4 mr-2" />
                               Imprimer Facture
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handleShareWhatsApp(item.id)}>
+                              <MessageCircle className="w-4 h-4 mr-2" />
+                              Partager sur WhatsApp
                             </DropdownMenuItem>
                             <CanAccess permissions={['ventes.update']}>
                               <DropdownMenuSeparator />

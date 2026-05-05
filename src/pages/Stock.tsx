@@ -5,6 +5,7 @@ import Pagination from "@/components/Pagination";
 import CanAccess from "@/components/CanAccess";
 import { Package, AlertTriangle, Search, Plus, Edit, Trash, MoreVertical, AlertCircle, TrendingDown, History, ArrowUpCircle, ArrowDownCircle, Flame, Zap, Clock, Snail, Snowflake, TrendingUp as TrendUp } from "lucide-react";
 import { useState, useEffect } from "react";
+import { getPhotoUrl } from "@/lib/api-client";
 import { toast } from "sonner";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useMouvementsByArticle } from "@/hooks/useMouvements";
@@ -39,6 +40,7 @@ const Stock = () => {
   const [editingItem, setEditingItem] = useState<any>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [historyArticleId, setHistoryArticleId] = useState<string | null>(null);
+  const [selectedImage, setSelectedImage] = useState<{ url: string; nom: string } | null>(null);
   const [page, setPage] = useState(1);
   const [limit] = useState(10);
 
@@ -72,12 +74,15 @@ const Stock = () => {
   };
 
   const handleSubmit = (data: any) => {
+    // Extraire la photo si présente
+    const { photo, ...articleData } = data;
+
     if (editingItem) {
       // Mode édition
-      updateArticle.mutate({ id: editingItem.id, data });
+      updateArticle.mutate({ id: editingItem.id, data: articleData, photo });
     } else {
       // Mode création
-      createArticle.mutate(data);
+      createArticle.mutate({ data: articleData, photo });
     }
     setEditingItem(null);
     setFormOpen(false);
@@ -317,6 +322,56 @@ const Stock = () => {
               ))}
             </div>
           )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Dialog Visualisation Photo */}
+      <Dialog open={selectedImage !== null} onOpenChange={() => setSelectedImage(null)}>
+        <DialogContent className="max-w-[95vw] sm:max-w-4xl max-h-[95vh] p-0 overflow-hidden bg-background/95 backdrop-blur-sm border-2">
+          <div className="relative">
+            {/* Header avec nom de l'article */}
+            {selectedImage && (
+              <div className="absolute top-0 left-0 right-0 z-10 bg-gradient-to-b from-background/90 to-transparent p-4 sm:p-6">
+                <h3 className="text-lg sm:text-xl font-semibold text-foreground truncate">
+                  {selectedImage.nom}
+                </h3>
+              </div>
+            )}
+
+            {/* Image */}
+            {selectedImage && (
+              <div className="flex items-center justify-center min-h-[50vh] max-h-[85vh] p-4 sm:p-8 pt-16 sm:pt-20">
+                <img
+                  src={selectedImage.url}
+                  alt={selectedImage.nom}
+                  className="max-w-full max-h-full object-contain rounded-lg shadow-2xl"
+                />
+              </div>
+            )}
+
+            {/* Bouton de fermeture personnalisé */}
+            <button
+              onClick={() => setSelectedImage(null)}
+              className="absolute top-4 right-4 w-10 h-10 rounded-full bg-background/80 hover:bg-background border-2 border-border flex items-center justify-center transition-all hover:scale-110 shadow-lg z-20"
+              aria-label="Fermer"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="text-foreground"
+              >
+                <line x1="18" y1="6" x2="6" y2="18" />
+                <line x1="6" y1="6" x2="18" y2="18" />
+              </svg>
+            </button>
+          </div>
         </DialogContent>
       </Dialog>
 
@@ -575,20 +630,61 @@ const Stock = () => {
                     item.stock === 0 ? 'bg-destructive/5' : item.stock <= item.seuilAlerte * 0.3 ? 'bg-destructive/5' : ''
                   }`}>
                     <td className="px-4 sm:px-6 py-3 sm:py-4">
-                      <div className="flex items-center gap-2 min-w-[120px] sm:min-w-[150px]">
-                        {item.stock === 0 && (
-                          <div className="w-8 h-8 rounded-full bg-destructive/10 flex items-center justify-center flex-shrink-0">
-                            <AlertCircle className="w-4 h-4 text-destructive" />
+                      <div className="flex items-center gap-2 sm:gap-3 min-w-[120px] sm:min-w-[200px]">
+                        {/* Photo miniature */}
+                        <div
+                          className={`w-10 h-10 sm:w-12 sm:h-12 rounded-lg border border-border overflow-hidden bg-muted/50 flex-shrink-0 transition-all ${
+                            item.photo ? 'cursor-pointer hover:border-primary hover:shadow-md hover:scale-105' : ''
+                          }`}
+                          onClick={() => {
+                            if (item.photo) {
+                              setSelectedImage({
+                                url: getPhotoUrl(item.photo) || '',
+                                nom: item.nom
+                              });
+                            }
+                          }}
+                        >
+                          {item.photo ? (
+                            <img
+                              src={getPhotoUrl(item.photo) || ''}
+                              alt={item.nom}
+                              className="w-full h-full object-cover"
+                              onError={(e) => {
+                                const target = e.currentTarget;
+                                target.style.display = 'none';
+                                const parent = target.parentElement;
+                                if (parent) {
+                                  parent.classList.add('flex', 'items-center', 'justify-center');
+                                  const icon = document.createElement('div');
+                                  icon.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-muted-foreground"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" x2="12" y1="22.08" y2="12"/></svg>';
+                                  parent.appendChild(icon.firstChild!);
+                                }
+                              }}
+                            />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center">
+                              <Package className="w-5 h-5 sm:w-6 sm:h-6 text-muted-foreground" />
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Alert icons et nom */}
+                        <div className="flex items-center gap-2 flex-1 min-w-0">
+                          {item.stock === 0 && (
+                            <div className="w-8 h-8 rounded-full bg-destructive/10 flex items-center justify-center flex-shrink-0">
+                              <AlertCircle className="w-4 h-4 text-destructive" />
+                            </div>
+                          )}
+                          {item.stock > 0 && item.stock <= item.seuilAlerte && (
+                            <AlertTriangle className={`w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0 ${
+                              item.stock <= item.seuilAlerte * 0.3 ? 'text-destructive' : 'text-warning'
+                            }`} />
+                          )}
+                          <div className="min-w-0">
+                            <span className="text-xs sm:text-sm font-semibold text-foreground block truncate">{item.nom}</span>
+                            {item.reference && <p className="text-[10px] text-muted-foreground truncate">{item.reference}</p>}
                           </div>
-                        )}
-                        {item.stock > 0 && item.stock <= item.seuilAlerte && (
-                          <AlertTriangle className={`w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0 ${
-                            item.stock <= item.seuilAlerte * 0.3 ? 'text-destructive' : 'text-warning'
-                          }`} />
-                        )}
-                        <div>
-                          <span className="text-xs sm:text-sm font-semibold text-foreground">{item.nom}</span>
-                          {item.reference && <p className="text-[10px] text-muted-foreground">{item.reference}</p>}
                         </div>
                       </div>
                     </td>

@@ -37,7 +37,7 @@ const VersementsClient = () => {
   // Charger tous les versements pour les stats et l'historique (sans recherche)
   const { data: versementsResponse, isLoading: loadingVersements } = useVersementsClient({
     page: 1,
-    limit: 1000,
+    limit: 100,
   });
   const versements = versementsResponse?.data || [];
 

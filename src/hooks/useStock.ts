@@ -28,9 +28,11 @@ export const useCreateArticle = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (data: CreateArticleDto) => stockApi.create(data),
+    mutationFn: ({ data, photo }: { data: CreateArticleDto; photo?: File }) =>
+      stockApi.create(data, photo),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['stock'] });
+      queryClient.invalidateQueries({ queryKey: ['stock', 'stats'] });
       toast.success('Article ajouté au stock');
     },
     onError: (error: any) => {
@@ -43,8 +45,8 @@ export const useUpdateArticle = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ id, data }: { id: string; data: Partial<CreateArticleDto> }) =>
-      stockApi.update(id, data),
+    mutationFn: ({ id, data, photo }: { id: string; data: Partial<CreateArticleDto>; photo?: File }) =>
+      stockApi.update(id, data, photo),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['stock'] });
       toast.success('Article mis à jour');

@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { useCategoriesActive } from "@/hooks/useCategories";
 import { useCreateArticle } from "@/hooks/useStock";
 import { formatPrixInput, handlePrixChange } from "@/utils/format-prix";
+import { ImageIcon, Upload, X } from "lucide-react";
 
 interface NouvelArticleModalProps {
   open: boolean;
@@ -27,6 +28,9 @@ const NouvelArticleModal = ({ open, onOpenChange, onArticleCreated }: NouvelArti
     prixAchat: "",
   });
 
+  const [photoFile, setPhotoFile] = useState<File | null>(null);
+  const [photoPreview, setPhotoPreview] = useState<string | null>(null);
+
   const update = (field: string, value: string) => setForm(prev => ({ ...prev, [field]: value }));
 
   const resetForm = () => {
@@ -40,6 +44,35 @@ const NouvelArticleModal = ({ open, onOpenChange, onArticleCreated }: NouvelArti
       prixVente: "",
       prixAchat: "",
     });
+    setPhotoFile(null);
+    setPhotoPreview(null);
+  };
+
+  const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Valider la taille (5MB max)
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("Fichier trop volumineux. Taille maximale: 5MB");
+      return;
+    }
+
+    // Valider le type
+    const validTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/jpg'];
+    if (!validTypes.includes(file.type)) {
+      toast.error("Format non supporté. Utilisez JPG, PNG ou WEBP");
+      return;
+    }
+
+    setPhotoFile(file);
+
+    // Générer l'aperçu
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setPhotoPreview(reader.result as string);
+    };
+    reader.readAsDataURL(file);
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -62,31 +95,34 @@ const NouvelArticleModal = ({ open, onOpenChange, onArticleCreated }: NouvelArti
       prixAchat: form.prixAchat ? Number(form.prixAchat) : undefined,
     };
 
-    createArticle.mutate(articleData, {
-      onSuccess: (newArticle) => {
-        toast.success("Article créé avec succès");
-        if (onArticleCreated) {
-          onArticleCreated(newArticle);
-        }
-        resetForm();
-        onOpenChange(false);
-      },
-      onError: (error: any) => {
-        toast.error(error.response?.data?.message || "Erreur lors de la création de l'article");
-      },
-    });
+    createArticle.mutate(
+      { data: articleData, photo: photoFile || undefined },
+      {
+        onSuccess: (newArticle) => {
+          toast.success("Article créé avec succès");
+          if (onArticleCreated) {
+            onArticleCreated(newArticle);
+          }
+          resetForm();
+          onOpenChange(false);
+        },
+        onError: (error: any) => {
+          toast.error(error.response?.data?.message || "Erreur lors de la création de l'article");
+        },
+      }
+    );
   };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-[95vw] sm:max-w-md">
-        <DialogHeader>
+      <DialogContent className="max-w-[95vw] sm:max-w-md max-h-[90vh] flex flex-col">
+        <DialogHeader className="flex-shrink-0">
           <DialogTitle className="font-heading">Créer un Nouvel Article</DialogTitle>
           <DialogDescription>
             L'article sera créé avec un stock initial de 0. La quantité sera ajoutée par l'approvisionnement.
           </DialogDescription>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-4 overflow-y-auto flex-1 pr-2">
           <FormField
             label="Nom de l'article *"
             placeholder="Ex: Abaya Noire Premium"
@@ -102,6 +138,59 @@ const NouvelArticleModal = ({ open, onOpenChange, onArticleCreated }: NouvelArti
             onChange={e => update("reference", (e.target as HTMLInputElement).value)}
             maxLength={50}
           />
+
+          {/* Photo Upload */}
+          <div className="space-y-2">
+            <label className="block text-sm font-medium text-foreground">
+              Photo de l'article (optionnel)
+            </label>
+
+            <div className="flex items-center gap-4">
+              {photoPreview ? (
+                <div className="relative w-24 h-24 rounded-lg border border-border overflow-hidden">
+                  <img
+                    src={photoPreview}
+                    alt="Aperçu"
+                    className="w-full h-full object-cover"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setPhotoFile(null);
+                      setPhotoPreview(null);
+                    }}
+                    className="absolute top-1 right-1 p-1 bg-destructive text-destructive-foreground rounded-full hover:bg-destructive/90"
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                </div>
+              ) : (
+                <div className="w-24 h-24 rounded-lg border-2 border-dashed border-border bg-muted/50 flex items-center justify-center">
+                  <ImageIcon className="w-8 h-8 text-muted-foreground" />
+                </div>
+              )}
+
+              <div className="flex-1">
+                <input
+                  type="file"
+                  id="photo-upload"
+                  accept="image/jpeg,image/png,image/webp,image/jpg"
+                  onChange={handlePhotoChange}
+                  className="hidden"
+                />
+                <label
+                  htmlFor="photo-upload"
+                  className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-border bg-card text-sm font-medium cursor-pointer hover:bg-secondary transition-colors"
+                >
+                  <Upload className="w-4 h-4" />
+                  Choisir une photo
+                </label>
+                <p className="text-xs text-muted-foreground mt-1">
+                  JPG, PNG ou WEBP. Max 5MB.
+                </p>
+              </div>
+            </div>
+          </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <FormField

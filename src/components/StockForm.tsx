@@ -4,6 +4,8 @@ import FormField from "@/components/FormField";
 import { toast } from "sonner";
 import { useCategoriesActive } from "@/hooks/useCategories";
 import { formatPrixInput, handlePrixChange } from "@/utils/format-prix";
+import { ImageIcon, Upload, X } from "lucide-react";
+import { getPhotoUrl } from "@/lib/api-client";
 
 interface StockFormProps {
   open: boolean;
@@ -43,6 +45,8 @@ const StockForm = ({ open, onOpenChange, onSubmit, initialData = null, mode = 'c
   };
 
   const [form, setForm] = useState(getInitialState());
+  const [photoFile, setPhotoFile] = useState<File | null>(null);
+  const [photoPreview, setPhotoPreview] = useState<string | null>(null);
 
   useEffect(() => {
     if (mode === 'edit' && initialData) {
@@ -55,10 +59,45 @@ const StockForm = ({ open, onOpenChange, onSubmit, initialData = null, mode = 'c
         prixAchat: initialData.prixAchat?.replace(' GNF', '') || '',
         reference: initialData.reference || '',
       });
+
+      // Afficher la photo existante si présente
+      if (initialData.photo) {
+        setPhotoPreview(getPhotoUrl(initialData.photo));
+      } else {
+        setPhotoPreview(null);
+      }
+      setPhotoFile(null); // Pas de fichier (juste l'aperçu depuis l'URL)
     }
   }, [mode, initialData, open]);
 
   const update = (field: string, value: string) => setForm(prev => ({ ...prev, [field]: value }));
+
+  const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Valider la taille (5MB max)
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("Fichier trop volumineux. Taille maximale: 5MB");
+      return;
+    }
+
+    // Valider le type
+    const validTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/jpg'];
+    if (!validTypes.includes(file.type)) {
+      toast.error("Format non supporté. Utilisez JPG, PNG ou WEBP");
+      return;
+    }
+
+    setPhotoFile(file);
+
+    // Générer l'aperçu
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setPhotoPreview(reader.result as string);
+    };
+    reader.readAsDataURL(file);
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -79,16 +118,18 @@ const StockForm = ({ open, onOpenChange, onSubmit, initialData = null, mode = 'c
       prixAchat: form.prixAchat ? Number(form.prixAchat) : undefined,
     };
 
-    onSubmit({ ...articleData, id: form.id });
+    onSubmit({ ...articleData, id: form.id, photo: photoFile || undefined });
 
     setForm(getInitialState());
+    setPhotoFile(null);
+    setPhotoPreview(null);
     onOpenChange(false);
   };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-[95vw] sm:max-w-md">
-        <DialogHeader>
+      <DialogContent className="max-w-[95vw] sm:max-w-md max-h-[90vh] flex flex-col">
+        <DialogHeader className="flex-shrink-0">
           <DialogTitle className="font-heading">
             Modifier l'Article
           </DialogTitle>
@@ -96,9 +137,63 @@ const StockForm = ({ open, onOpenChange, onSubmit, initialData = null, mode = 'c
             Modifiez les informations de l'article (sauf la quantité qui est gérée par les approvisionnements et ventes)
           </DialogDescription>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-4 overflow-y-auto flex-1 pr-2">
           <FormField label="Nom de l'article *" placeholder="Ex: Abaya Noire Premium" value={form.nom} onChange={e => update("nom", (e.target as HTMLInputElement).value)} maxLength={100} />
           <FormField label="Référence (SKU)" placeholder="Ex: ABY-001" value={form.reference} onChange={e => update("reference", (e.target as HTMLInputElement).value)} maxLength={50} />
+
+          {/* Photo Upload */}
+          <div className="space-y-2">
+            <label className="block text-sm font-medium text-foreground">
+              Photo de l'article (optionnel)
+            </label>
+
+            <div className="flex items-center gap-4">
+              {photoPreview ? (
+                <div className="relative w-24 h-24 rounded-lg border border-border overflow-hidden">
+                  <img
+                    src={photoPreview}
+                    alt="Aperçu"
+                    className="w-full h-full object-cover"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setPhotoFile(null);
+                      setPhotoPreview(null);
+                    }}
+                    className="absolute top-1 right-1 p-1 bg-destructive text-destructive-foreground rounded-full hover:bg-destructive/90"
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                </div>
+              ) : (
+                <div className="w-24 h-24 rounded-lg border-2 border-dashed border-border bg-muted/50 flex items-center justify-center">
+                  <ImageIcon className="w-8 h-8 text-muted-foreground" />
+                </div>
+              )}
+
+              <div className="flex-1">
+                <input
+                  type="file"
+                  id="photo-upload-edit"
+                  accept="image/jpeg,image/png,image/webp,image/jpg"
+                  onChange={handlePhotoChange}
+                  className="hidden"
+                />
+                <label
+                  htmlFor="photo-upload-edit"
+                  className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-border bg-card text-sm font-medium cursor-pointer hover:bg-secondary transition-colors"
+                >
+                  <Upload className="w-4 h-4" />
+                  {photoPreview ? 'Changer la photo' : 'Choisir une photo'}
+                </label>
+                <p className="text-xs text-muted-foreground mt-1">
+                  JPG, PNG ou WEBP. Max 5MB.
+                </p>
+              </div>
+            </div>
+          </div>
+
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <FormField
               label="Catégorie *"

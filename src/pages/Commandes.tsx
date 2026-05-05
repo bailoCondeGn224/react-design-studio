@@ -2,6 +2,7 @@ import { useState } from "react";
 import AppLayout from "@/components/AppLayout";
 import PageHeader from "@/components/PageHeader";
 import CommandeForm from "@/components/CommandeForm";
+import CommandeReceipt from "@/components/CommandeReceipt";
 import Pagination from "@/components/Pagination";
 import CanAccess from "@/components/CanAccess";
 import { Button } from "@/components/ui/button";
@@ -10,7 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import FormField from "@/components/FormField";
-import { Plus, MoreVertical, Eye, Edit, Trash2, CheckCircle, XCircle, Package } from "lucide-react";
+import { Plus, MoreVertical, Eye, Edit, Trash2, CheckCircle, XCircle, Package, Printer } from "lucide-react";
 import { toast } from "sonner";
 import {
   useCommandes,
@@ -40,6 +41,7 @@ const Commandes = () => {
   const [livrerData, setLivrerData] = useState({ montantPaye: 0, modePaiement: "especes", note: "" });
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [annulerId, setAnnulerId] = useState<string | null>(null);
+  const [printCommande, setPrintCommande] = useState<Commande | null>(null);
 
   // Hooks
   const { data: commandesResponse, isLoading } = useCommandes({ page, limit: 15, ...filters });
@@ -274,6 +276,11 @@ const Commandes = () => {
                           <DropdownMenuItem onClick={() => setDetailsCommande(commande)}>
                             <Eye className="mr-2 h-4 w-4" />
                             Voir détails
+                          </DropdownMenuItem>
+
+                          <DropdownMenuItem onClick={() => setPrintCommande(commande)}>
+                            <Printer className="mr-2 h-4 w-4" />
+                            Imprimer reçu
                           </DropdownMenuItem>
 
                           {commande.statut === 'en_attente' && (
@@ -534,6 +541,20 @@ const Commandes = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Reçu de commande imprimable */}
+      {printCommande && (() => {
+        const client = clients.find((c: any) => c.id === printCommande.clientId);
+        return (
+          <CommandeReceipt
+            commande={printCommande}
+            clientNom={client?.nom}
+            clientTelephone={client?.telephone}
+            clientAdresse={client?.adresse}
+            onClose={() => setPrintCommande(null)}
+          />
+        );
+      })()}
     </AppLayout>
   );
 };
