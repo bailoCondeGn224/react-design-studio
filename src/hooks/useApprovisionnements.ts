@@ -18,6 +18,14 @@ export const useApprovisionnement = (id: string) => {
   });
 };
 
+export const useApproLignes = (approId: string | null, page: number = 1, limit: number = 10) => {
+  return useQuery({
+    queryKey: ['approvisionnements', approId, 'lignes', page, limit],
+    queryFn: () => approvisionnementsApi.getLignes(approId!, page, limit),
+    enabled: !!approId,
+  });
+};
+
 export const useApprovisionnementsStats = () => {
   return useQuery({
     queryKey: ['approvisionnements', 'stats'],

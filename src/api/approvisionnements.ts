@@ -40,4 +40,11 @@ export const approvisionnementsApi = {
     const response = await apiClient.get(`/approvisionnements/fournisseur/${fournisseurId}/stats`);
     return response.data;
   },
+
+  getLignes: async (approId: string, page: number = 1, limit: number = 10): Promise<PaginatedResponse<any>> => {
+    const response = await apiClient.get<PaginatedResponse<any>>(`/approvisionnements/${approId}/lignes`, {
+      params: { page, limit },
+    });
+    return response.data;
+  },
 };

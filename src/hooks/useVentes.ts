@@ -18,6 +18,14 @@ export const useVente = (id: string) => {
   });
 };
 
+export const useVenteVersements = (venteId: string | null, page: number = 1, limit: number = 10) => {
+  return useQuery({
+    queryKey: ['ventes', venteId, 'versements', page, limit],
+    queryFn: () => ventesApi.getVersements(venteId!, page, limit),
+    enabled: !!venteId,
+  });
+};
+
 export const useVentesStats = () => {
   return useQuery({
     queryKey: ['ventes', 'stats'],

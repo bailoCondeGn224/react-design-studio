@@ -43,6 +43,8 @@ const Stock = () => {
   const [selectedImage, setSelectedImage] = useState<{ url: string; nom: string } | null>(null);
   const [page, setPage] = useState(1);
   const [limit] = useState(10);
+  const [historyPage, setHistoryPage] = useState(1);
+  const [historyLimit] = useState(10);
 
   // Hooks React Query avec filtres backend et recherche débouncée
   const { data: stockResponse, isLoading } = useStock({
@@ -61,12 +63,20 @@ const Stock = () => {
   const deleteArticle = useDeleteArticle();
 
   // Historique mouvements
-  const { data: mouvementsResponse } = useMouvementsByArticle(historyArticleId || '', { page: 1, limit: 10 });
+  const { data: mouvementsResponse } = useMouvementsByArticle(historyArticleId || '', { page: historyPage, limit: historyLimit });
   const mouvements = mouvementsResponse?.data || [];
+  const mouvementsMeta = mouvementsResponse?.meta;
   const articleEnCours = articles.find((a: any) => a.id === historyArticleId);
 
   // Statistiques de rotation
   const { data: statsRotation } = useStatsRotation();
+
+  // Reset pagination historique quand on ouvre le dialog
+  useEffect(() => {
+    if (historyArticleId) {
+      setHistoryPage(1);
+    }
+  }, [historyArticleId]);
 
   const handleEdit = (item: any) => {
     setEditingItem(item);
@@ -320,6 +330,17 @@ const Stock = () => {
                   </div>
                 </div>
               ))}
+            </div>
+          )}
+
+          {/* Pagination si nécessaire */}
+          {mouvementsMeta && mouvementsMeta.totalPages > 1 && (
+            <div className="mt-4 pt-4 border-t">
+              <Pagination
+                currentPage={historyPage}
+                totalPages={mouvementsMeta.totalPages}
+                onPageChange={setHistoryPage}
+              />
             </div>
           )}
         </DialogContent>

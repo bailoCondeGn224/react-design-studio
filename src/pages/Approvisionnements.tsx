@@ -24,7 +24,7 @@ import {
   AlertDialogTitle
 } from "@/components/ui/alert-dialog";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { useApprovisionnements, useApprovisionnement, useCreateApprovisionnement, useUpdateApprovisionnement, useDeleteApprovisionnement } from "@/hooks/useApprovisionnements";
+import { useApprovisionnements, useApprovisionnement, useApproLignes, useCreateApprovisionnement, useUpdateApprovisionnement, useDeleteApprovisionnement } from "@/hooks/useApprovisionnements";
 import { useStockAlerts } from "@/hooks/useStock";
 import { approvisionnementsApi } from "@/api/approvisionnements";
 import { printInvoice } from "@/utils/invoice-generator";
@@ -40,6 +40,8 @@ const Approvisionnements = () => {
   const [detailsId, setDetailsId] = useState<string | null>(null);
   const [page, setPage] = useState(1);
   const [limit] = useState(15);
+  const [lignesPage, setLignesPage] = useState(1);
+  const [lignesLimit] = useState(10);
 
   // Utiliser le filtre backend avec recherche débouncée
   const { data: approvisionnementsResponse, isLoading } = useApprovisionnements({
@@ -50,7 +52,17 @@ const Approvisionnements = () => {
   const approvisionnements = approvisionnementsResponse?.data || [];
   const meta = approvisionnementsResponse?.meta;
   const { data: approvisionnementDetails } = useApprovisionnement(detailsId || '');
+  const { data: lignesResponse } = useApproLignes(detailsId, lignesPage, lignesLimit);
+  const lignes = lignesResponse?.data || [];
+  const lignesMeta = lignesResponse?.meta;
   const { data: articlesAlerts = [] } = useStockAlerts();
+
+  // Reset pagination lignes quand on ouvre le dialog
+  useEffect(() => {
+    if (detailsId) {
+      setLignesPage(1);
+    }
+  }, [detailsId]);
   const user = useCurrentUser();
   const organization = user?.organization;
   const createApprovisionnement = useCreateApprovisionnement();
@@ -245,7 +257,7 @@ const Approvisionnements = () => {
               <div>
                 <p className="text-xs sm:text-sm text-muted-foreground mb-1.5 sm:mb-2">Articles</p>
                 <div className="space-y-1.5 sm:space-y-2">
-                  {approvisionnementDetails.lignes.map((ligne: any, index: number) => (
+                  {lignes.map((ligne: any, index: number) => (
                     <div key={index} className="flex justify-between items-center p-2 sm:p-3 bg-secondary/30 rounded-lg text-xs sm:text-sm">
                       <div className="flex-1 min-w-0 mr-2">
                         <p className="font-semibold truncate">{ligne.nom}</p>
@@ -257,6 +269,17 @@ const Approvisionnements = () => {
                     </div>
                   ))}
                 </div>
+
+                {/* Pagination si nécessaire */}
+                {lignesMeta && lignesMeta.totalPages > 1 && (
+                  <div className="mt-4 pt-4 border-t">
+                    <Pagination
+                      currentPage={lignesPage}
+                      totalPages={lignesMeta.totalPages}
+                      onPageChange={setLignesPage}
+                    />
+                  </div>
+                )}
               </div>
 
               <div className="bg-primary/5 p-3 sm:p-4 rounded-lg space-y-1.5 sm:space-y-2">

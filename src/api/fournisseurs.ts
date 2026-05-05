@@ -12,8 +12,10 @@ export const fournisseursApi = {
     return response.data;
   },
 
-  getDetails: async (id: string): Promise<any> => {
-    const response = await apiClient.get(`/fournisseurs/${id}/details`);
+  getDetails: async (id: string, approPage: number = 1, approLimit: number = 10): Promise<any> => {
+    const response = await apiClient.get(`/fournisseurs/${id}/details`, {
+      params: { approPage, approLimit },
+    });
     return response.data;
   },
 

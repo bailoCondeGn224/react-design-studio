@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import AppLayout from "@/components/AppLayout";
 import PageHeader from "@/components/PageHeader";
 import CommandeForm from "@/components/CommandeForm";
@@ -16,6 +16,7 @@ import { toast } from "sonner";
 import {
   useCommandes,
   useCommandesStats,
+  useCommandeLignes,
   useCreateCommande,
   useUpdateCommande,
   useLivrerCommande,
@@ -42,11 +43,16 @@ const Commandes = () => {
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [annulerId, setAnnulerId] = useState<string | null>(null);
   const [printCommande, setPrintCommande] = useState<Commande | null>(null);
+  const [lignesPage, setLignesPage] = useState(1);
+  const [lignesLimit] = useState(10);
 
   // Hooks
   const { data: commandesResponse, isLoading } = useCommandes({ page, limit: 15, ...filters });
   const { data: stats } = useCommandesStats();
   const { data: clientsResponse } = useClients({ page: 1, limit: 100 });
+  const { data: lignesResponse } = useCommandeLignes(detailsCommande?.id || null, lignesPage, lignesLimit);
+  const lignes = lignesResponse?.data || [];
+  const lignesMeta = lignesResponse?.meta;
   const createCommande = useCreateCommande();
   const updateCommande = useUpdateCommande();
   const livrerCommandeMutation = useLivrerCommande();
@@ -56,6 +62,13 @@ const Commandes = () => {
   const commandes = commandesResponse?.data || [];
   const meta = commandesResponse?.meta;
   const clients = clientsResponse?.data || [];
+
+  // Reset pagination lignes quand on ouvre le dialog
+  useEffect(() => {
+    if (detailsCommande) {
+      setLignesPage(1);
+    }
+  }, [detailsCommande?.id]);
 
   const handleCreate = (data: any) => {
     createCommande.mutate(data);
@@ -389,7 +402,7 @@ const Commandes = () => {
                     </tr>
                   </thead>
                   <tbody className="divide-y">
-                    {detailsCommande.lignes.map((ligne: any, idx: number) => (
+                    {lignes.map((ligne: any, idx: number) => (
                       <tr key={idx}>
                         <td className="px-3 py-2">{ligne.nom}</td>
                         <td className="px-3 py-2 text-center">{ligne.quantite}</td>
@@ -399,6 +412,17 @@ const Commandes = () => {
                     ))}
                   </tbody>
                 </table>
+
+                {/* Pagination si nécessaire */}
+                {lignesMeta && lignesMeta.totalPages > 1 && (
+                  <div className="mt-4 pt-4 border-t">
+                    <Pagination
+                      currentPage={lignesPage}
+                      totalPages={lignesMeta.totalPages}
+                      onPageChange={setLignesPage}
+                    />
+                  </div>
+                )}
               </div>
 
               <div className="bg-muted p-4 rounded-lg space-y-2">

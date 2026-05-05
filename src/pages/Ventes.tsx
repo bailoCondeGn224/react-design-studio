@@ -4,7 +4,7 @@ import VenteForm from "@/components/VenteForm";
 import Pagination from "@/components/Pagination";
 import CanAccess from "@/components/CanAccess";
 import { Plus, Receipt, CreditCard, Banknote, Smartphone, Edit, Trash, MoreVertical, AlertCircle, Printer, Eye, TrendingUp, DollarSign, MessageCircle } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -23,7 +23,7 @@ import {
   AlertDialogTitle
 } from "@/components/ui/alert-dialog";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { useVentes, useVente, useVentesStats, useCreateVente, useUpdateVente, useDeleteVente } from "@/hooks/useVentes";
+import { useVentes, useVente, useVenteVersements, useVentesStats, useCreateVente, useUpdateVente, useDeleteVente } from "@/hooks/useVentes";
 import { ventesApi } from "@/api/ventes";
 import { printInvoice, shareInvoiceWhatsApp } from "@/utils/invoice-generator";
 import { useCurrentUser } from "@/hooks/useAuth";
@@ -52,12 +52,24 @@ const Ventes = () => {
   const [detailsId, setDetailsId] = useState<string | null>(null);
   const [page, setPage] = useState(1);
   const [limit] = useState(15);
+  const [versementPage, setVersementPage] = useState(1);
+  const [versementLimit] = useState(10);
 
   const { data: ventesResponse, isLoading } = useVentes({ page, limit });
   const ventes = ventesResponse?.data || [];
   const meta = ventesResponse?.meta;
   const { data: venteDetails } = useVente(detailsId || '');
+  const { data: versementsResponse } = useVenteVersements(detailsId, versementPage, versementLimit);
+  const versements = versementsResponse?.data || [];
+  const versementsMeta = versementsResponse?.meta;
   const { data: statsVentes } = useVentesStats();
+
+  // Reset pagination versements quand on ouvre le dialog
+  useEffect(() => {
+    if (detailsId) {
+      setVersementPage(1);
+    }
+  }, [detailsId]);
   const user = useCurrentUser();
   const organization = user?.organization;
   const createVente = useCreateVente();
@@ -303,11 +315,11 @@ const Ventes = () => {
               </div>
 
               {/* Historique des paiements */}
-              {venteDetails.versements && venteDetails.versements.length > 0 && (
+              {versements && versements.length > 0 && (
                 <div>
                   <p className="text-sm font-semibold text-foreground mb-2">Historique des Paiements</p>
                   <div className="space-y-2">
-                    {venteDetails.versements.map((versement: any, index: number) => (
+                    {versements.map((versement: any, index: number) => (
                       <div key={index} className="flex justify-between items-center p-3 bg-success/10 border border-success/20 rounded-lg text-sm">
                         <div>
                           <p className="font-semibold text-success">{formatPrix(versement.montant)}</p>
@@ -328,8 +340,19 @@ const Ventes = () => {
                     ))}
                   </div>
                   <div className="mt-2 p-2 bg-secondary/30 rounded text-xs text-muted-foreground text-center">
-                    {venteDetails.versements.length} paiement(s) enregistré(s)
+                    {versementsMeta?.totalItems || versements.length} paiement(s) enregistré(s)
                   </div>
+
+                  {/* Pagination si nécessaire */}
+                  {versementsMeta && versementsMeta.totalPages > 1 && (
+                    <div className="mt-4 pt-4 border-t">
+                      <Pagination
+                        currentPage={versementPage}
+                        totalPages={versementsMeta.totalPages}
+                        onPageChange={setVersementPage}
+                      />
+                    </div>
+                  )}
                 </div>
               )}
 

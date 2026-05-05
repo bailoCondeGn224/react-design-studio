@@ -35,4 +35,11 @@ export const ventesApi = {
     const response = await apiClient.get<Vente[]>('/ventes/recent');
     return response.data;
   },
+
+  getVersements: async (venteId: string, page: number = 1, limit: number = 10): Promise<PaginatedResponse<any>> => {
+    const response = await apiClient.get<PaginatedResponse<any>>(`/ventes/${venteId}/versements`, {
+      params: { page, limit },
+    });
+    return response.data;
+  },
 };

@@ -35,6 +35,8 @@ const Fournisseurs = () => {
   const [detailsItem, setDetailsItem] = useState<any>(null);
   const [page, setPage] = useState(1);
   const [limit] = useState(15);
+  const [approPage, setApproPage] = useState(1);
+  const [approLimit] = useState(10);
 
   // Utiliser le filtre backend avec recherche débouncée
   const { data: fournisseursResponse, isLoading } = useFournisseurs({
@@ -48,8 +50,15 @@ const Fournisseurs = () => {
   const updateFournisseur = useUpdateFournisseur();
   const deleteFournisseur = useDeleteFournisseur();
 
-  // Charger les détails complets du fournisseur sélectionné (avec approvisionnements et versements)
-  const { data: fournisseurDetails, isLoading: loadingDetails } = useFournisseurDetails(detailsItem?.id || null);
+  // Charger les détails complets du fournisseur sélectionné (avec approvisionnements paginés et versements)
+  const { data: fournisseurDetails, isLoading: loadingDetails } = useFournisseurDetails(detailsItem?.id || null, approPage, approLimit);
+
+  // Reset pagination approvisionnements quand on ouvre le dialog
+  useEffect(() => {
+    if (detailsItem) {
+      setApproPage(1);
+    }
+  }, [detailsItem?.id]);
 
   const handleEdit = (item: any) => {
     setEditingItem(item);
@@ -297,6 +306,17 @@ const Fournisseurs = () => {
                     <p className="text-sm text-muted-foreground text-center py-4">Aucun approvisionnement</p>
                   )}
                 </div>
+
+                {/* Pagination si nécessaire */}
+                {fournisseurDetails.approMeta && fournisseurDetails.approMeta.totalPages > 1 && (
+                  <div className="mt-4 pt-4 border-t">
+                    <Pagination
+                      currentPage={approPage}
+                      totalPages={fournisseurDetails.approMeta.totalPages}
+                      onPageChange={setApproPage}
+                    />
+                  </div>
+                )}
               </div>
 
               {/* Versements récents */}

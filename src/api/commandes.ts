@@ -55,4 +55,12 @@ export const commandesApi = {
     const response = await apiClient.get<StatsCommandes>('/commandes/stats');
     return response.data;
   },
+
+  // Lignes paginées d'une commande
+  getLignes: async (commandeId: string, page: number = 1, limit: number = 10): Promise<PaginatedResponse<any>> => {
+    const response = await apiClient.get<PaginatedResponse<any>>(`/commandes/${commandeId}/lignes`, {
+      params: { page, limit },
+    });
+    return response.data;
+  },
 };

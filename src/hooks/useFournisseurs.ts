@@ -10,10 +10,10 @@ export const useFournisseurs = (params?: PaginationParams) => {
   });
 };
 
-export const useFournisseurDetails = (id: string | null) => {
+export const useFournisseurDetails = (id: string | null, approPage: number = 1, approLimit: number = 10) => {
   return useQuery({
-    queryKey: ['fournisseurs', id, 'details'],
-    queryFn: () => fournisseursApi.getDetails(id!),
+    queryKey: ['fournisseurs', id, 'details', approPage, approLimit],
+    queryFn: () => fournisseursApi.getDetails(id!, approPage, approLimit),
     enabled: !!id, // Ne charge que si id existe
   });
 };

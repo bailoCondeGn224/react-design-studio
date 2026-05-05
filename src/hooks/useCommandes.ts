@@ -24,6 +24,15 @@ export const useCommande = (id: string) => {
   });
 };
 
+// Lignes paginées d'une commande
+export const useCommandeLignes = (commandeId: string | null, page: number = 1, limit: number = 10) => {
+  return useQuery({
+    queryKey: ['commandes', commandeId, 'lignes', page, limit],
+    queryFn: () => commandesApi.getLignes(commandeId!, page, limit),
+    enabled: !!commandeId,
+  });
+};
+
 // Statistiques
 export const useCommandesStats = () => {
   return useQuery({
