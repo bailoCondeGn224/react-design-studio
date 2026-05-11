@@ -867,3 +867,57 @@ export interface CreateRetourFournisseurDto {
   montantRembourse?: number;
   note?: string;
 }
+
+// Types pour les Inventaires
+export type StatutInventaire = 'EN_COURS' | 'TERMINE';
+
+export interface StatistiquesInventaire {
+  articlesManquants: number;
+  articlesSurplus: number;
+  valeurPertes: number;
+  valeurSurplus: number;
+  valeurNetteEcart: number;
+}
+
+export interface Inventaire {
+  id: string;
+  organizationId: string;
+  date: string;
+  statut: StatutInventaire;
+  note?: string;
+  totalArticles: number;
+  articlesComptes: number;
+  articlesAvecEcarts: number;
+  responsableId?: string;
+  responsableNom?: string;
+  termineLe?: string;
+  comptages?: ComptageInventaire[];
+  statistiques?: StatistiquesInventaire;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ComptageInventaire {
+  id: string;
+  inventaireId: string;
+  articleId: string;
+  articleNom: string;
+  quantiteSysteme: number;
+  quantiteComptee: number;
+  ecart: number;
+  note?: string;
+  comptePar?: string;
+  createdAt: string;
+  article?: Article;
+}
+
+export interface CreateInventaireDto {
+  date?: string;
+  note?: string;
+}
+
+export interface AddComptageDto {
+  articleId: string;
+  quantiteComptee: number;
+  note?: string;
+}

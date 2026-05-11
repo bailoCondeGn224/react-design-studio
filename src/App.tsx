@@ -27,6 +27,8 @@ const VersementsClient = lazy(() => import("./pages/VersementsClient.tsx"));
 const RetoursClients = lazy(() => import("./pages/RetoursClients.tsx"));
 const RetoursFournisseurs = lazy(() => import("./pages/RetoursFournisseurs.tsx"));
 const MouvementsStock = lazy(() => import("./pages/MouvementsStock.tsx"));
+const Inventaires = lazy(() => import("./pages/Inventaires.tsx"));
+const InventaireDetail = lazy(() => import("./pages/InventaireDetail.tsx"));
 const Analytics = lazy(() => import("./pages/Analytics.tsx"));
 const Utilisateurs = lazy(() => import("./pages/Utilisateurs.tsx"));
 const Roles = lazy(() => import("./pages/Roles.tsx"));
@@ -38,7 +40,17 @@ const Plans = lazy(() => import("./pages/admin/Plans.tsx"));
 // Page Admin Dashboard (pour role ADMIN)
 const AdminDashboard = lazy(() => import("./pages/AdminDashboard.tsx"));
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 5 * 60 * 1000, // 5 minutes - les données restent fraîches
+      gcTime: 10 * 60 * 1000, // 10 minutes - cache en mémoire
+      refetchOnWindowFocus: false, // Ne pas refetch au focus
+      refetchOnMount: false, // Ne pas refetch au montage si data existe
+      retry: 1, // Réessayer 1 fois en cas d'erreur
+    },
+  },
+});
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
@@ -162,6 +174,22 @@ const App = () => (
                 element={
                   <ProtectedRoute permissions={['mouvements.read']}>
                     <MouvementsStock />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/inventaires"
+                element={
+                  <ProtectedRoute permissions={['stock.read']}>
+                    <Inventaires />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/inventaires/:id"
+                element={
+                  <ProtectedRoute permissions={['stock.read']}>
+                    <InventaireDetail />
                   </ProtectedRoute>
                 }
               />

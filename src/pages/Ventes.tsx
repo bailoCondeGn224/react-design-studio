@@ -248,12 +248,12 @@ const Ventes = () => {
 
       {/* Dialog Détails */}
       <Dialog open={detailsId !== null} onOpenChange={() => setDetailsId(null)}>
-        <DialogContent className="max-w-[95vw] sm:max-w-2xl">
+        <DialogContent className="max-w-[95vw] sm:max-w-2xl max-h-[90vh] flex flex-col">
           <DialogHeader>
             <DialogTitle className="font-heading">Détails de la Vente</DialogTitle>
           </DialogHeader>
           {venteDetails && (
-            <div className="space-y-4">
+            <div className="space-y-4 overflow-y-auto pr-2">
               <div className="grid grid-cols-2 gap-4 text-sm">
                 <div>
                   <p className="text-muted-foreground">Numéro</p>
@@ -273,7 +273,9 @@ const Ventes = () => {
               </div>
 
               <div>
-                <p className="text-sm text-muted-foreground mb-2">Articles vendus</p>
+                <p className="text-sm text-muted-foreground mb-2">
+                  Articles vendus ({venteDetails.lignes?.length || 0})
+                </p>
                 <div className="space-y-2">
                   {venteDetails.lignes && venteDetails.lignes.length > 0 ? (
                     venteDetails.lignes.map((ligne: any, index: number) => (
@@ -317,7 +319,9 @@ const Ventes = () => {
               {/* Historique des paiements */}
               {versements && versements.length > 0 && (
                 <div>
-                  <p className="text-sm font-semibold text-foreground mb-2">Historique des Paiements</p>
+                  <p className="text-sm font-semibold text-foreground mb-2">
+                    Historique des Paiements ({versementsMeta?.total || versements.length})
+                  </p>
                   <div className="space-y-2">
                     {versements.map((versement: any, index: number) => (
                       <div key={index} className="flex justify-between items-center p-3 bg-success/10 border border-success/20 rounded-lg text-sm">
@@ -339,16 +343,12 @@ const Ventes = () => {
                       </div>
                     ))}
                   </div>
-                  <div className="mt-2 p-2 bg-secondary/30 rounded text-xs text-muted-foreground text-center">
-                    {versementsMeta?.totalItems || versements.length} paiement(s) enregistré(s)
-                  </div>
 
                   {/* Pagination si nécessaire */}
                   {versementsMeta && versementsMeta.totalPages > 1 && (
-                    <div className="mt-4 pt-4 border-t">
+                    <div className="mt-2 -mx-1">
                       <Pagination
-                        currentPage={versementPage}
-                        totalPages={versementsMeta.totalPages}
+                        meta={versementsMeta}
                         onPageChange={setVersementPage}
                       />
                     </div>
@@ -464,12 +464,17 @@ const Ventes = () => {
                       <td className="px-4 sm:px-6 py-3 sm:py-4 hidden lg:table-cell">
                         {item.lignes && item.lignes.length > 0 ? (
                           <div className="text-sm text-foreground">
-                            {item.lignes.map((ligne: any, idx: number) => (
+                            {item.lignes.slice(0, 3).map((ligne: any, idx: number) => (
                               <div key={idx} className="flex items-center justify-between gap-2 py-0.5">
                                 <span className="truncate">{ligne.nom}</span>
                                 <span className="text-xs text-muted-foreground whitespace-nowrap">×{ligne.quantite}</span>
                               </div>
                             ))}
+                            {item.lignes.length > 3 && (
+                              <div className="text-xs text-primary font-medium mt-1 cursor-pointer hover:underline" onClick={() => setDetailsId(item.id)}>
+                                + {item.lignes.length - 3} autre{item.lignes.length - 3 > 1 ? 's' : ''} article{item.lignes.length - 3 > 1 ? 's' : ''}
+                              </div>
+                            )}
                           </div>
                         ) : (
                           <span className="text-sm text-muted-foreground">-</span>

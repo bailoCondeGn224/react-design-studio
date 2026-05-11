@@ -150,6 +150,25 @@ const VenteForm = ({ open, onOpenChange, onSubmit, initialData = null, mode = 'c
       return;
     }
 
+    // VALIDATION MONTANT PAYÉ : Ne pas dépasser le total
+    const total = calculerTotal();
+    const montantPaye = Number(form.montantPaye);
+
+    if (montantPaye > total) {
+      toast.error(`Le montant payé (${formatPrix(montantPaye)}) ne peut pas dépasser le total de la vente (${formatPrix(total)}).`);
+      return;
+    }
+
+    // VALIDATION CRITIQUE : Vérifier qu'un client est enregistré
+    const montantRestant = total - montantPaye;
+    const isCreditMode = ['credit', 'acompte_50'].includes(form.modePaiement);
+
+    // Bloquer si: (1) il y a une dette OU (2) le mode est crédit/acompte
+    if ((montantRestant > 0 || isCreditMode) && !form.clientId) {
+      toast.error("Un client doit être enregistré pour les ventes à crédit ou avec un montant restant. Veuillez sélectionner ou créer un client.");
+      return;
+    }
+
     // Vérifier que toutes les lignes sont remplies
     for (const ligne of form.lignes) {
       if (!ligne.articleId || !ligne.quantite || !ligne.prixUnitaire) {
@@ -171,9 +190,6 @@ const VenteForm = ({ open, onOpenChange, onSubmit, initialData = null, mode = 'c
         }
       }
     }
-
-    const total = calculerTotal();
-    const montantRestant = calculerMontantRestant();
 
     // Nettoyer les lignes pour ne garder que les champs nécessaires
     const lignesClean = form.lignes.map(ligne => ({
@@ -203,6 +219,8 @@ const VenteForm = ({ open, onOpenChange, onSubmit, initialData = null, mode = 'c
 
   const total = calculerTotal();
   const montantRestant = calculerMontantRestant();
+  const isCreditMode = ['credit', 'acompte_50'].includes(form.modePaiement);
+  const requiresClient = montantRestant > 0 || isCreditMode;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -218,8 +236,16 @@ const VenteForm = ({ open, onOpenChange, onSubmit, initialData = null, mode = 'c
         <form onSubmit={handleSubmit} className="space-y-4">
           {/* Informations Client */}
           <div className="space-y-3">
+            {requiresClient && (
+              <div className="bg-warning/10 border border-warning/20 rounded-lg p-3 mb-2">
+                <p className="text-sm text-warning font-medium flex items-center gap-2">
+                  <span className="font-bold">⚠</span>
+                  Client enregistré OBLIGATOIRE pour les ventes à crédit ou avec un montant restant
+                </p>
+              </div>
+            )}
             <FormField
-              label="Client enregistré (optionnel)"
+              label={requiresClient ? "Client enregistré *" : "Client enregistré (optionnel)"}
               as="select"
               value={form.clientId}
               onChange={e => handleClientChange((e.target as HTMLSelectElement).value)}
@@ -375,15 +401,24 @@ const VenteForm = ({ open, onOpenChange, onSubmit, initialData = null, mode = 'c
                   value={formatPrixInput(form.montantPaye)}
                   onChange={e => update("montantPaye", handlePrixChange(e.target.value))}
                   onFocus={e => e.target.select()}
-                  className="w-full px-4 py-2.5 rounded-lg border border-border bg-card text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring/30"
+                  className={`w-full px-4 py-2.5 rounded-lg border bg-card text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 ${
+                    Number(form.montantPaye) > total
+                      ? 'border-destructive focus:ring-destructive/30'
+                      : 'border-border focus:ring-ring/30'
+                  }`}
                 />
+                {Number(form.montantPaye) > total && (
+                  <p className="text-xs text-destructive mt-1 flex items-center gap-1">
+                    ⚠ Le montant payé dépasse le total
+                  </p>
+                )}
               </div>
               <div>
                 <label className="text-sm font-medium text-muted-foreground mb-2 block">Montant restant</label>
                 <div className={`px-3 py-2 rounded-lg text-sm font-semibold ${
-                  montantRestant > 0 ? 'bg-warning/10 text-warning' : 'bg-secondary'
+                  montantRestant > 0 ? 'bg-warning/10 text-warning' : montantRestant < 0 ? 'bg-destructive/10 text-destructive' : 'bg-secondary'
                 }`}>
-                  {formatPrix(montantRestant)}
+                  {formatPrix(Math.max(0, montantRestant))}
                 </div>
               </div>
             </div>

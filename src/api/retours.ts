@@ -9,8 +9,13 @@ import {
 } from '@/types';
 
 export const retoursClientsApi = {
-  getAll: async (params?: PaginationParams): Promise<PaginatedResponse<any>> => {
+  getAll: async (params?: PaginationParams): Promise<PaginatedResponse<RetourClient>> => {
     const response = await apiClient.get('/retours/client', { params });
+    return response.data;
+  },
+
+  getOne: async (id: string): Promise<RetourClient> => {
+    const response = await apiClient.get(`/retours/client/${id}`);
     return response.data;
   },
 

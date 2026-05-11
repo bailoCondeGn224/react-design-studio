@@ -1,18 +1,19 @@
 import AppLayout from "@/components/AppLayout";
 import PageHeader from "@/components/PageHeader";
+import Pagination from "@/components/Pagination";
 import RetourClientForm from "@/components/RetourClientForm";
 import CanAccess from "@/components/CanAccess";
-import { Plus, RotateCcw, Eye, Calendar, User, DollarSign } from "lucide-react";
+import { Plus, RotateCcw, Calendar, DollarSign } from "lucide-react";
 import { useState } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useCreateRetourClient, useRetoursClients, useRetoursClientsStats } from "@/hooks/useRetours";
 
 const RetoursClients = () => {
   const [formOpen, setFormOpen] = useState(false);
   const [page, setPage] = useState(1);
+  const limit = 50;
 
   const createRetourClient = useCreateRetourClient();
-  const { data: retoursData } = useRetoursClients({ page, limit: 50 });
+  const { data: retoursData, isLoading } = useRetoursClients({ page, limit });
   const { data: stats } = useRetoursClientsStats();
 
   const handleSubmit = (data: any) => {
@@ -31,6 +32,27 @@ const RetoursClients = () => {
     }).format(montant).replace('GNF', 'GNF');
   };
 
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('fr-FR', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric'
+    });
+  };
+
+  if (isLoading) {
+    return (
+      <AppLayout>
+        <div className="flex items-center justify-center h-96">
+          <div className="text-center">
+            <div className="w-12 h-12 border-4 border-primary/30 border-t-primary rounded-full animate-spin mx-auto mb-4" />
+            <p className="text-muted-foreground">Chargement...</p>
+          </div>
+        </div>
+      </AppLayout>
+    );
+  }
+
   return (
     <AppLayout>
       <PageHeader
@@ -47,49 +69,52 @@ const RetoursClients = () => {
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-gray-600 mb-1">Total Retours</p>
-              <p className="text-2xl font-bold text-gray-900">{stats?.totalRetours || 0}</p>
+        <div className="bg-card border border-border rounded-lg p-4 shadow-card">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-lg bg-orange-500/10 flex items-center justify-center">
+              <RotateCcw className="w-5 h-5 text-orange-600 dark:text-orange-400" />
             </div>
-            <div className="p-3 bg-orange-50 rounded-lg">
-              <RotateCcw className="w-6 h-6 text-orange-500" />
+            <div>
+              <p className="text-xs text-muted-foreground">Total Retours</p>
+              <p className="text-xl font-bold text-foreground">{stats?.totalRetours || 0}</p>
+              <p className="text-xs text-muted-foreground">Enregistrés</p>
             </div>
           </div>
         </div>
 
-        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-gray-600 mb-1">Montant Total</p>
-              <p className="text-2xl font-bold text-gray-900">{stats ? formatPrix(stats.montantTotal) : formatPrix(0)}</p>
+        <div className="bg-card border border-border rounded-lg p-4 shadow-card">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-lg bg-blue-500/10 flex items-center justify-center">
+              <DollarSign className="w-5 h-5 text-blue-600 dark:text-blue-400" />
             </div>
-            <div className="p-3 bg-blue-50 rounded-lg">
-              <DollarSign className="w-6 h-6 text-blue-500" />
+            <div>
+              <p className="text-xs text-muted-foreground">Montant Total</p>
+              <p className="text-xl font-bold text-foreground">{stats ? formatPrix(stats.montantTotal) : formatPrix(0)}</p>
+              <p className="text-xs text-muted-foreground">Remboursé</p>
             </div>
           </div>
         </div>
 
-        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-gray-600 mb-1">Ce Mois</p>
-              <p className="text-2xl font-bold text-gray-900">{stats?.retoursCeMois || 0}</p>
+        <div className="bg-card border border-border rounded-lg p-4 shadow-card">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-lg bg-green-500/10 flex items-center justify-center">
+              <Calendar className="w-5 h-5 text-green-600 dark:text-green-400" />
             </div>
-            <div className="p-3 bg-green-50 rounded-lg">
-              <Calendar className="w-6 h-6 text-green-500" />
+            <div>
+              <p className="text-xs text-muted-foreground">Ce Mois</p>
+              <p className="text-xl font-bold text-foreground">{stats?.retoursCeMois || 0}</p>
+              <p className="text-xs text-muted-foreground">Retours</p>
             </div>
           </div>
         </div>
       </div>
 
       {/* Info Message */}
-      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+      <div className="bg-blue-500/10 border border-blue-500/20 rounded-lg p-4 mb-6">
         <div className="flex items-start gap-3">
-          <RotateCcw className="w-5 h-5 text-blue-500 mt-0.5 flex-shrink-0" />
-          <div className="text-sm text-blue-700">
-            <p className="font-medium mb-1">À propos des retours clients</p>
+          <RotateCcw className="w-5 h-5 text-blue-600 dark:text-blue-400 mt-0.5 flex-shrink-0" />
+          <div className="text-sm text-muted-foreground">
+            <p className="font-medium mb-1 text-foreground">À propos des retours clients</p>
             <p>
               Sélectionnez une vente existante, puis choisissez les articles à retourner.
               Le stock sera automatiquement mis à jour et le client sera remboursé selon le mode choisi.
@@ -99,41 +124,54 @@ const RetoursClients = () => {
       </div>
 
       {/* Historique des retours */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-6">
-        <h3 className="text-lg font-semibold mb-4">Historique des Retours</h3>
+      <div className="bg-card border border-border rounded-lg shadow-card overflow-hidden">
+        <div className="p-4 border-b border-border">
+          <h3 className="text-lg font-semibold text-foreground">Historique des Retours</h3>
+        </div>
+
         {retoursData && retoursData.data && retoursData.data.length > 0 ? (
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Article</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Quantité</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Prix Unit.</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Montant</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Référence</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Utilisateur</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-200">
-                {retoursData.data.map((retour: any) => (
-                  <tr key={retour.id} className="hover:bg-gray-50">
-                    <td className="px-4 py-3 text-sm">{new Date(retour.date).toLocaleDateString()}</td>
-                    <td className="px-4 py-3 text-sm font-medium">{retour.articleNom}</td>
-                    <td className="px-4 py-3 text-sm">{retour.quantite}</td>
-                    <td className="px-4 py-3 text-sm">{formatPrix(retour.prixUnitaire)}</td>
-                    <td className="px-4 py-3 text-sm font-semibold text-blue-600">{formatPrix(retour.valeurTotal)}</td>
-                    <td className="px-4 py-3 text-sm">{retour.reference}</td>
-                    <td className="px-4 py-3 text-sm text-gray-600">{retour.userNom}</td>
+          <>
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead className="bg-secondary/50">
+                  <tr>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Date</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Article</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Quantité</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Prix Unit.</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Montant</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Référence</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Utilisateur</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody className="divide-y divide-border">
+                  {retoursData.data.map((retour: any) => (
+                    <tr key={retour.id} className="hover:bg-secondary/30 transition-colors">
+                      <td className="px-4 py-3 text-sm text-foreground whitespace-nowrap">{formatDate(retour.date)}</td>
+                      <td className="px-4 py-3 text-sm font-medium text-foreground">{retour.articleNom}</td>
+                      <td className="px-4 py-3 text-sm text-foreground">{retour.quantite}</td>
+                      <td className="px-4 py-3 text-sm text-foreground">{formatPrix(retour.prixUnitaire)}</td>
+                      <td className="px-4 py-3 text-sm font-semibold text-blue-600 dark:text-blue-400">{formatPrix(retour.valeurTotal)}</td>
+                      <td className="px-4 py-3 text-sm text-muted-foreground">{retour.reference}</td>
+                      <td className="px-4 py-3 text-sm text-muted-foreground">{retour.userNom}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Pagination */}
+            {retoursData.meta && (
+              <Pagination
+                meta={retoursData.meta}
+                onPageChange={setPage}
+              />
+            )}
+          </>
         ) : (
-          <div className="text-center py-12 text-gray-500">
-            <RotateCcw className="w-12 h-12 mx-auto mb-3 text-gray-300" />
-            <p>Aucun retour client enregistré</p>
+          <div className="text-center py-12 text-muted-foreground">
+            <RotateCcw className="w-12 h-12 mx-auto mb-3 opacity-30" />
+            <p className="text-foreground font-medium">Aucun retour client enregistré</p>
             <p className="text-sm mt-1">Créez votre premier retour client pour commencer</p>
           </div>
         )}

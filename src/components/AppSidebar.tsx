@@ -2,7 +2,7 @@ import { NavLink, useLocation } from "react-router-dom";
 import {
   LayoutDashboard, Users, UserCheck, Package, FolderTree, MapPin, Truck, ShoppingCart, Wallet,
   ChevronLeft, ChevronRight, Sparkles, ArrowDownRight, ArrowDownLeft, Menu, LogOut, History, BarChart3,
-  Shield, UserCog, Settings, Building2, CreditCard, RotateCcw, PackageX, ClipboardList
+  Shield, UserCog, Settings, Building2, CreditCard, RotateCcw, PackageX, ClipboardList, ClipboardCheck
 } from "lucide-react";
 import { useState } from "react";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
@@ -27,6 +27,7 @@ const navItems = [
   { to: "/retours-clients", icon: RotateCcw, label: "Retours Clients", permissions: ["retours.create"] },
   { to: "/retours-fournisseurs", icon: PackageX, label: "Retours Fournisseurs", permissions: ["retours.create"] },
   { to: "/mouvements-stock", icon: History, label: "Historique Mouvements", permissions: ["mouvements.read"] },
+  { to: "/inventaires", icon: ClipboardCheck, label: "Inventaires", permissions: ["stock.read"] },
   { to: "/utilisateurs", icon: UserCog, label: "Utilisateurs", permissions: ["users.read"] },
   { to: "/roles", icon: Shield, label: "Rôles & Permissions", permissions: ["roles.read"] },
 ];
@@ -55,6 +56,7 @@ const adminNavItems = [
   { to: "/retours-clients", icon: RotateCcw, label: "Retours Clients", permissions: ["retours.create"] },
   { to: "/retours-fournisseurs", icon: PackageX, label: "Retours Fournisseurs", permissions: ["retours.create"] },
   { to: "/mouvements-stock", icon: History, label: "Historique Mouvements", permissions: ["mouvements.read"] },
+  { to: "/inventaires", icon: ClipboardCheck, label: "Inventaires", permissions: ["stock.read"] },
   { to: "/utilisateurs", icon: UserCog, label: "Utilisateurs", permissions: ["users.read"] },
   { to: "/roles", icon: Shield, label: "Rôles & Permissions", permissions: ["roles.read"] },
 ];

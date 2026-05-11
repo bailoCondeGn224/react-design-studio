@@ -9,7 +9,11 @@ export const useCreateRetourClient = () => {
   return useMutation({
     mutationFn: (data: CreateRetourClientDto) => retoursClientsApi.create(data),
     onSuccess: () => {
+      // Invalider TOUTES les requêtes liées aux ventes (y compris détails individuels et stats)
       queryClient.invalidateQueries({ queryKey: ['ventes'] });
+      // Forcer le refetch immédiat des ventes
+      queryClient.refetchQueries({ queryKey: ['ventes'], type: 'active' });
+      // Invalider les autres ressources affectées
       queryClient.invalidateQueries({ queryKey: ['stock'] });
       queryClient.invalidateQueries({ queryKey: ['clients'] });
       queryClient.invalidateQueries({ queryKey: ['mouvements-stock'] });
