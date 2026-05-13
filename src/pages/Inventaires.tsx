@@ -24,11 +24,17 @@ import { Inventaire } from '@/types';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import CreateInventaireDialog from '@/components/inventaires/CreateInventaireDialog';
+import Pagination from '@/components/Pagination';
 
 export default function Inventaires() {
   const navigate = useNavigate();
-  const { data: inventaires, isLoading } = useInventaires();
+  const [page, setPage] = useState(1);
+  const [limit] = useState(10);
+  const { data: response, isLoading } = useInventaires({ page, limit });
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
+
+  const inventaires = response?.data || [];
+  const meta = response?.meta;
 
   const getStatutBadge = (statut: string) => {
     if (statut === 'TERMINE') {
@@ -99,85 +105,94 @@ export default function Inventaires() {
           </CardContent>
         </Card>
       ) : (
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {inventaires.map((inventaire) => (
-            <Card
-              key={inventaire.id}
-              className="cursor-pointer hover:shadow-lg transition-shadow"
-              onClick={() => navigate(`/inventaires/${inventaire.id}`)}
-            >
-              <CardHeader className="pb-3">
-                <div className="flex items-start justify-between">
+        <>
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            {inventaires.map((inventaire) => (
+              <Card
+                key={inventaire.id}
+                className="cursor-pointer hover:shadow-lg transition-shadow"
+                onClick={() => navigate(`/inventaires/${inventaire.id}`)}
+              >
+                <CardHeader className="pb-3">
+                  <div className="flex items-start justify-between">
+                    <div className="space-y-1">
+                      <CardTitle className="text-base">
+                        {inventaire.note || 'Inventaire sans titre'}
+                      </CardTitle>
+                      <CardDescription className="flex items-center gap-1 text-xs">
+                        <Calendar className="w-3 h-3" />
+                        {format(new Date(inventaire.date), 'dd MMM yyyy', {
+                          locale: fr,
+                        })}
+                      </CardDescription>
+                    </div>
+                    {getStatutBadge(inventaire.statut)}
+                  </div>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  {/* Progression */}
                   <div className="space-y-1">
-                    <CardTitle className="text-base">
-                      {inventaire.note || 'Inventaire sans titre'}
-                    </CardTitle>
-                    <CardDescription className="flex items-center gap-1 text-xs">
-                      <Calendar className="w-3 h-3" />
-                      {format(new Date(inventaire.date), 'dd MMM yyyy', {
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-muted-foreground">Progression</span>
+                      <span className="font-medium">
+                        {inventaire.articlesComptes}/{inventaire.totalArticles}
+                      </span>
+                    </div>
+                    <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+                      <div
+                        className={`h-full ${getProgressColor(inventaire)} transition-all`}
+                        style={{
+                          width: `${inventaire.totalArticles > 0 ? (inventaire.articlesComptes / inventaire.totalArticles) * 100 : 0}%`,
+                        }}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Écarts */}
+                  {inventaire.articlesAvecEcarts > 0 && (
+                    <div className="flex items-center gap-2 text-sm text-orange-600 bg-orange-50 p-2 rounded">
+                      <AlertTriangle className="w-4 h-4" />
+                      <span>
+                        {inventaire.articlesAvecEcarts} article(s) avec écarts
+                      </span>
+                    </div>
+                  )}
+
+                  {/* Responsable */}
+                  {inventaire.responsableNom && (
+                    <p className="text-xs text-muted-foreground">
+                      Par {inventaire.responsableNom}
+                    </p>
+                  )}
+
+                  {/* Date de fin */}
+                  {inventaire.termineLe && (
+                    <p className="text-xs text-muted-foreground">
+                      Terminé le{' '}
+                      {format(new Date(inventaire.termineLe), 'dd/MM/yyyy HH:mm', {
                         locale: fr,
                       })}
-                    </CardDescription>
-                  </div>
-                  {getStatutBadge(inventaire.statut)}
-                </div>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                {/* Progression */}
-                <div className="space-y-1">
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-muted-foreground">Progression</span>
-                    <span className="font-medium">
-                      {inventaire.articlesComptes}/{inventaire.totalArticles}
-                    </span>
-                  </div>
-                  <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
-                    <div
-                      className={`h-full ${getProgressColor(inventaire)} transition-all`}
-                      style={{
-                        width: `${inventaire.totalArticles > 0 ? (inventaire.articlesComptes / inventaire.totalArticles) * 100 : 0}%`,
-                      }}
-                    />
-                  </div>
-                </div>
+                    </p>
+                  )}
 
-                {/* Écarts */}
-                {inventaire.articlesAvecEcarts > 0 && (
-                  <div className="flex items-center gap-2 text-sm text-orange-600 bg-orange-50 p-2 rounded">
-                    <AlertTriangle className="w-4 h-4" />
-                    <span>
-                      {inventaire.articlesAvecEcarts} article(s) avec écarts
-                    </span>
-                  </div>
-                )}
+                  {/* Action */}
+                  {inventaire.statut === 'EN_COURS' && (
+                    <Button className="w-full mt-2" variant="outline" size="sm">
+                      Continuer le comptage
+                    </Button>
+                  )}
+                </CardContent>
+              </Card>
+            ))}
+          </div>
 
-                {/* Responsable */}
-                {inventaire.responsableNom && (
-                  <p className="text-xs text-muted-foreground">
-                    Par {inventaire.responsableNom}
-                  </p>
-                )}
-
-                {/* Date de fin */}
-                {inventaire.termineLe && (
-                  <p className="text-xs text-muted-foreground">
-                    Terminé le{' '}
-                    {format(new Date(inventaire.termineLe), 'dd/MM/yyyy HH:mm', {
-                      locale: fr,
-                    })}
-                  </p>
-                )}
-
-                {/* Action */}
-                {inventaire.statut === 'EN_COURS' && (
-                  <Button className="w-full mt-2" variant="outline" size="sm">
-                    Continuer le comptage
-                  </Button>
-                )}
-              </CardContent>
+          {/* Pagination */}
+          {meta && meta.totalPages > 1 && (
+            <Card>
+              <Pagination meta={meta} onPageChange={setPage} />
             </Card>
-          ))}
-        </div>
+          )}
+        </>
       )}
 
       {/* Dialog de création */}

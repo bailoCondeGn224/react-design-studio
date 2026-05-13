@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import FormField from "@/components/FormField";
+import FournisseurVersementSelector from "@/components/FournisseurVersementSelector";
 import { toast } from "sonner";
-import { useFournisseurs } from "@/hooks/useFournisseurs";
 import { Versement } from "@/types";
 import { formatPrixInput, handlePrixChange } from "@/utils/format-prix";
 
@@ -15,9 +15,6 @@ interface VersementFormProps {
 }
 
 const VersementForm = ({ open, onOpenChange, onSubmit, versement, fournisseurId }: VersementFormProps) => {
-  const { data: fournisseursResponse } = useFournisseurs({ page: 1, limit: 100 });
-  const fournisseurs = fournisseursResponse?.data || [];
-
   const getInitialState = () => {
     if (versement) {
       return {
@@ -45,25 +42,14 @@ const VersementForm = ({ open, onOpenChange, onSubmit, versement, fournisseurId 
   useEffect(() => {
     if (open) {
       setForm(getInitialState());
-      if (versement) {
-        const f = fournisseurs.find((x: any) => x.id === versement.fournisseurId);
-        setSelectedFournisseur(f || null);
-      } else if (fournisseurId) {
-        const f = fournisseurs.find((x: any) => x.id === fournisseurId);
-        setSelectedFournisseur(f || null);
-      } else {
+      if (!versement && !fournisseurId) {
         setSelectedFournisseur(null);
       }
     }
-  }, [open, versement, fournisseurId]);
+  }, [open]);
 
   const update = (field: string, value: any) => {
     setForm(prev => ({ ...prev, [field]: value }));
-
-    if (field === "fournisseurId") {
-      const f = fournisseurs.find((x: any) => x.id === value);
-      setSelectedFournisseur(f || null);
-    }
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -77,6 +63,14 @@ const VersementForm = ({ open, onOpenChange, onSubmit, versement, fournisseurId 
     const montant = parseFloat(form.montant);
     if (isNaN(montant) || montant <= 0) {
       toast.error("Veuillez entrer un montant valide");
+      return;
+    }
+
+    // Validation: le montant ne doit pas dépasser la dette
+    if (selectedFournisseur && montant > selectedFournisseur.dette) {
+      toast.error(
+        `Le montant (${formatPrix(montant)}) dépasse la dette du fournisseur (${formatPrix(selectedFournisseur.dette)})`
+      );
       return;
     }
 
@@ -125,28 +119,20 @@ const VersementForm = ({ open, onOpenChange, onSubmit, versement, fournisseurId 
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
-          <FormField
-            label="Fournisseur *"
-            as="select"
+          <FournisseurVersementSelector
             value={form.fournisseurId}
-            onChange={e => update("fournisseurId", (e.target as HTMLSelectElement).value)}
-          >
-            <option value="">Sélectionner un fournisseur</option>
-            {fournisseurs.map((f: any) => (
-              <option key={f.id} value={f.id}>
-                {f.nom} {f.adresse ? `— ${f.adresse}` : ''}
-              </option>
-            ))}
-          </FormField>
-
-          {selectedFournisseur && (
-            <div className="bg-secondary/50 border border-border rounded-lg p-3">
-              <p className="text-xs text-muted-foreground mb-1">Dette actuelle</p>
-              <p className="text-lg font-heading font-semibold text-foreground">
-                {formatPrix(selectedFournisseur.dette || 0)}
-              </p>
-            </div>
-          )}
+            onChange={(fournisseur) => {
+              if (fournisseur) {
+                setSelectedFournisseur(fournisseur);
+                update("fournisseurId", fournisseur.id);
+              } else {
+                setSelectedFournisseur(null);
+                update("fournisseurId", "");
+              }
+            }}
+            selectedFournisseur={selectedFournisseur}
+            placeholder="Rechercher un fournisseur..."
+          />
 
           <div>
             <label className="block text-sm font-medium text-foreground mb-2">Montant versé (GNF) *</label>
@@ -157,8 +143,17 @@ const VersementForm = ({ open, onOpenChange, onSubmit, versement, fournisseurId 
               value={formatPrixInput(form.montant)}
               onChange={e => update("montant", handlePrixChange(e.target.value))}
               onFocus={e => e.target.select()}
-              className="w-full px-4 py-2.5 rounded-lg border border-border bg-card text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring/30"
+              className={`w-full px-4 py-2.5 rounded-lg border bg-card text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring/30 ${
+                selectedFournisseur && form.montant && parseFloat(form.montant) > selectedFournisseur.dette
+                  ? "border-red-500 focus:ring-red-500/30"
+                  : "border-border"
+              }`}
             />
+            {selectedFournisseur && form.montant && parseFloat(form.montant) > selectedFournisseur.dette && (
+              <p className="text-xs text-red-500 mt-1">
+                ⚠️ Le montant dépasse la dette actuelle ({formatPrix(selectedFournisseur.dette)})
+              </p>
+            )}
           </div>
 
           <div className="space-y-1.5">

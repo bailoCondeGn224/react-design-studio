@@ -893,6 +893,30 @@ export interface Inventaire {
   termineLe?: string;
   comptages?: ComptageInventaire[];
   statistiques?: StatistiquesInventaire;
+
+  // Champs financiers
+  dateDebut?: string;
+  dateFin?: string;
+  dureeJours?: number;
+  chiffreAffaires?: number;
+  nombreVentes?: number;
+  panierMoyen?: number;
+  coutMarchandises?: number;
+  beneficeBrut?: number;
+  tauxMarge?: number;
+  depensesFixes?: number;
+  depensesVariables?: number;
+  depensesExceptionnelles?: number;
+  totalDepenses?: number;
+  valeurArticlesManquants?: number;
+  valeurArticlesAbimes?: number;
+  totalPertes?: number;
+  beneficeNet?: number;
+  tauxRentabilite?: number;
+  estBeneficiaire?: boolean;
+  financesCalcules?: boolean;
+  financesCalculesLe?: string;
+
   createdAt: string;
   updatedAt: string;
 }
@@ -920,4 +944,121 @@ export interface AddComptageDto {
   articleId: string;
   quantiteComptee: number;
   note?: string;
+}
+
+// Types pour les Dépenses
+export enum TypeDepense {
+  LOYER = 'LOYER',
+  TRANSPORT = 'TRANSPORT',
+  SALAIRES = 'SALAIRES',
+  ELECTRICITE = 'ELECTRICITE',
+  EAU = 'EAU',
+  INTERNET = 'INTERNET',
+  TELEPHONE = 'TELEPHONE',
+  FOURNITURES = 'FOURNITURES',
+  MAINTENANCE = 'MAINTENANCE',
+  ASSURANCE = 'ASSURANCE',
+  TAXES = 'TAXES',
+  MARKETING = 'MARKETING',
+  EMBALLAGE = 'EMBALLAGE',
+  AUTRE = 'AUTRE',
+}
+
+export enum CategorieDepense {
+  FIXE = 'FIXE',
+  VARIABLE = 'VARIABLE',
+  EXCEPTIONNELLE = 'EXCEPTIONNELLE',
+}
+
+export const typeDepenseLabels: Record<TypeDepense, string> = {
+  [TypeDepense.LOYER]: 'Loyer',
+  [TypeDepense.TRANSPORT]: 'Transport',
+  [TypeDepense.SALAIRES]: 'Salaires',
+  [TypeDepense.ELECTRICITE]: 'Électricité',
+  [TypeDepense.EAU]: 'Eau',
+  [TypeDepense.INTERNET]: 'Internet',
+  [TypeDepense.TELEPHONE]: 'Téléphone',
+  [TypeDepense.FOURNITURES]: 'Fournitures',
+  [TypeDepense.MAINTENANCE]: 'Maintenance',
+  [TypeDepense.ASSURANCE]: 'Assurance',
+  [TypeDepense.TAXES]: 'Taxes',
+  [TypeDepense.MARKETING]: 'Marketing',
+  [TypeDepense.EMBALLAGE]: 'Emballage',
+  [TypeDepense.AUTRE]: 'Autre',
+};
+
+export const categorieDepenseLabels: Record<CategorieDepense, string> = {
+  [CategorieDepense.FIXE]: 'Fixe',
+  [CategorieDepense.VARIABLE]: 'Variable',
+  [CategorieDepense.EXCEPTIONNELLE]: 'Exceptionnelle',
+};
+
+/**
+ * Mapping automatique entre type et catégorie de dépense
+ */
+export const typeToCategorieMap: Record<TypeDepense, CategorieDepense> = {
+  // Dépenses fixes (mensuelles/récurrentes)
+  [TypeDepense.LOYER]: CategorieDepense.FIXE,
+  [TypeDepense.SALAIRES]: CategorieDepense.FIXE,
+  [TypeDepense.ELECTRICITE]: CategorieDepense.FIXE,
+  [TypeDepense.EAU]: CategorieDepense.FIXE,
+  [TypeDepense.INTERNET]: CategorieDepense.FIXE,
+  [TypeDepense.TELEPHONE]: CategorieDepense.FIXE,
+  [TypeDepense.ASSURANCE]: CategorieDepense.FIXE,
+  [TypeDepense.TAXES]: CategorieDepense.FIXE,
+  // Dépenses variables (occasionnelles)
+  [TypeDepense.TRANSPORT]: CategorieDepense.VARIABLE,
+  [TypeDepense.FOURNITURES]: CategorieDepense.VARIABLE,
+  [TypeDepense.EMBALLAGE]: CategorieDepense.VARIABLE,
+  [TypeDepense.MARKETING]: CategorieDepense.VARIABLE,
+  // Dépenses exceptionnelles (ponctuelles)
+  [TypeDepense.MAINTENANCE]: CategorieDepense.EXCEPTIONNELLE,
+  [TypeDepense.AUTRE]: CategorieDepense.EXCEPTIONNELLE,
+};
+
+export interface Depense {
+  id: string;
+  organizationId: string;
+  type: TypeDepense;
+  categorie: CategorieDepense;
+  montant: number;
+  description?: string;
+  date: string;
+  reference?: string;
+  userId?: string;
+  userNom?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateDepenseDto {
+  type: TypeDepense;
+  categorie: CategorieDepense;
+  montant: number;
+  description?: string;
+  date: string;
+  reference?: string;
+}
+
+export interface UpdateDepenseDto extends Partial<CreateDepenseDto> {}
+
+export interface DepenseFilterParams extends PaginationParams {
+  dateDebut?: string;
+  dateFin?: string;
+  type?: TypeDepense;
+  categorie?: CategorieDepense;
+}
+
+export interface DepenseStats {
+  totalDepenses: number;
+  depensesFixes: number;
+  depensesVariables: number;
+  depensesExceptionnelles: number;
+  nombreDepenses: number;
+  depenseMoyenne: number;
+  repartitionParType: Array<{
+    type: string;
+    montant: number;
+    pourcentage: number;
+  }>;
 }

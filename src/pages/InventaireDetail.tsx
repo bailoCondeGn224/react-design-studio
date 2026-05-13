@@ -22,6 +22,7 @@ import { useCategoriesActive } from '@/hooks/useCategories';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import ValiderInventaireDialog from '@/components/inventaires/ValiderInventaireDialog';
+import FinancesSummary from '@/components/inventaires/FinancesSummary';
 import { Article, ComptageInventaire } from '@/types';
 
 export default function InventaireDetail() {
@@ -287,86 +288,94 @@ export default function InventaireDetail() {
 
       {/* Vue pour inventaire TERMINE */}
       {inventaire.statut === 'TERMINE' && (
-        <div className="bg-card border border-border rounded-xl shadow-card overflow-hidden">
-          <div className="bg-secondary border-b border-border p-4">
-            <h3 className="font-semibold text-lg">Récapitulatif de l'inventaire</h3>
-            <p className="text-sm text-muted-foreground">
-              Inventaire terminé le {inventaire.termineLe ? format(new Date(inventaire.termineLe), 'dd MMMM yyyy à HH:mm', { locale: fr }) : '-'}
-            </p>
+        <>
+          {/* Résumé financier - EN HAUT pour éviter le scroll */}
+          <div className="mb-6">
+            <FinancesSummary inventaire={inventaire} />
           </div>
 
-          <div className="overflow-x-auto">
-            <table className="w-full min-w-[800px]">
-              <thead>
-                <tr className="bg-secondary border-b border-border">
-                  <th className="text-left text-[10px] sm:text-xs font-bold uppercase tracking-wide text-foreground px-4 sm:px-6 py-3 sm:py-4 whitespace-nowrap">
-                    Article
-                  </th>
-                  <th className="text-center text-[10px] sm:text-xs font-bold uppercase tracking-wide text-foreground px-4 sm:px-6 py-3 sm:py-4 whitespace-nowrap">
-                    Zone
-                  </th>
-                  <th className="text-right text-[10px] sm:text-xs font-bold uppercase tracking-wide text-foreground px-4 sm:px-6 py-3 sm:py-4 whitespace-nowrap">
-                    Stock Système
-                  </th>
-                  <th className="text-right text-[10px] sm:text-xs font-bold uppercase tracking-wide text-foreground px-4 sm:px-6 py-3 sm:py-4 whitespace-nowrap">
-                    Qté Comptée
-                  </th>
-                  <th className="text-right text-[10px] sm:text-xs font-bold uppercase tracking-wide text-foreground px-4 sm:px-6 py-3 sm:py-4 whitespace-nowrap">
-                    Écart
-                  </th>
-                  <th className="text-left text-[10px] sm:text-xs font-bold uppercase tracking-wide text-foreground px-4 sm:px-6 py-3 sm:py-4 whitespace-nowrap">
-                    Note
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-border">
-                {inventaire.comptages && inventaire.comptages.length > 0 ? (
-                  inventaire.comptages.map((comptage) => (
-                    <tr key={comptage.id} className={comptage.ecart !== 0 ? 'bg-warning/5' : ''}>
-                      <td className="px-4 sm:px-6 py-3 sm:py-4">
-                        <span className="text-xs sm:text-sm font-semibold text-foreground">
-                          {comptage.articleNom}
-                        </span>
-                      </td>
-                      <td className="px-4 sm:px-6 py-3 sm:py-4 text-center">
-                        <span className="text-xs sm:text-sm text-muted-foreground">
-                          {comptage.article?.zone || '-'}
-                        </span>
-                      </td>
-                      <td className="px-4 sm:px-6 py-3 sm:py-4 text-right">
-                        <span className="text-xs sm:text-sm font-mono font-medium text-foreground">
-                          {comptage.quantiteSysteme}
-                        </span>
-                      </td>
-                      <td className="px-4 sm:px-6 py-3 sm:py-4 text-right">
-                        <span className="text-xs sm:text-sm font-mono font-medium text-foreground">
-                          {comptage.quantiteComptee}
-                        </span>
-                      </td>
-                      <td className="px-4 sm:px-6 py-3 sm:py-4 text-right">
-                        <span className={`text-xs sm:text-sm font-bold font-mono ${getEcartColor(comptage.ecart)}`}>
-                          {comptage.ecart > 0 ? '+' : ''}
-                          {comptage.ecart}
-                        </span>
-                      </td>
-                      <td className="px-4 sm:px-6 py-3 sm:py-4">
-                        <span className="text-xs text-muted-foreground">
-                          {comptage.note || '-'}
-                        </span>
+          {/* Récapitulatif des comptages */}
+          <div className="bg-card border border-border rounded-xl shadow-card overflow-hidden">
+            <div className="bg-secondary border-b border-border p-4">
+              <h3 className="font-semibold text-lg">Récapitulatif de l'inventaire</h3>
+              <p className="text-sm text-muted-foreground">
+                Inventaire terminé le {inventaire.termineLe ? format(new Date(inventaire.termineLe), 'dd MMMM yyyy à HH:mm', { locale: fr }) : '-'}
+              </p>
+            </div>
+
+            <div className="overflow-x-auto">
+              <table className="w-full min-w-[800px]">
+                <thead>
+                  <tr className="bg-secondary border-b border-border">
+                    <th className="text-left text-[10px] sm:text-xs font-bold uppercase tracking-wide text-foreground px-4 sm:px-6 py-3 sm:py-4 whitespace-nowrap">
+                      Article
+                    </th>
+                    <th className="text-center text-[10px] sm:text-xs font-bold uppercase tracking-wide text-foreground px-4 sm:px-6 py-3 sm:py-4 whitespace-nowrap">
+                      Zone
+                    </th>
+                    <th className="text-right text-[10px] sm:text-xs font-bold uppercase tracking-wide text-foreground px-4 sm:px-6 py-3 sm:py-4 whitespace-nowrap">
+                      Stock Système
+                    </th>
+                    <th className="text-right text-[10px] sm:text-xs font-bold uppercase tracking-wide text-foreground px-4 sm:px-6 py-3 sm:py-4 whitespace-nowrap">
+                      Qté Comptée
+                    </th>
+                    <th className="text-right text-[10px] sm:text-xs font-bold uppercase tracking-wide text-foreground px-4 sm:px-6 py-3 sm:py-4 whitespace-nowrap">
+                      Écart
+                    </th>
+                    <th className="text-left text-[10px] sm:text-xs font-bold uppercase tracking-wide text-foreground px-4 sm:px-6 py-3 sm:py-4 whitespace-nowrap">
+                      Note
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-border">
+                  {inventaire.comptages && inventaire.comptages.length > 0 ? (
+                    inventaire.comptages.map((comptage) => (
+                      <tr key={comptage.id} className={comptage.ecart !== 0 ? 'bg-warning/5' : ''}>
+                        <td className="px-4 sm:px-6 py-3 sm:py-4">
+                          <span className="text-xs sm:text-sm font-semibold text-foreground">
+                            {comptage.articleNom}
+                          </span>
+                        </td>
+                        <td className="px-4 sm:px-6 py-3 sm:py-4 text-center">
+                          <span className="text-xs sm:text-sm text-muted-foreground">
+                            {comptage.article?.zone || '-'}
+                          </span>
+                        </td>
+                        <td className="px-4 sm:px-6 py-3 sm:py-4 text-right">
+                          <span className="text-xs sm:text-sm font-mono font-medium text-foreground">
+                            {comptage.quantiteSysteme}
+                          </span>
+                        </td>
+                        <td className="px-4 sm:px-6 py-3 sm:py-4 text-right">
+                          <span className="text-xs sm:text-sm font-mono font-medium text-foreground">
+                            {comptage.quantiteComptee}
+                          </span>
+                        </td>
+                        <td className="px-4 sm:px-6 py-3 sm:py-4 text-right">
+                          <span className={`text-xs sm:text-sm font-bold font-mono ${getEcartColor(comptage.ecart)}`}>
+                            {comptage.ecart > 0 ? '+' : ''}
+                            {comptage.ecart}
+                          </span>
+                        </td>
+                        <td className="px-4 sm:px-6 py-3 sm:py-4">
+                          <span className="text-xs text-muted-foreground">
+                            {comptage.note || '-'}
+                          </span>
+                        </td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan={6} className="px-6 py-12 text-center text-muted-foreground">
+                        Aucun comptage enregistré
                       </td>
                     </tr>
-                  ))
-                ) : (
-                  <tr>
-                    <td colSpan={6} className="px-6 py-12 text-center text-muted-foreground">
-                      Aucun comptage enregistré
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
+                  )}
+                </tbody>
+              </table>
+            </div>
           </div>
-        </div>
+        </>
       )}
 
       {/* Vue pour inventaire EN_COURS */}

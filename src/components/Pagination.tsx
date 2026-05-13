@@ -7,6 +7,11 @@ interface PaginationProps {
 }
 
 const Pagination = ({ meta, onPageChange }: PaginationProps) => {
+  // Sécurité: retourner null si meta n'est pas défini
+  if (!meta) {
+    return null;
+  }
+
   const { page, totalPages, hasNextPage, hasPreviousPage } = meta;
 
   // Générer les numéros de page à afficher

@@ -2,9 +2,9 @@ import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import FormField from "@/components/FormField";
 import ArticleCombobox from "@/components/ArticleCombobox";
+import ClientCombobox from "@/components/ClientCombobox";
 import { toast } from "sonner";
 import { Plus, Trash2 } from "lucide-react";
-import { useClients } from "@/hooks/useClients";
 import { formatPrixInput, handlePrixChange } from "@/utils/format-prix";
 
 interface CommandeFormProps {
@@ -16,9 +16,6 @@ interface CommandeFormProps {
 }
 
 const CommandeForm = ({ open, onOpenChange, onSubmit, initialData = null, mode = 'create' }: CommandeFormProps) => {
-  const { data: clientsResponse } = useClients({ page: 1, limit: 100 });
-  const clients = clientsResponse?.data || [];
-
   const getInitialState = () => {
     if (mode === 'edit' && initialData) {
       return {
@@ -39,6 +36,7 @@ const CommandeForm = ({ open, onOpenChange, onSubmit, initialData = null, mode =
   };
 
   const [form, setForm] = useState(getInitialState());
+  const [selectedClient, setSelectedClient] = useState<any>(null);
 
   useEffect(() => {
     if (mode === 'edit' && initialData) {
@@ -172,93 +170,111 @@ const CommandeForm = ({ open, onOpenChange, onSubmit, initialData = null, mode =
         <form onSubmit={handleSubmit} className="space-y-4">
           {/* Sélection Client (REQUIS) */}
           <div className="space-y-3">
-            <FormField
-              label="Client *"
-              as="select"
+            <label className="text-sm font-medium">Client *</label>
+            <ClientCombobox
               value={form.clientId}
-              onChange={e => update("clientId", (e.target as HTMLSelectElement).value)}
-              required
-            >
-              <option value="">-- Sélectionnez un client --</option>
-              {clients.map((c: any) => (
-                <option key={c.id} value={c.id}>
-                  {c.nom}
-                </option>
-              ))}
-            </FormField>
+              onChange={(client) => {
+                if (client) {
+                  setSelectedClient(client);
+                  update("clientId", client.id);
+                } else {
+                  setSelectedClient(null);
+                  update("clientId", "");
+                }
+              }}
+              placeholder="Rechercher un client..."
+            />
           </div>
 
           {/* Articles */}
           <div className="space-y-2">
-            <div className="flex justify-between items-center">
+            <div className="flex justify-between items-center mb-3">
               <label className="text-sm font-medium">Articles *</label>
               <button
                 type="button"
                 onClick={ajouterLigne}
-                className="flex items-center gap-1 text-sm text-primary hover:underline"
+                className="flex items-center gap-1 px-3 py-1.5 text-sm text-primary bg-primary/10 hover:bg-primary/20 rounded-md transition-colors"
               >
                 <Plus size={16} />
-                Ajouter
+                Ajouter un article
               </button>
             </div>
 
-            {form.lignes.map((ligne: any, index: number) => (
-              <div key={index} className="grid grid-cols-12 gap-2 p-3 bg-muted/50 rounded-lg">
-                <div className="col-span-12 sm:col-span-5">
-                  <ArticleCombobox
-                    value={ligne.articleId}
-                    onChange={(article: any) => {
-                      if (article) {
-                        updateLigne(index, "articleId", article.id);
-                        updateLigne(index, "nom", article.nom);
-                        updateLigne(index, "prixUnitaire", article.prixVente);
-                        updateLigne(index, "stockDisponible", article.stock);
-                      }
-                    }}
-                    excludeIds={form.lignes.map((l: any) => l.articleId).filter(Boolean)}
-                    showPrice={true}
-                    priceType="vente"
-                    checkStock={false}
-                  />
-                </div>
-
-                <div className="col-span-5 sm:col-span-2">
-                  <FormField
-                    placeholder="Qté"
-                    type="number"
-                    value={ligne.quantite}
-                    onChange={e => updateLigne(index, "quantite", (e.target as HTMLInputElement).value)}
-                    min={1}
-                  />
-                </div>
-
-                <div className="col-span-5 sm:col-span-3">
-                  <FormField
-                    placeholder="Prix unitaire"
-                    value={formatPrixInput(ligne.prixUnitaire)}
-                    onChange={e => updateLigne(index, "prixUnitaire", handlePrixChange((e.target as HTMLInputElement).value))}
-                  />
-                </div>
-
-                <div className="col-span-10 sm:col-span-1 flex items-center text-sm font-medium">
-                  {formatPrix(ligne.sousTotal)}
-                </div>
-
-                <div className="col-span-2 sm:col-span-1 flex items-center justify-center">
-                  <button
-                    type="button"
-                    onClick={() => supprimerLigne(index)}
-                    className="text-destructive hover:text-destructive/80"
-                  >
-                    <Trash2 size={18} />
-                  </button>
+            {form.lignes.length > 0 ? (
+              <div className="border rounded-lg overflow-hidden">
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead className="bg-muted/50 border-b">
+                      <tr>
+                        <th className="text-left p-3 font-medium">Article</th>
+                        <th className="text-left p-3 font-medium w-24">Qté</th>
+                        <th className="text-left p-3 font-medium w-32">Prix unitaire</th>
+                        <th className="text-right p-3 font-medium w-36">Sous-total</th>
+                        <th className="p-3 w-12"></th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y">
+                      {form.lignes.map((ligne: any, index: number) => (
+                        <tr key={index} className="hover:bg-muted/30">
+                          <td className="p-3">
+                            <ArticleCombobox
+                              value={ligne.articleId}
+                              onChange={(article: any) => {
+                                if (article) {
+                                  updateLigne(index, "articleId", article.id);
+                                  updateLigne(index, "nom", article.nom);
+                                  updateLigne(index, "prixUnitaire", article.prixVente);
+                                  updateLigne(index, "stockDisponible", article.stock);
+                                }
+                              }}
+                              excludeIds={form.lignes.map((l: any) => l.articleId).filter(Boolean)}
+                              showPrice={false}
+                              priceType="vente"
+                              checkStock={false}
+                            />
+                          </td>
+                          <td className="p-3">
+                            <input
+                              type="number"
+                              placeholder="Qté"
+                              value={ligne.quantite}
+                              onChange={e => updateLigne(index, "quantite", e.target.value)}
+                              min={1}
+                              className="w-full px-2 py-1.5 border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-ring/30"
+                            />
+                          </td>
+                          <td className="p-3">
+                            <input
+                              type="text"
+                              placeholder="Prix"
+                              value={formatPrixInput(ligne.prixUnitaire)}
+                              onChange={e => updateLigne(index, "prixUnitaire", handlePrixChange(e.target.value))}
+                              className="w-full px-2 py-1.5 border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-ring/30"
+                            />
+                          </td>
+                          <td className="p-3 text-right">
+                            <span className="font-medium text-primary">{formatPrix(ligne.sousTotal)}</span>
+                          </td>
+                          <td className="p-3 text-center">
+                            <button
+                              type="button"
+                              onClick={() => supprimerLigne(index)}
+                              className="p-1.5 text-destructive hover:bg-destructive/10 rounded-md transition-colors"
+                              title="Supprimer"
+                            >
+                              <Trash2 size={16} />
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
                 </div>
               </div>
-            ))}
-
-            {form.lignes.length === 0 && (
-              <div className="text-center py-6 text-muted-foreground">
-                Aucun article ajouté
+            ) : (
+              <div className="border rounded-lg text-center py-8 text-muted-foreground bg-muted/30">
+                <p className="text-sm">Aucun article ajouté</p>
+                <p className="text-xs mt-1">Cliquez sur "Ajouter un article" pour commencer</p>
               </div>
             )}
           </div>

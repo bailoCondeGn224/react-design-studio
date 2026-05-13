@@ -3,6 +3,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import FormField from "@/components/FormField";
 import { toast } from "sonner";
 import { useCategoriesActive } from "@/hooks/useCategories";
+import { Star } from "lucide-react";
 
 interface FournisseurFormProps {
   open: boolean;
@@ -20,7 +21,7 @@ const FournisseurForm = ({ open, onOpenChange, onSubmit, initialData = null, mod
       return initialData;
     }
     return {
-      nom: "", adresse: "", telephone: "", email: "", produits: [] as string[], statut: "actif",
+      nom: "", adresse: "", telephone: "", email: "", produits: [] as string[], statut: "actif", rating: 0,
     };
   };
 
@@ -48,11 +49,7 @@ const FournisseurForm = ({ open, onOpenChange, onSubmit, initialData = null, mod
       return;
     }
 
-    if (mode === 'edit') {
-      onSubmit(form);
-    } else {
-      onSubmit({ ...form, rating: 0 });
-    }
+    onSubmit(form);
 
     setForm(getInitialState());
     onOpenChange(false);
@@ -81,7 +78,34 @@ const FournisseurForm = ({ open, onOpenChange, onSubmit, initialData = null, mod
           </div>
           <FormField label="Téléphone *" type="tel" placeholder="+224 6XX XXX XXX" value={form.telephone} onChange={e => update("telephone", (e.target as HTMLInputElement).value)} maxLength={20} />
           <FormField label="Email" type="email" placeholder="contact@exemple.com" value={form.email} onChange={e => update("email", (e.target as HTMLInputElement).value)} maxLength={100} />
-          
+
+          <div className="space-y-1.5">
+            <label className="text-sm font-medium text-foreground">Évaluation (optionnel)</label>
+            <div className="flex items-center gap-1">
+              {[1, 2, 3, 4, 5].map((star) => (
+                <button
+                  key={star}
+                  type="button"
+                  onClick={() => update("rating", form.rating === star ? 0 : star)}
+                  className="p-1 hover:scale-110 transition-transform"
+                >
+                  <Star
+                    className={`w-6 h-6 ${
+                      star <= form.rating
+                        ? "fill-yellow-400 text-yellow-400"
+                        : "text-gray-300"
+                    }`}
+                  />
+                </button>
+              ))}
+              {form.rating > 0 && (
+                <span className="ml-2 text-sm text-muted-foreground">
+                  {form.rating}/5
+                </span>
+              )}
+            </div>
+          </div>
+
           <div className="space-y-1.5">
             <label className="text-sm font-medium text-foreground">Catégories fournies</label>
             {loadingCategories ? (

@@ -29,6 +29,7 @@ const RetoursFournisseurs = lazy(() => import("./pages/RetoursFournisseurs.tsx")
 const MouvementsStock = lazy(() => import("./pages/MouvementsStock.tsx"));
 const Inventaires = lazy(() => import("./pages/Inventaires.tsx"));
 const InventaireDetail = lazy(() => import("./pages/InventaireDetail.tsx"));
+const Depenses = lazy(() => import("./pages/Depenses.tsx"));
 const Analytics = lazy(() => import("./pages/Analytics.tsx"));
 const Utilisateurs = lazy(() => import("./pages/Utilisateurs.tsx"));
 const Roles = lazy(() => import("./pages/Roles.tsx"));
@@ -190,6 +191,14 @@ const App = () => (
                 element={
                   <ProtectedRoute permissions={['stock.read']}>
                     <InventaireDetail />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/depenses"
+                element={
+                  <ProtectedRoute permissions={['depenses.read']}>
+                    <Depenses />
                   </ProtectedRoute>
                 }
               />

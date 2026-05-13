@@ -2,9 +2,9 @@ import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import FormField from "@/components/FormField";
+import VenteCombobox from "@/components/VenteCombobox";
 import { toast } from "sonner";
-import { Check, Search } from "lucide-react";
-import { useVentes } from "@/hooks/useVentes";
+import { Check } from "lucide-react";
 import { formatPrixInput } from "@/utils/format-prix";
 import { LigneRetourClient } from "@/types";
 
@@ -15,9 +15,6 @@ interface RetourClientFormProps {
 }
 
 const RetourClientForm = ({ open, onOpenChange, onSubmit }: RetourClientFormProps) => {
-  const { data: ventesResponse } = useVentes({ page: 1, limit: 50 });
-  const ventes = ventesResponse?.data || [];
-
   const [form, setForm] = useState({
     venteId: "",
     lignes: [] as Array<LigneRetourClient & { selected: boolean; quantiteMax: number }>,
@@ -27,8 +24,7 @@ const RetourClientForm = ({ open, onOpenChange, onSubmit }: RetourClientFormProp
 
   const [selectedVente, setSelectedVente] = useState<any>(null);
 
-  const handleVenteChange = (venteId: string) => {
-    const vente = ventes.find((v: any) => v.id === venteId);
+  const handleVenteChange = (vente: any) => {
     if (vente) {
       setSelectedVente(vente);
       // Initialiser les lignes avec toutes les lignes de la vente
@@ -45,7 +41,7 @@ const RetourClientForm = ({ open, onOpenChange, onSubmit }: RetourClientFormProp
       }));
       setForm(prev => ({
         ...prev,
-        venteId: venteId,
+        venteId: vente.id,
         lignes: lignes
       }));
     } else {
@@ -166,19 +162,11 @@ const RetourClientForm = ({ open, onOpenChange, onSubmit }: RetourClientFormProp
           {/* Sélection de la vente */}
           <div className="space-y-2">
             <label className="text-sm font-medium">Vente *</label>
-            <select
+            <VenteCombobox
               value={form.venteId}
-              onChange={(e) => handleVenteChange(e.target.value)}
-              className="w-full p-2 border rounded-md"
-              required
-            >
-              <option value="">Sélectionner une vente</option>
-              {ventes.map((vente: any) => (
-                <option key={vente.id} value={vente.id}>
-                  {vente.numero} - {vente.nom} {vente.prenom} - {formatPrix(vente.total)} - {new Date(vente.date).toLocaleDateString()}
-                </option>
-              ))}
-            </select>
+              onChange={handleVenteChange}
+              placeholder="Rechercher une vente..."
+            />
           </div>
 
           {/* Informations de la vente sélectionnée */}
@@ -264,17 +252,16 @@ const RetourClientForm = ({ open, onOpenChange, onSubmit }: RetourClientFormProp
           {/* Mode de remboursement */}
           <FormField
             label="Mode de remboursement"
-            type="select"
+            as="select"
             value={form.modeRemboursement}
-            onChange={(value) => setForm(prev => ({ ...prev, modeRemboursement: value }))}
-            options={[
-              { value: "especes", label: "Espèces" },
-              { value: "mobile_money", label: "Mobile Money" },
-              { value: "virement", label: "Virement" },
-              { value: "credit_compte", label: "Crédit sur compte client" },
-            ]}
+            onChange={(e: any) => setForm(prev => ({ ...prev, modeRemboursement: e.target.value }))}
             required
-          />
+          >
+            <option value="especes">Espèces</option>
+            <option value="mobile_money">Mobile Money</option>
+            <option value="virement">Virement</option>
+            <option value="credit_compte">Crédit sur compte client</option>
+          </FormField>
 
           {/* Note */}
           <div className="space-y-2">

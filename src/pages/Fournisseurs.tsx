@@ -311,8 +311,7 @@ const Fournisseurs = () => {
                 {fournisseurDetails.approMeta && fournisseurDetails.approMeta.totalPages > 1 && (
                   <div className="mt-4 pt-4 border-t">
                     <Pagination
-                      currentPage={approPage}
-                      totalPages={fournisseurDetails.approMeta.totalPages}
+                      meta={fournisseurDetails.approMeta}
                       onPageChange={setApproPage}
                     />
                   </div>

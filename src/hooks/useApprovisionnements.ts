@@ -47,9 +47,15 @@ export const useCreateApprovisionnement = () => {
   return useMutation({
     mutationFn: (data: CreateApprovisionnementDto) => approvisionnementsApi.create(data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['approvisionnements'] });
-      queryClient.invalidateQueries({ queryKey: ['stock'] });
-      queryClient.invalidateQueries({ queryKey: ['fournisseurs'] });
+      // Invalider TOUS les caches liés (exact: false force l'invalidation de toutes les sous-clés)
+      queryClient.invalidateQueries({ queryKey: ['approvisionnements'], exact: false });
+      queryClient.invalidateQueries({ queryKey: ['stock'], exact: false });
+      queryClient.invalidateQueries({ queryKey: ['fournisseurs'], exact: false });
+      queryClient.invalidateQueries({ queryKey: ['mouvements'], exact: false });
+
+      // Forcer le refetch immédiat du stock
+      queryClient.refetchQueries({ queryKey: ['stock'] });
+
       toast.success('Approvisionnement enregistré - Stock mis à jour');
     },
     onError: (error: any) => {
@@ -65,7 +71,13 @@ export const useUpdateApprovisionnement = () => {
     mutationFn: ({ id, data }: { id: string; data: Partial<CreateApprovisionnementDto> }) =>
       approvisionnementsApi.update(id, data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['approvisionnements'] });
+      queryClient.invalidateQueries({ queryKey: ['approvisionnements'], exact: false });
+      queryClient.invalidateQueries({ queryKey: ['stock'], exact: false });
+      queryClient.invalidateQueries({ queryKey: ['fournisseurs'], exact: false });
+      queryClient.invalidateQueries({ queryKey: ['mouvements'], exact: false });
+
+      queryClient.refetchQueries({ queryKey: ['stock'] });
+
       toast.success('Approvisionnement mis à jour');
     },
     onError: (error: any) => {
@@ -80,12 +92,17 @@ export const useDeleteApprovisionnement = () => {
   return useMutation({
     mutationFn: (id: string) => approvisionnementsApi.delete(id),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['approvisionnements'] });
-      queryClient.invalidateQueries({ queryKey: ['stock'] });
-      toast.success('Approvisionnement annulé');
+      queryClient.invalidateQueries({ queryKey: ['approvisionnements'], exact: false });
+      queryClient.invalidateQueries({ queryKey: ['stock'], exact: false });
+      queryClient.invalidateQueries({ queryKey: ['fournisseurs'], exact: false });
+      queryClient.invalidateQueries({ queryKey: ['mouvements'], exact: false });
+
+      queryClient.refetchQueries({ queryKey: ['stock'] });
+
+      toast.success('Approvisionnement supprimé');
     },
     onError: (error: any) => {
-      toast.error(error.response?.data?.message || 'Erreur lors de l\'annulation');
+      toast.error(error.response?.data?.message || 'Erreur lors de la suppression');
     },
   });
 };

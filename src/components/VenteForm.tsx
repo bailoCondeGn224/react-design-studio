@@ -2,9 +2,9 @@ import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import FormField from "@/components/FormField";
 import ArticleCombobox from "@/components/ArticleCombobox";
+import ClientCombobox from "@/components/ClientCombobox";
 import { toast } from "sonner";
 import { Plus, Trash2 } from "lucide-react";
-import { useClients } from "@/hooks/useClients";
 import { formatPrixInput, handlePrixChange } from "@/utils/format-prix";
 
 interface VenteFormProps {
@@ -16,9 +16,6 @@ interface VenteFormProps {
 }
 
 const VenteForm = ({ open, onOpenChange, onSubmit, initialData = null, mode = 'create' }: VenteFormProps) => {
-  const { data: clientsResponse } = useClients({ page: 1, limit: 100 });
-  const clients = clientsResponse?.data || [];
-
   const getInitialState = () => {
     if (mode === 'edit' && initialData) {
       return {
@@ -60,16 +57,14 @@ const VenteForm = ({ open, onOpenChange, onSubmit, initialData = null, mode = 'c
 
   const update = (field: string, value: any) => setForm(prev => ({ ...prev, [field]: value }));
 
-  const handleClientChange = (clientId: string) => {
-    const client = clients.find((c: any) => c.id === clientId);
+  const handleClientChange = (client: any) => {
     if (client) {
       // Pré-remplir les infos du client
-      const [nom = "", prenom = ""] = (client.nom || "").split(" ", 2);
       setForm(prev => ({
         ...prev,
-        clientId: clientId,
-        nom: nom,
-        prenom: prenom || "",
+        clientId: client.id,
+        nom: client.nom || "",
+        prenom: client.prenom || "",
         tel: client.telephone || ""
       }));
     } else {
@@ -244,19 +239,16 @@ const VenteForm = ({ open, onOpenChange, onSubmit, initialData = null, mode = 'c
                 </p>
               </div>
             )}
-            <FormField
-              label={requiresClient ? "Client enregistré *" : "Client enregistré (optionnel)"}
-              as="select"
-              value={form.clientId}
-              onChange={e => handleClientChange((e.target as HTMLSelectElement).value)}
-            >
-              <option value="">-- Client sans compte --</option>
-              {clients.map((c: any) => (
-                <option key={c.id} value={c.id}>
-                  {c.nom}
-                </option>
-              ))}
-            </FormField>
+            <div>
+              <label className="block text-sm font-medium text-foreground mb-2">
+                {requiresClient ? "Client enregistré *" : "Client enregistré (optionnel)"}
+              </label>
+              <ClientCombobox
+                value={form.clientId}
+                onChange={handleClientChange}
+                placeholder="Rechercher un client..."
+              />
+            </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <FormField

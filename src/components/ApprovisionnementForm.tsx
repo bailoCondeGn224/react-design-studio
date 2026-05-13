@@ -2,10 +2,10 @@ import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import FormField from "@/components/FormField";
 import ArticleCombobox from "@/components/ArticleCombobox";
+import FournisseurCombobox from "@/components/FournisseurCombobox";
 import NouvelArticleModal from "@/components/NouvelArticleModal";
 import { toast } from "sonner";
 import { Plus, Trash2, TrendingUp, Package } from "lucide-react";
-import { useFournisseurs } from "@/hooks/useFournisseurs";
 import { formatPrixInput, handlePrixChange } from "@/utils/format-prix";
 
 interface ApprovisionnementFormProps {
@@ -17,8 +17,6 @@ interface ApprovisionnementFormProps {
 }
 
 const ApprovisionnementForm = ({ open, onOpenChange, onSubmit, initialData = null, mode = 'create' }: ApprovisionnementFormProps) => {
-  const { data: fournisseursResponse } = useFournisseurs({ page: 1, limit: 100 });
-  const fournisseurs = fournisseursResponse?.data || [];
 
   const getInitialState = () => {
     if (mode === 'edit' && initialData) {
@@ -42,6 +40,7 @@ const ApprovisionnementForm = ({ open, onOpenChange, onSubmit, initialData = nul
   };
 
   const [form, setForm] = useState(getInitialState());
+  const [selectedFournisseur, setSelectedFournisseur] = useState<any>(null);
   const [nouvelArticleModalOpen, setNouvelArticleModalOpen] = useState(false);
   const [currentLigneIndex, setCurrentLigneIndex] = useState<number | null>(null);
 
@@ -181,9 +180,8 @@ const ApprovisionnementForm = ({ open, onOpenChange, onSubmit, initialData = nul
     const total = calculerTotal();
     const montantRestant = calculerMontantRestant();
 
-    // Trouver le nom du fournisseur
-    const fournisseur = fournisseurs.find((f: any) => f.id === form.fournisseurId);
-    if (!fournisseur) {
+    // Vérifier que le fournisseur est sélectionné
+    if (!selectedFournisseur) {
       toast.error("Fournisseur introuvable");
       return;
     }
@@ -199,7 +197,7 @@ const ApprovisionnementForm = ({ open, onOpenChange, onSubmit, initialData = nul
 
     const approvisionementData = {
       fournisseurId: form.fournisseurId,
-      fournisseurNom: fournisseur.nom,
+      fournisseurNom: selectedFournisseur.nom,
       lignes: lignesClean,
       total,
       montantPaye: Number(form.montantPaye),
@@ -211,6 +209,7 @@ const ApprovisionnementForm = ({ open, onOpenChange, onSubmit, initialData = nul
 
     onSubmit(approvisionementData);
     setForm(getInitialState());
+    setSelectedFournisseur(null);
     onOpenChange(false);
   };
 
@@ -232,19 +231,22 @@ const ApprovisionnementForm = ({ open, onOpenChange, onSubmit, initialData = nul
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           {/* Sélection Fournisseur */}
-          <FormField
-            label="Fournisseur *"
-            as="select"
-            value={form.fournisseurId}
-            onChange={e => update("fournisseurId", (e.target as HTMLSelectElement).value)}
-          >
-            <option value="">-- Sélectionner un fournisseur --</option>
-            {fournisseurs.map((f: any) => (
-              <option key={f.id} value={f.id}>
-                {f.nom}
-              </option>
-            ))}
-          </FormField>
+          <div className="space-y-2">
+            <label className="text-sm font-medium">Fournisseur *</label>
+            <FournisseurCombobox
+              value={form.fournisseurId}
+              onChange={(fournisseur) => {
+                if (fournisseur) {
+                  setSelectedFournisseur(fournisseur);
+                  update("fournisseurId", fournisseur.id);
+                } else {
+                  setSelectedFournisseur(null);
+                  update("fournisseurId", "");
+                }
+              }}
+              placeholder="Rechercher un fournisseur..."
+            />
+          </div>
 
           {/* Lignes d'articles */}
           <div className="space-y-2">

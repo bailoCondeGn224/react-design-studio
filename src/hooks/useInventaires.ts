@@ -1,12 +1,12 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { inventairesApi } from '@/api/inventaires';
-import { CreateInventaireDto, AddComptageDto } from '@/types';
+import { CreateInventaireDto, AddComptageDto, PaginationParams } from '@/types';
 import { toast } from 'sonner';
 
-export const useInventaires = () => {
+export const useInventaires = (params?: PaginationParams) => {
   return useQuery({
-    queryKey: ['inventaires'],
-    queryFn: () => inventairesApi.getAll(),
+    queryKey: ['inventaires', params],
+    queryFn: () => inventairesApi.getAll(params),
   });
 };
 
@@ -94,6 +94,27 @@ export const useValiderInventaire = () => {
     onError: (error: any) => {
       toast.error(
         error.response?.data?.message || 'Erreur lors de la validation',
+      );
+    },
+  });
+};
+
+export const useCalculerFinances = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (inventaireId: string) =>
+      inventairesApi.calculerFinances(inventaireId),
+    onSuccess: async (_, inventaireId) => {
+      await Promise.all([
+        queryClient.refetchQueries({ queryKey: ['inventaires'] }),
+        queryClient.refetchQueries({ queryKey: ['inventaires', inventaireId] }),
+      ]);
+      toast.success('Finances calculées avec succès');
+    },
+    onError: (error: any) => {
+      toast.error(
+        error.response?.data?.message || 'Erreur lors du calcul des finances',
       );
     },
   });

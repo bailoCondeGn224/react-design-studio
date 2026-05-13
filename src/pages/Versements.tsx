@@ -25,13 +25,14 @@ const Versements = () => {
   const [selectedFournisseur, setSelectedFournisseur] = useState<any>(null);
   const [fournisseurVersements, setFournisseurVersements] = useState<any[]>([]);
 
-  // Charger les fournisseurs avec recherche
+  // Charger les fournisseurs avec recherche et pagination
   const { data: fournisseursResponse, isLoading: loadingFournisseurs } = useFournisseurs({
-    page: 1,
-    limit: 100,
+    page,
+    limit,
     search: debouncedSearch || undefined,
   });
   const fournisseurs = fournisseursResponse?.data || [];
+  const fournisseursMeta = fournisseursResponse?.meta;
 
   // Utiliser les stats depuis le backend
   const { data: statsFournisseurs, isLoading: loadingStatsFournisseurs } = useStatsFournisseurs();
@@ -421,6 +422,14 @@ const Versements = () => {
             </tbody>
           </table>
         </div>
+
+        {/* Pagination */}
+        {fournisseursMeta && fournisseursMeta.totalPages > 1 && (
+          <Pagination
+            meta={fournisseursMeta}
+            onPageChange={setPage}
+          />
+        )}
       </div>
 
       {/* Dialog Historique Fournisseur */}

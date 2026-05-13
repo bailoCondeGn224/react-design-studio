@@ -2,9 +2,9 @@ import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import FormField from "@/components/FormField";
+import ApprovisionnementCombobox from "@/components/ApprovisionnementCombobox";
 import { toast } from "sonner";
 import { Check } from "lucide-react";
-import { useApprovisionnements } from "@/hooks/useApprovisionnements";
 import { LigneRetourFournisseur } from "@/types";
 
 interface RetourFournisseurFormProps {
@@ -14,9 +14,6 @@ interface RetourFournisseurFormProps {
 }
 
 const RetourFournisseurForm = ({ open, onOpenChange, onSubmit }: RetourFournisseurFormProps) => {
-  const { data: approsResponse } = useApprovisionnements({ page: 1, limit: 50 });
-  const approvisionnements = approsResponse?.data || [];
-
   const [form, setForm] = useState({
     approvisionnementId: "",
     lignes: [] as Array<LigneRetourFournisseur & { selected: boolean; quantiteMax: number }>,
@@ -27,8 +24,7 @@ const RetourFournisseurForm = ({ open, onOpenChange, onSubmit }: RetourFournisse
 
   const [selectedAppro, setSelectedAppro] = useState<any>(null);
 
-  const handleApproChange = (approId: string) => {
-    const appro = approvisionnements.find((a: any) => a.id === approId);
+  const handleApproChange = (appro: any) => {
     if (appro) {
       setSelectedAppro(appro);
       // Initialiser les lignes avec toutes les lignes de l'approvisionnement
@@ -45,7 +41,7 @@ const RetourFournisseurForm = ({ open, onOpenChange, onSubmit }: RetourFournisse
       }));
       setForm(prev => ({
         ...prev,
-        approvisionnementId: approId,
+        approvisionnementId: appro.id,
         lignes: lignes,
         montantRembourse: 0
       }));
@@ -173,19 +169,11 @@ const RetourFournisseurForm = ({ open, onOpenChange, onSubmit }: RetourFournisse
           {/* Sélection de l'approvisionnement */}
           <div className="space-y-2">
             <label className="text-sm font-medium">Approvisionnement *</label>
-            <select
+            <ApprovisionnementCombobox
               value={form.approvisionnementId}
-              onChange={(e) => handleApproChange(e.target.value)}
-              className="w-full p-2 border rounded-md"
-              required
-            >
-              <option value="">Sélectionner un approvisionnement</option>
-              {approvisionnements.map((appro: any) => (
-                <option key={appro.id} value={appro.id}>
-                  {appro.numero} - {appro.fournisseurNom} - {formatPrix(appro.total)} - {new Date(appro.dateLivraison).toLocaleDateString()}
-                </option>
-              ))}
-            </select>
+              onChange={handleApproChange}
+              placeholder="Rechercher un approvisionnement..."
+            />
           </div>
 
           {/* Informations de l'approvisionnement sélectionné */}

@@ -7,6 +7,9 @@ export const useFournisseurs = (params?: PaginationParams) => {
   return useQuery({
     queryKey: ['fournisseurs', params],
     queryFn: () => fournisseursApi.getAll(params),
+    staleTime: 0, // Considérer les données comme périmées immédiatement
+    refetchOnMount: true, // Toujours refetch au montage
+    refetchOnWindowFocus: true, // Refetch quand la fenêtre reprend le focus
   });
 };
 
@@ -31,7 +34,13 @@ export const useCreateFournisseur = () => {
   return useMutation({
     mutationFn: (data: CreateFournisseurDto) => fournisseursApi.create(data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['fournisseurs'] });
+      // Invalidation complète avec exact: false pour toutes les sous-clés
+      queryClient.invalidateQueries({ queryKey: ['fournisseurs'], exact: false });
+      queryClient.invalidateQueries({ queryKey: ['approvisionnements'], exact: false });
+
+      // Forcer le refetch immédiat
+      queryClient.refetchQueries({ queryKey: ['fournisseurs'] });
+
       toast.success('Fournisseur ajouté');
     },
     onError: (error: any) => {
@@ -47,7 +56,11 @@ export const useUpdateFournisseur = () => {
     mutationFn: ({ id, data }: { id: string; data: Partial<CreateFournisseurDto> }) =>
       fournisseursApi.update(id, data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['fournisseurs'] });
+      queryClient.invalidateQueries({ queryKey: ['fournisseurs'], exact: false });
+      queryClient.invalidateQueries({ queryKey: ['approvisionnements'], exact: false });
+
+      queryClient.refetchQueries({ queryKey: ['fournisseurs'] });
+
       toast.success('Fournisseur mis à jour');
     },
     onError: (error: any) => {
@@ -62,7 +75,11 @@ export const useDeleteFournisseur = () => {
   return useMutation({
     mutationFn: (id: string) => fournisseursApi.delete(id),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['fournisseurs'] });
+      queryClient.invalidateQueries({ queryKey: ['fournisseurs'], exact: false });
+      queryClient.invalidateQueries({ queryKey: ['approvisionnements'], exact: false });
+
+      queryClient.refetchQueries({ queryKey: ['fournisseurs'] });
+
       toast.success('Fournisseur supprimé');
     },
     onError: (error: any) => {

@@ -4,6 +4,7 @@ import {
   ComptageInventaire,
   CreateInventaireDto,
   AddComptageDto,
+  PaginationParams,
 } from '@/types';
 
 export const inventairesApi = {
@@ -14,8 +15,8 @@ export const inventairesApi = {
   },
 
   // Liste des inventaires
-  getAll: async (): Promise<Inventaire[]> => {
-    const response = await apiClient.get('/inventaires');
+  getAll: async (params?: PaginationParams): Promise<{ data: Inventaire[]; meta: any }> => {
+    const response = await apiClient.get('/inventaires', { params });
     return response.data;
   },
 
@@ -52,6 +53,12 @@ export const inventairesApi = {
   // Valider l'inventaire
   valider: async (inventaireId: string): Promise<Inventaire> => {
     const response = await apiClient.post(`/inventaires/${inventaireId}/valider`);
+    return response.data;
+  },
+
+  // Calculer les finances
+  calculerFinances: async (inventaireId: string): Promise<Inventaire> => {
+    const response = await apiClient.post(`/inventaires/${inventaireId}/calculer-finances`);
     return response.data;
   },
 };

@@ -417,8 +417,7 @@ const Commandes = () => {
                 {lignesMeta && lignesMeta.totalPages > 1 && (
                   <div className="mt-4 pt-4 border-t">
                     <Pagination
-                      currentPage={lignesPage}
-                      totalPages={lignesMeta.totalPages}
+                      meta={lignesMeta}
                       onPageChange={setLignesPage}
                     />
                   </div>

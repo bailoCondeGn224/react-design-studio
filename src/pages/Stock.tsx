@@ -337,8 +337,7 @@ const Stock = () => {
           {mouvementsMeta && mouvementsMeta.totalPages > 1 && (
             <div className="mt-4 pt-4 border-t">
               <Pagination
-                currentPage={historyPage}
-                totalPages={mouvementsMeta.totalPages}
+                meta={mouvementsMeta}
                 onPageChange={setHistoryPage}
               />
             </div>
@@ -591,29 +590,27 @@ const Stock = () => {
       <div className="flex flex-col sm:flex-row gap-3 mb-6">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-          <input type="text" placeholder="Rechercher un article..." value={searchInput} onChange={(e) => setSearchInput(e.target.value)}
-            className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-border bg-card text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring/30" />
+          <input
+            type="text"
+            placeholder="Rechercher un article..."
+            value={searchInput}
+            onChange={(e) => setSearchInput(e.target.value)}
+            className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-border bg-card text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring/30"
+          />
         </div>
-        <div className="flex gap-1.5 flex-wrap">
-          <button
-            onClick={() => setSelectedCategorieId("all")}
-            className={`px-3 py-2 rounded-lg text-xs font-medium transition-colors ${
-              selectedCategorieId === "all" ? "gradient-gold text-primary-foreground" : "bg-secondary text-secondary-foreground hover:bg-accent hover:text-accent-foreground"
-            }`}
+        <div className="sm:w-64">
+          <select
+            value={selectedCategorieId}
+            onChange={(e) => setSelectedCategorieId(e.target.value)}
+            className="w-full px-4 py-2.5 rounded-lg border border-border bg-card text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring/30 cursor-pointer"
           >
-            Tous
-          </button>
-          {categories.filter(c => c.actif).map((c) => (
-            <button
-              key={c.id}
-              onClick={() => setSelectedCategorieId(c.id)}
-              className={`px-3 py-2 rounded-lg text-xs font-medium transition-colors ${
-                selectedCategorieId === c.id ? "gradient-gold text-primary-foreground" : "bg-secondary text-secondary-foreground hover:bg-accent hover:text-accent-foreground"
-              }`}
-            >
-              {c.nom}
-            </button>
-          ))}
+            <option value="all">Toutes les catégories</option>
+            {categories.filter(c => c.actif).map((c) => (
+              <option key={c.id} value={c.id}>
+                {c.nom}
+              </option>
+            ))}
+          </select>
         </div>
       </div>
 
