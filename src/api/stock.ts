@@ -32,6 +32,27 @@ export const stockApi = {
     return response.data;
   },
 
+  createBulk: async (articles: CreateArticleDto[], photos?: (File | null)[]): Promise<{ created: Article[]; errors: any[] }> => {
+    const formData = new FormData();
+
+    // Ajouter les données JSON des articles
+    formData.append('articles', JSON.stringify(articles));
+
+    // Ajouter les photos avec des noms indexés pour maintenir la correspondance
+    if (photos && photos.length > 0) {
+      photos.forEach((photo, index) => {
+        if (photo) {
+          formData.append(`photo_${index}`, photo);
+        }
+      });
+    }
+
+    const response = await apiClient.post<{ created: Article[]; errors: any[] }>('/stock/bulk', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' }
+    });
+    return response.data;
+  },
+
   update: async (id: string, data: Partial<CreateArticleDto>, photo?: File): Promise<Article> => {
     if (photo) {
       const formData = new FormData();

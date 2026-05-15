@@ -74,3 +74,27 @@ export const useDeleteArticle = () => {
     },
   });
 };
+
+export const useCreateBulkArticles = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ articles, photos }: { articles: CreateArticleDto[]; photos?: (File | null)[] }) =>
+      stockApi.createBulk(articles, photos),
+    onSuccess: (data: any) => {
+      queryClient.invalidateQueries({ queryKey: ['stock'] });
+      queryClient.invalidateQueries({ queryKey: ['stock', 'stats'] });
+      const count = data?.created?.length || 0;
+      const errors = data?.errors?.length || 0;
+
+      if (errors > 0) {
+        toast.success(`${count} article(s) créé(s), ${errors} erreur(s)`);
+      } else {
+        toast.success(`${count} article(s) ajouté(s) avec succès`);
+      }
+    },
+    onError: (error: any) => {
+      toast.error(error.response?.data?.message || 'Erreur lors de l\'ajout des articles');
+    },
+  });
+};

@@ -1,0 +1,146 @@
+[
+  {
+    "name": "01-dashboard-principal",
+    "description": "Tableau de bord principal - Vue d'ensemble des statistiques clés",
+    "path": "C:\\Users\\Bailo conde\\Documents\\projects\\Gestion _boutique _walli_indistrie\\react-design-studio\\documentation\\screenshots\\01-dashboard-principal.png",
+    "category": "vendeur"
+  },
+  {
+    "name": "02-liste-clients",
+    "description": "Gestion des clients - Liste complète avec recherche et filtres",
+    "path": "C:\\Users\\Bailo conde\\Documents\\projects\\Gestion _boutique _walli_indistrie\\react-design-studio\\documentation\\screenshots\\02-liste-clients.png",
+    "category": "vendeur"
+  },
+  {
+    "name": "03-formulaire-client",
+    "description": "Formulaire de création d'un nouveau client",
+    "path": "C:\\Users\\Bailo conde\\Documents\\projects\\Gestion _boutique _walli_indistrie\\react-design-studio\\documentation\\screenshots\\03-formulaire-client.png",
+    "category": "vendeur"
+  },
+  {
+    "name": "04-liste-ventes",
+    "description": "Registre des ventes - Toutes les ventes avec statistiques mensuelles",
+    "path": "C:\\Users\\Bailo conde\\Documents\\projects\\Gestion _boutique _walli_indistrie\\react-design-studio\\documentation\\screenshots\\04-liste-ventes.png",
+    "category": "vendeur"
+  },
+  {
+    "name": "05-formulaire-vente",
+    "description": "Formulaire de création d'une nouvelle vente",
+    "path": "C:\\Users\\Bailo conde\\Documents\\projects\\Gestion _boutique _walli_indistrie\\react-design-studio\\documentation\\screenshots\\05-formulaire-vente.png",
+    "category": "vendeur"
+  },
+  {
+    "name": "06-gestion-stock",
+    "description": "Gestion du stock - Liste des articles avec alertes",
+    "path": "C:\\Users\\Bailo conde\\Documents\\projects\\Gestion _boutique _walli_indistrie\\react-design-studio\\documentation\\screenshots\\06-gestion-stock.png",
+    "category": "vendeur"
+  },
+  {
+    "name": "08-commandes-clients",
+    "description": "Gestion des commandes clients - Suivi des commandes",
+    "path": "C:\\Users\\Bailo conde\\Documents\\projects\\Gestion _boutique _walli_indistrie\\react-design-studio\\documentation\\screenshots\\08-commandes-clients.png",
+    "category": "vendeur"
+  },
+  {
+    "name": "09-versements-clients",
+    "description": "Paiements clients - Gestion des crédits et paiements",
+    "path": "C:\\Users\\Bailo conde\\Documents\\projects\\Gestion _boutique _walli_indistrie\\react-design-studio\\documentation\\screenshots\\09-versements-clients.png",
+    "category": "vendeur"
+  },
+  {
+    "name": "10-fournisseurs",
+    "description": "Gestion des fournisseurs - Liste avec dettes et statistiques",
+    "path": "C:\\Users\\Bailo conde\\Documents\\projects\\Gestion _boutique _walli_indistrie\\react-design-studio\\documentation\\screenshots\\10-fournisseurs.png",
+    "category": "admin"
+  },
+  {
+    "name": "11-approvisionnements",
+    "description": "Gestion des approvisionnements - Achats auprès des fournisseurs",
+    "path": "C:\\Users\\Bailo conde\\Documents\\projects\\Gestion _boutique _walli_indistrie\\react-design-studio\\documentation\\screenshots\\11-approvisionnements.png",
+    "category": "admin"
+  },
+  {
+    "name": "12-versements-fournisseurs",
+    "description": "Paiements fournisseurs - Gestion des dettes fournisseurs",
+    "path": "C:\\Users\\Bailo conde\\Documents\\projects\\Gestion _boutique _walli_indistrie\\react-design-studio\\documentation\\screenshots\\12-versements-fournisseurs.png",
+    "category": "admin"
+  },
+  {
+    "name": "13-categories",
+    "description": "Gestion des catégories d'articles",
+    "path": "C:\\Users\\Bailo conde\\Documents\\projects\\Gestion _boutique _walli_indistrie\\react-design-studio\\documentation\\screenshots\\13-categories.png",
+    "category": "admin"
+  },
+  {
+    "name": "14-zones-stockage",
+    "description": "Gestion des zones de stockage",
+    "path": "C:\\Users\\Bailo conde\\Documents\\projects\\Gestion _boutique _walli_indistrie\\react-design-studio\\documentation\\screenshots\\14-zones-stockage.png",
+    "category": "admin"
+  },
+  {
+    "name": "15-inventaires",
+    "description": "Gestion des inventaires - Comptage et vérification du stock",
+    "path": "C:\\Users\\Bailo conde\\Documents\\projects\\Gestion _boutique _walli_indistrie\\react-design-studio\\documentation\\screenshots\\15-inventaires.png",
+    "category": "admin"
+  },
+  {
+    "name": "16-mouvements-stock",
+    "description": "Historique des mouvements de stock",
+    "path": "C:\\Users\\Bailo conde\\Documents\\projects\\Gestion _boutique _walli_indistrie\\react-design-studio\\documentation\\screenshots\\16-mouvements-stock.png",
+    "category": "admin"
+  },
+  {
+    "name": "17-depenses",
+    "description": "Gestion des dépenses - Loyer, salaires, utilities, etc.",
+    "path": "C:\\Users\\Bailo conde\\Documents\\projects\\Gestion _boutique _walli_indistrie\\react-design-studio\\documentation\\screenshots\\17-depenses.png",
+    "category": "admin"
+  },
+  {
+    "name": "18-analytics",
+    "description": "Tableau analytique - Vue complète des indicateurs clés",
+    "path": "C:\\Users\\Bailo conde\\Documents\\projects\\Gestion _boutique _walli_indistrie\\react-design-studio\\documentation\\screenshots\\18-analytics.png",
+    "category": "admin"
+  },
+  {
+    "name": "19-retours-clients",
+    "description": "Gestion des retours clients",
+    "path": "C:\\Users\\Bailo conde\\Documents\\projects\\Gestion _boutique _walli_indistrie\\react-design-studio\\documentation\\screenshots\\19-retours-clients.png",
+    "category": "admin"
+  },
+  {
+    "name": "20-retours-fournisseurs",
+    "description": "Gestion des retours fournisseurs",
+    "path": "C:\\Users\\Bailo conde\\Documents\\projects\\Gestion _boutique _walli_indistrie\\react-design-studio\\documentation\\screenshots\\20-retours-fournisseurs.png",
+    "category": "admin"
+  },
+  {
+    "name": "21-utilisateurs",
+    "description": "Gestion des utilisateurs - Équipe et rôles",
+    "path": "C:\\Users\\Bailo conde\\Documents\\projects\\Gestion _boutique _walli_indistrie\\react-design-studio\\documentation\\screenshots\\21-utilisateurs.png",
+    "category": "admin"
+  },
+  {
+    "name": "22-roles-permissions",
+    "description": "Rôles et permissions - Configuration des accès",
+    "path": "C:\\Users\\Bailo conde\\Documents\\projects\\Gestion _boutique _walli_indistrie\\react-design-studio\\documentation\\screenshots\\22-roles-permissions.png",
+    "category": "admin"
+  },
+  {
+    "name": "23-dashboard-admin",
+    "description": "Tableau de bord administrateur - Graphiques et statistiques détaillées",
+    "path": "C:\\Users\\Bailo conde\\Documents\\projects\\Gestion _boutique _walli_indistrie\\react-design-studio\\documentation\\screenshots\\23-dashboard-admin.png",
+    "category": "admin"
+  },
+  {
+    "name": "24-super-admin-dashboard",
+    "description": "Dashboard Super Admin - Vue plateforme",
+    "path": "C:\\Users\\Bailo conde\\Documents\\projects\\Gestion _boutique _walli_indistrie\\react-design-studio\\documentation\\screenshots\\24-super-admin-dashboard.png",
+    "category": "super-admin"
+  },
+  {
+    "name": "25-super-admin-organizations",
+    "description": "Gestion des organisations - Configuration boutiques",
+    "path": "C:\\Users\\Bailo conde\\Documents\\projects\\Gestion _boutique _walli_indistrie\\react-design-studio\\documentation\\screenshots\\25-super-admin-organizations.png",
+    "category": "super-admin"
+  }
+]

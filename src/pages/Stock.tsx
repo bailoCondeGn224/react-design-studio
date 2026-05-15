@@ -8,6 +8,7 @@ import { useState, useEffect } from "react";
 import { getPhotoUrl } from "@/lib/api-client";
 import { toast } from "sonner";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
 import { useMouvementsByArticle } from "@/hooks/useMouvements";
 import { useStatsRotation } from "@/hooks/useRotation";
 import {
@@ -27,7 +28,8 @@ import {
   AlertDialogHeader,
   AlertDialogTitle
 } from "@/components/ui/alert-dialog";
-import { useStock, useStockStats, useCreateArticle, useUpdateArticle, useDeleteArticle } from "@/hooks/useStock";
+import { useStock, useStockStats, useCreateArticle, useUpdateArticle, useDeleteArticle, useCreateBulkArticles } from "@/hooks/useStock";
+import BulkArticleForm from "@/components/BulkArticleForm";
 import { useCategoriesActive } from "@/hooks/useCategories";
 import { useZonesActive } from "@/hooks/useZones";
 import { useDebounce } from "@/hooks/useDebounce";
@@ -37,6 +39,7 @@ const Stock = () => {
   const [searchInput, setSearchInput] = useState("");
   const debouncedSearch = useDebounce(searchInput, 500);
   const [formOpen, setFormOpen] = useState(false);
+  const [bulkFormOpen, setBulkFormOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<any>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [historyArticleId, setHistoryArticleId] = useState<string | null>(null);
@@ -61,6 +64,7 @@ const Stock = () => {
   const createArticle = useCreateArticle();
   const updateArticle = useUpdateArticle();
   const deleteArticle = useDeleteArticle();
+  const createBulkArticles = useCreateBulkArticles();
 
   // Historique mouvements
   const { data: mouvementsResponse } = useMouvementsByArticle(historyArticleId || '', { page: historyPage, limit: historyLimit });
@@ -103,6 +107,10 @@ const Stock = () => {
       deleteArticle.mutate(deleteId);
       setDeleteId(null);
     }
+  };
+
+  const handleBulkSubmit = (articles: any[], photos: (File | null)[]) => {
+    createBulkArticles.mutate({ articles, photos });
   };
 
   const handleFormClose = (open: boolean) => {
@@ -220,9 +228,27 @@ const Stock = () => {
 
   return (
     <AppLayout>
-      <PageHeader
-        title="Gestion du Stock"
-        description="Consultation du stock - Les articles sont créés via les approvisionnements"
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+        <PageHeader
+          title="Gestion du Stock"
+          description="Gestion des articles en stock"
+        />
+        <CanAccess permissions={['stock.create']}>
+          <Button
+            onClick={() => setBulkFormOpen(true)}
+            className="gap-2 whitespace-nowrap"
+          >
+            <Plus className="w-4 h-4" />
+            Ajouter des articles
+          </Button>
+        </CanAccess>
+      </div>
+
+      {/* Formulaire d'ajout multiple */}
+      <BulkArticleForm
+        open={bulkFormOpen}
+        onOpenChange={setBulkFormOpen}
+        onSubmit={handleBulkSubmit}
       />
 
       {/* Formulaire de modification (infos article uniquement, pas la quantité) */}
