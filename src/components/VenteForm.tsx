@@ -18,10 +18,13 @@ interface VenteFormProps {
 const VenteForm = ({ open, onOpenChange, onSubmit, initialData = null, mode = 'create' }: VenteFormProps) => {
   const getInitialState = () => {
     if (mode === 'edit' && initialData) {
+      // Si on a nom et prenom séparés, les concaténer
+      const nomComplet = initialData.nomComplet ||
+        (initialData.nom && initialData.prenom ? `${initialData.nom} ${initialData.prenom}` : "");
+
       return {
         clientId: initialData.clientId || "",
-        nom: initialData.nom || "",
-        prenom: initialData.prenom || "",
+        nomComplet: nomComplet,
         tel: initialData.tel || "",
         lignes: initialData.lignes || [],
         montantPaye: initialData.montantPaye || 0,
@@ -30,8 +33,7 @@ const VenteForm = ({ open, onOpenChange, onSubmit, initialData = null, mode = 'c
     }
     return {
       clientId: "",
-      nom: "",
-      prenom: "",
+      nomComplet: "",
       tel: "",
       lignes: [],
       montantPaye: 0,
@@ -43,10 +45,13 @@ const VenteForm = ({ open, onOpenChange, onSubmit, initialData = null, mode = 'c
 
   useEffect(() => {
     if (mode === 'edit' && initialData) {
+      // Si on a nom et prenom séparés, les concaténer
+      const nomComplet = initialData.nomComplet ||
+        (initialData.nom && initialData.prenom ? `${initialData.nom} ${initialData.prenom}` : "");
+
       setForm({
         clientId: initialData.clientId || "",
-        nom: initialData.nom || "",
-        prenom: initialData.prenom || "",
+        nomComplet: nomComplet,
         tel: initialData.tel || "",
         lignes: initialData.lignes || [],
         montantPaye: initialData.montantPaye || 0,
@@ -63,16 +68,14 @@ const VenteForm = ({ open, onOpenChange, onSubmit, initialData = null, mode = 'c
       setForm(prev => ({
         ...prev,
         clientId: client.id,
-        nom: client.nom || "",
-        prenom: client.prenom || "",
+        nomComplet: client.nom || "",
         tel: client.telephone || ""
       }));
     } else {
       setForm(prev => ({
         ...prev,
         clientId: "",
-        nom: "",
-        prenom: "",
+        nomComplet: "",
         tel: ""
       }));
     }
@@ -135,7 +138,7 @@ const VenteForm = ({ open, onOpenChange, onSubmit, initialData = null, mode = 'c
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!form.nom.trim() || !form.prenom.trim() || !form.tel.trim()) {
+    if (!form.nomComplet.trim() || !form.tel.trim()) {
       toast.error("Veuillez remplir les informations du client");
       return;
     }
@@ -195,10 +198,15 @@ const VenteForm = ({ open, onOpenChange, onSubmit, initialData = null, mode = 'c
       sousTotal: Number(ligne.sousTotal),
     }));
 
+    // Séparer le nom complet en nom et prénom pour le backend
+    const nomParts = form.nomComplet.trim().split(' ');
+    const nom = nomParts.length > 1 ? nomParts.slice(0, -1).join(' ') : form.nomComplet.trim();
+    const prenom = nomParts.length > 1 ? nomParts[nomParts.length - 1] : "";
+
     const venteData = {
       clientId: form.clientId || undefined,
-      nom: form.nom,
-      prenom: form.prenom,
+      nom: nom,
+      prenom: prenom,
       tel: form.tel,
       lignes: lignesClean,
       total,
@@ -250,22 +258,13 @@ const VenteForm = ({ open, onOpenChange, onSubmit, initialData = null, mode = 'c
               />
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <FormField
-                label="Nom *"
-                placeholder="Diallo"
-                value={form.nom}
-                onChange={e => update("nom", (e.target as HTMLInputElement).value)}
-                maxLength={100}
-              />
-              <FormField
-                label="Prénom *"
-                placeholder="Aminata"
-                value={form.prenom}
-                onChange={e => update("prenom", (e.target as HTMLInputElement).value)}
-                maxLength={100}
-              />
-            </div>
+            <FormField
+              label="Nom complet *"
+              placeholder="Ex: Aminata Diallo"
+              value={form.nomComplet}
+              onChange={e => update("nomComplet", (e.target as HTMLInputElement).value)}
+              maxLength={200}
+            />
 
             <FormField
               label="Téléphone *"

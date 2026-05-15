@@ -21,7 +21,7 @@ const FournisseurForm = ({ open, onOpenChange, onSubmit, initialData = null, mod
       return initialData;
     }
     return {
-      nom: "", adresse: "", telephone: "", email: "", produits: [] as string[], statut: "actif", rating: 0,
+      nom: "", prenom: "", adresse: "", telephone: "", email: "", produits: [] as string[], statut: "actif", rating: 0,
     };
   };
 
@@ -44,7 +44,7 @@ const FournisseurForm = ({ open, onOpenChange, onSubmit, initialData = null, mod
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!form.nom.trim() || !form.adresse.trim() || !form.telephone.trim()) {
+    if (!form.nom.trim() || !form.prenom.trim() || !form.adresse.trim() || !form.telephone.trim()) {
       toast.error("Veuillez remplir les champs obligatoires");
       return;
     }
@@ -68,7 +68,10 @@ const FournisseurForm = ({ open, onOpenChange, onSubmit, initialData = null, mod
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
-          <FormField label="Nom *" placeholder="Ex: Al-Nour Textiles" value={form.nom} onChange={e => update("nom", (e.target as HTMLInputElement).value)} maxLength={100} />
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <FormField label="Nom *" placeholder="Ex: Diallo" value={form.nom} onChange={e => update("nom", (e.target as HTMLInputElement).value)} maxLength={100} />
+            <FormField label="Prénom *" placeholder="Ex: Mamadou" value={form.prenom} onChange={e => update("prenom", (e.target as HTMLInputElement).value)} maxLength={100} />
+          </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <FormField label="Adresse *" placeholder="Dubaï" value={form.adresse} onChange={e => update("adresse", (e.target as HTMLInputElement).value)} maxLength={50} />
             <FormField label="Statut" as="select" value={form.statut} onChange={e => update("statut", (e.target as HTMLSelectElement).value)}>

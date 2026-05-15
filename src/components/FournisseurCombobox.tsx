@@ -19,6 +19,7 @@ import { useFournisseurs } from '@/hooks/useFournisseurs';
 interface Fournisseur {
   id: string;
   nom: string;
+  prenom: string;
   telephone?: string;
   email?: string;
   adresse?: string;
@@ -87,7 +88,7 @@ const FournisseurCombobox = ({
           <span className="truncate text-sm">
             {selectedFournisseur ? (
               <span className="flex items-center gap-2">
-                <span className="font-medium">{selectedFournisseur.nom}</span>
+                <span className="font-medium">{selectedFournisseur.nom} {selectedFournisseur.prenom}</span>
                 {selectedFournisseur.telephone && (
                   <>
                     <span className="text-muted-foreground">•</span>
@@ -120,7 +121,7 @@ const FournisseurCombobox = ({
                 {fournisseurs.map((fournisseur) => (
                   <CommandItem
                     key={fournisseur.id}
-                    value={`${fournisseur.nom} ${fournisseur.telephone || ''} ${fournisseur.email || ''}`}
+                    value={`${fournisseur.nom} ${fournisseur.prenom} ${fournisseur.telephone || ''} ${fournisseur.email || ''}`}
                     onSelect={() => {
                       onChange(fournisseur);
                       setOpen(false);
@@ -136,7 +137,7 @@ const FournisseurCombobox = ({
                     />
                     <div className="flex flex-col flex-1 min-w-0">
                       <div className="flex items-center gap-2">
-                        <span className="font-medium">{fournisseur.nom}</span>
+                        <span className="font-medium">{fournisseur.nom} {fournisseur.prenom}</span>
                       </div>
                       <div className="flex items-center gap-3 text-xs text-muted-foreground mt-0.5">
                         {fournisseur.telephone && (

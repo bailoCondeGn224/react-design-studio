@@ -3,6 +3,7 @@ import FournisseurCombobox from '@/components/FournisseurCombobox';
 interface Fournisseur {
   id: string;
   nom: string;
+  prenom: string;
   telephone?: string;
   email?: string;
   totalAchats?: number;
@@ -63,7 +64,7 @@ const FournisseurVersementSelector = ({
             <div className="grid grid-cols-2 gap-3 pt-3 border-t border-orange-200 dark:border-orange-800">
               <div>
                 <p className="text-xs text-muted-foreground mb-0.5">Fournisseur</p>
-                <p className="text-sm font-medium text-foreground">{selectedFournisseur.nom}</p>
+                <p className="text-sm font-medium text-foreground">{selectedFournisseur.nom} {selectedFournisseur.prenom}</p>
               </div>
               {selectedFournisseur.telephone && (
                 <div>

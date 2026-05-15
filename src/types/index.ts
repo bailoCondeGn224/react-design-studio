@@ -359,6 +359,7 @@ export interface StatsCommandes {
 export interface Fournisseur {
   id: string;
   nom: string;
+  prenom: string;
   adresse?: string;
   telephone: string;
   email?: string;
@@ -374,6 +375,7 @@ export interface Fournisseur {
 
 export interface CreateFournisseurDto {
   nom: string;
+  prenom: string;
   adresse?: string;
   telephone: string;
   email?: string;

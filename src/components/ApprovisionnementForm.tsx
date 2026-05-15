@@ -197,7 +197,7 @@ const ApprovisionnementForm = ({ open, onOpenChange, onSubmit, initialData = nul
 
     const approvisionementData = {
       fournisseurId: form.fournisseurId,
-      fournisseurNom: selectedFournisseur.nom,
+      fournisseurNom: `${selectedFournisseur.nom} ${selectedFournisseur.prenom}`,
       lignes: lignesClean,
       total,
       montantPaye: Number(form.montantPaye),
