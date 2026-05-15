@@ -184,8 +184,8 @@ const Fournisseurs = () => {
                 </h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <p className="text-xs text-muted-foreground mb-1">Nom</p>
-                    <p className="text-sm font-semibold text-foreground">{fournisseurDetails.nom} {fournisseurDetails.prenom}</p>
+                    <p className="text-xs text-muted-foreground mb-1">Nom complet</p>
+                    <p className="text-sm font-semibold text-foreground">{fournisseurDetails.nom}</p>
                   </div>
                   <div>
                     <p className="text-xs text-muted-foreground mb-1">Statut</p>
@@ -388,7 +388,7 @@ const Fournisseurs = () => {
               <div key={f.id} className="bg-card border border-border rounded-xl p-4 sm:p-5 shadow-card hover:shadow-elevated transition-shadow animate-fade-in">
                 <div className="flex items-start justify-between mb-3 gap-2">
                   <div className="flex-1 min-w-0">
-                    <h3 className="font-heading font-semibold text-sm sm:text-base text-foreground truncate">{f.nom} {f.prenom}</h3>
+                    <h3 className="font-heading font-semibold text-sm sm:text-base text-foreground truncate">{f.nom}</h3>
                     {f.adresse && (
                       <div className="flex items-center gap-1 text-xs text-muted-foreground mt-1">
                         <MapPin className="w-3 h-3 flex-shrink-0" />

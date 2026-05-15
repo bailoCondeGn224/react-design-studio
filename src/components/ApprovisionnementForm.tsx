@@ -181,8 +181,8 @@ const ApprovisionnementForm = ({ open, onOpenChange, onSubmit, initialData = nul
     const montantRestant = calculerMontantRestant();
 
     // Vérifier que le fournisseur est sélectionné
-    if (!selectedFournisseur) {
-      toast.error("Fournisseur introuvable");
+    if (!selectedFournisseur || !selectedFournisseur.nom) {
+      toast.error("Fournisseur introuvable ou incomplet");
       return;
     }
 
@@ -197,7 +197,7 @@ const ApprovisionnementForm = ({ open, onOpenChange, onSubmit, initialData = nul
 
     const approvisionementData = {
       fournisseurId: form.fournisseurId,
-      fournisseurNom: `${selectedFournisseur.nom} ${selectedFournisseur.prenom}`,
+      fournisseurNom: selectedFournisseur.nom || '',
       lignes: lignesClean,
       total,
       montantPaye: Number(form.montantPaye),

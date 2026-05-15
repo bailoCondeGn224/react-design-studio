@@ -19,6 +19,7 @@ import { Badge } from '@/components/ui/badge';
 import { useInventaire, useAddComptage } from '@/hooks/useInventaires';
 import { useStock } from '@/hooks/useStock';
 import { useCategoriesActive } from '@/hooks/useCategories';
+import { useZonesActive } from '@/hooks/useZones';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import ValiderInventaireDialog from '@/components/inventaires/ValiderInventaireDialog';
@@ -31,11 +32,13 @@ export default function InventaireDetail() {
   const { data: inventaire, isLoading } = useInventaire(id || null);
   const { data: stockResponse, isLoading: loadingStock } = useStock({ page: 1, limit: 100 }); // Limite max du backend
   const { data: categories = [] } = useCategoriesActive();
+  const { data: zones = [] } = useZonesActive();
   const addComptageMutation = useAddComptage();
 
   // Filtres
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategorie, setSelectedCategorie] = useState<string>('all');
+  const [selectedZone, setSelectedZone] = useState<string>('all');
   const [filterStatut, setFilterStatut] = useState<string>('all'); // all, compté, non-compté
   const [filterEcart, setFilterEcart] = useState<string>('all'); // all, avec-ecart, sans-ecart
 
@@ -68,6 +71,11 @@ export default function InventaireDetail() {
 
     // Catégorie
     if (selectedCategorie !== 'all' && article.categorieId !== selectedCategorie) {
+      return false;
+    }
+
+    // Zone
+    if (selectedZone !== 'all' && article.zone !== selectedZone) {
       return false;
     }
 
@@ -109,7 +117,7 @@ export default function InventaireDetail() {
   // Reset pagination quand les filtres changent
   useEffect(() => {
     setPage(1);
-  }, [searchQuery, selectedCategorie, filterStatut, filterEcart]);
+  }, [searchQuery, selectedCategorie, selectedZone, filterStatut, filterEcart]);
 
   const handleStartEdit = (article: Article) => {
     if (isArticleCompte(article.id)) return;
@@ -381,8 +389,10 @@ export default function InventaireDetail() {
       {/* Vue pour inventaire EN_COURS */}
       {inventaire.statut === 'EN_COURS' && (
         <>
-          <div className="flex flex-col sm:flex-row gap-3 mb-6">
-            <div className="relative flex-1">
+          {/* Barre de recherche et filtres */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-3 mb-6">
+            {/* Recherche */}
+            <div className="relative lg:col-span-2">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <input
                 type="text"
@@ -392,99 +402,64 @@ export default function InventaireDetail() {
                 className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-border bg-card text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring/30"
               />
             </div>
-            <div className="flex gap-1.5 flex-wrap">
-              <button
-                onClick={() => setSelectedCategorie('all')}
-                className={`px-3 py-2 rounded-lg text-xs font-medium transition-colors ${
-                  selectedCategorie === 'all'
-                    ? 'gradient-gold text-primary-foreground'
-                    : 'bg-secondary text-secondary-foreground hover:bg-accent hover:text-accent-foreground'
-                }`}
+
+            {/* Filtre Catégorie */}
+            <div>
+              <select
+                value={selectedCategorie}
+                onChange={(e) => setSelectedCategorie(e.target.value)}
+                className="w-full px-4 py-2.5 rounded-lg border border-border bg-card text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring/30 cursor-pointer"
               >
-                Toutes catégories
-              </button>
-              {categories.map((cat) => (
-                <button
-                  key={cat.id}
-                  onClick={() => setSelectedCategorie(cat.id)}
-                  className={`px-3 py-2 rounded-lg text-xs font-medium transition-colors ${
-                    selectedCategorie === cat.id
-                      ? 'gradient-gold text-primary-foreground'
-                      : 'bg-secondary text-secondary-foreground hover:bg-accent hover:text-accent-foreground'
-                  }`}
-                >
-                  {cat.nom}
-                </button>
-              ))}
+                <option value="all">Toutes catégories</option>
+                {categories.map((cat) => (
+                  <option key={cat.id} value={cat.id}>
+                    {cat.nom}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Filtre Zone */}
+            <div>
+              <select
+                value={selectedZone}
+                onChange={(e) => setSelectedZone(e.target.value)}
+                className="w-full px-4 py-2.5 rounded-lg border border-border bg-card text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring/30 cursor-pointer"
+              >
+                <option value="all">Toutes zones</option>
+                {zones.map((zone) => (
+                  <option key={zone.id} value={zone.code}>
+                    Zone {zone.code}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Filtre Statut */}
+            <div>
+              <select
+                value={filterStatut}
+                onChange={(e) => setFilterStatut(e.target.value)}
+                className="w-full px-4 py-2.5 rounded-lg border border-border bg-card text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring/30 cursor-pointer"
+              >
+                <option value="all">Tous les statuts</option>
+                <option value="compté">Comptés</option>
+                <option value="non-compté">Non comptés</option>
+              </select>
             </div>
           </div>
 
-          <div className="flex gap-2 mb-6">
-            <div className="flex gap-1.5">
-              <button
-                onClick={() => setFilterStatut('all')}
-                className={`px-3 py-2 rounded-lg text-xs font-medium transition-colors ${
-                  filterStatut === 'all'
-                    ? 'bg-primary text-primary-foreground'
-                    : 'bg-secondary text-secondary-foreground hover:bg-accent'
-                }`}
-              >
-                Tous
-              </button>
-              <button
-                onClick={() => setFilterStatut('compté')}
-                className={`px-3 py-2 rounded-lg text-xs font-medium transition-colors ${
-                  filterStatut === 'compté'
-                    ? 'bg-primary text-primary-foreground'
-                    : 'bg-secondary text-secondary-foreground hover:bg-accent'
-                }`}
-              >
-                Comptés
-              </button>
-              <button
-                onClick={() => setFilterStatut('non-compté')}
-                className={`px-3 py-2 rounded-lg text-xs font-medium transition-colors ${
-                  filterStatut === 'non-compté'
-                    ? 'bg-primary text-primary-foreground'
-                    : 'bg-secondary text-secondary-foreground hover:bg-accent'
-                }`}
-              >
-                Non comptés
-              </button>
-            </div>
-
-            <div className="flex gap-1.5">
-              <button
-                onClick={() => setFilterEcart('all')}
-                className={`px-3 py-2 rounded-lg text-xs font-medium transition-colors ${
-                  filterEcart === 'all'
-                    ? 'bg-primary text-primary-foreground'
-                    : 'bg-secondary text-secondary-foreground hover:bg-accent'
-                }`}
-              >
-                Tous écarts
-              </button>
-              <button
-                onClick={() => setFilterEcart('avec-ecart')}
-                className={`px-3 py-2 rounded-lg text-xs font-medium transition-colors ${
-                  filterEcart === 'avec-ecart'
-                    ? 'bg-primary text-primary-foreground'
-                    : 'bg-secondary text-secondary-foreground hover:bg-accent'
-                }`}
-              >
-                Avec écart
-              </button>
-              <button
-                onClick={() => setFilterEcart('sans-ecart')}
-                className={`px-3 py-2 rounded-lg text-xs font-medium transition-colors ${
-                  filterEcart === 'sans-ecart'
-                    ? 'bg-primary text-primary-foreground'
-                    : 'bg-secondary text-secondary-foreground hover:bg-accent'
-                }`}
-              >
-                Sans écart
-              </button>
-            </div>
+          {/* Filtre Écart (ligne séparée) */}
+          <div className="mb-6">
+            <select
+              value={filterEcart}
+              onChange={(e) => setFilterEcart(e.target.value)}
+              className="w-full md:w-64 px-4 py-2.5 rounded-lg border border-border bg-card text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring/30 cursor-pointer"
+            >
+              <option value="all">Tous les écarts</option>
+              <option value="avec-ecart">Avec écart</option>
+              <option value="sans-ecart">Sans écart</option>
+            </select>
           </div>
 
           {/* Tableau compact */}
