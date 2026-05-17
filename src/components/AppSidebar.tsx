@@ -5,7 +5,7 @@ import {
   Shield, UserCog, Settings, Building2, CreditCard, RotateCcw, PackageX, ClipboardList, ClipboardCheck,
   Receipt
 } from "lucide-react";
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { useLogout, useCurrentUser, useIsSuperAdmin, useUserRole } from "@/hooks/useAuth";
 import CanAccess from "@/components/CanAccess";
@@ -70,6 +70,7 @@ const SidebarContent = ({ collapsed, setCollapsed, onItemClick }: { collapsed: b
   const user = useCurrentUser();
   const isSuperAdmin = useIsSuperAdmin();
   const userRole = useUserRole();
+  const navRef = useRef<HTMLElement>(null);
 
   // Les paramètres viennent maintenant de l'organization de l'utilisateur
   const organization = user?.organization;
@@ -81,6 +82,34 @@ const SidebarContent = ({ collapsed, setCollapsed, onItemClick }: { collapsed: b
   } else if (userRole === 'ADMIN') {
     menuItems = adminNavItems;
   }
+
+  // Restaurer la position de scroll au montage et après navigation
+  useEffect(() => {
+    const savedScrollPos = sessionStorage.getItem('sidebar-scroll-position');
+    if (savedScrollPos && navRef.current) {
+      // Petit délai pour s'assurer que le DOM est prêt
+      setTimeout(() => {
+        if (navRef.current) {
+          navRef.current.scrollTop = parseInt(savedScrollPos, 10);
+        }
+      }, 0);
+    }
+  }, [location.pathname]); // Se déclenche à chaque changement de route
+
+  // Sauvegarder la position de scroll avant de quitter
+  useEffect(() => {
+    const handleScroll = () => {
+      if (navRef.current) {
+        sessionStorage.setItem('sidebar-scroll-position', navRef.current.scrollTop.toString());
+      }
+    };
+
+    const navElement = navRef.current;
+    if (navElement) {
+      navElement.addEventListener('scroll', handleScroll);
+      return () => navElement.removeEventListener('scroll', handleScroll);
+    }
+  }, []);
 
   return (
     <div className="h-full flex flex-col">
@@ -112,7 +141,7 @@ const SidebarContent = ({ collapsed, setCollapsed, onItemClick }: { collapsed: b
       </div>
 
       {/* Nav */}
-      <nav className="flex-1 overflow-y-auto py-4 px-3 space-y-1 sidebar-scroll">
+      <nav ref={navRef} className="flex-1 overflow-y-auto py-4 px-3 space-y-1 sidebar-scroll">
         {menuItems.map((item) => {
           const isActive = location.pathname === item.to;
 

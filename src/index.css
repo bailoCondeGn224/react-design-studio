@@ -103,8 +103,8 @@
     scrollbar-width: thin;
     scrollbar-color: hsl(120 20% 25% / 0.3) transparent;
 
-    /* Smooth scrolling */
-    scroll-behavior: smooth;
+    /* Désactiver le scroll automatique pour conserver la position */
+    scroll-behavior: auto;
   }
 
   /* Chrome, Edge, Safari - Scrollbar personnalisée */
