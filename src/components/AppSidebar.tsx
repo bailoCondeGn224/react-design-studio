@@ -5,7 +5,7 @@ import {
   Shield, UserCog, Settings, Building2, CreditCard, RotateCcw, PackageX, ClipboardList, ClipboardCheck,
   Receipt
 } from "lucide-react";
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, memo, useMemo } from "react";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { useLogout, useCurrentUser, useIsSuperAdmin, useUserRole } from "@/hooks/useAuth";
 import CanAccess from "@/components/CanAccess";
@@ -64,6 +64,33 @@ const adminNavItems = [
   { to: "/roles", icon: Shield, label: "Rôles & Permissions", permissions: ["roles.read"] },
 ];
 
+// Composant MenuItem mémorisé pour éviter les re-renders inutiles
+const MenuItem = memo(({ item, collapsed, isActive, onItemClick }: {
+  item: typeof navItems[0];
+  collapsed: boolean;
+  isActive: boolean;
+  onItemClick?: () => void;
+}) => {
+  return (
+    <NavLink
+      to={item.to}
+      onClick={onItemClick}
+      className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 group ${
+        isActive
+          ? "bg-sidebar-accent text-sidebar-primary"
+          : "text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground"
+      }`}
+    >
+      <item.icon
+        className={`w-5 h-5 flex-shrink-0 transition-colors ${
+          isActive ? "text-sidebar-primary" : "text-sidebar-foreground/50 group-hover:text-sidebar-accent-foreground"
+        }`}
+      />
+      {!collapsed && <span className="animate-fade-in">{item.label}</span>}
+    </NavLink>
+  );
+});
+
 const SidebarContent = ({ collapsed, setCollapsed, onItemClick }: { collapsed: boolean; setCollapsed: (v: boolean) => void; onItemClick?: () => void }) => {
   const location = useLocation();
   const logout = useLogout();
@@ -75,13 +102,15 @@ const SidebarContent = ({ collapsed, setCollapsed, onItemClick }: { collapsed: b
   // Les paramètres viennent maintenant de l'organization de l'utilisateur
   const organization = user?.organization;
 
-  // Choisir le bon menu selon le type d'utilisateur
-  let menuItems = navItems;
-  if (isSuperAdmin) {
-    menuItems = superAdminNavItems;
-  } else if (userRole === 'ADMIN') {
-    menuItems = adminNavItems;
-  }
+  // Choisir le bon menu selon le type d'utilisateur - mémorisé pour éviter les re-renders
+  const menuItems = useMemo(() => {
+    if (isSuperAdmin) {
+      return superAdminNavItems;
+    } else if (userRole === 'ADMIN') {
+      return adminNavItems;
+    }
+    return navItems;
+  }, [isSuperAdmin, userRole]);
 
   // Restaurer la position de scroll au montage et après navigation
   useEffect(() => {
@@ -148,45 +177,25 @@ const SidebarContent = ({ collapsed, setCollapsed, onItemClick }: { collapsed: b
           // Pour les super admins, pas de vérification de permissions
           if (isSuperAdmin) {
             return (
-              <NavLink
+              <MenuItem
                 key={item.to}
-                to={item.to}
-                onClick={onItemClick}
-                className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 group ${
-                  isActive
-                    ? "bg-sidebar-accent text-sidebar-primary"
-                    : "text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground"
-                }`}
-              >
-                <item.icon
-                  className={`w-5 h-5 flex-shrink-0 transition-colors ${
-                    isActive ? "text-sidebar-primary" : "text-sidebar-foreground/50 group-hover:text-sidebar-accent-foreground"
-                  }`}
-                />
-                {!collapsed && <span className="animate-fade-in">{item.label}</span>}
-              </NavLink>
+                item={item}
+                collapsed={collapsed}
+                isActive={isActive}
+                onItemClick={onItemClick}
+              />
             );
           }
 
           // Pour les utilisateurs normaux, vérifier les permissions
           return (
             <CanAccess key={item.to} permissions={item.permissions}>
-              <NavLink
-                to={item.to}
-                onClick={onItemClick}
-                className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 group ${
-                  isActive
-                    ? "bg-sidebar-accent text-sidebar-primary"
-                    : "text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground"
-                }`}
-              >
-                <item.icon
-                  className={`w-5 h-5 flex-shrink-0 transition-colors ${
-                    isActive ? "text-sidebar-primary" : "text-sidebar-foreground/50 group-hover:text-sidebar-accent-foreground"
-                  }`}
-                />
-                {!collapsed && <span className="animate-fade-in">{item.label}</span>}
-              </NavLink>
+              <MenuItem
+                item={item}
+                collapsed={collapsed}
+                isActive={isActive}
+                onItemClick={onItemClick}
+              />
             </CanAccess>
           );
         })}
