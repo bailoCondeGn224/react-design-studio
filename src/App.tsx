@@ -44,10 +44,10 @@ const AdminDashboard = lazy(() => import("./pages/AdminDashboard.tsx"));
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: 5 * 60 * 1000, // 5 minutes - les données restent fraîches
-      gcTime: 10 * 60 * 1000, // 10 minutes - cache en mémoire
-      refetchOnWindowFocus: false, // Ne pas refetch au focus
-      refetchOnMount: false, // Ne pas refetch au montage si data existe
+      staleTime: 30 * 1000, // 30 secondes - données considérées fraîches
+      gcTime: 5 * 60 * 1000, // 5 minutes - cache en mémoire
+      refetchOnWindowFocus: false, // Ne pas refetch au focus de fenêtre
+      refetchOnMount: true, // Refetch au montage pour données fraîches
       retry: 1, // Réessayer 1 fois en cas d'erreur
     },
   },

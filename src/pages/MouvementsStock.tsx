@@ -28,7 +28,7 @@ const motifColors: Record<string, string> = {
 
 const MouvementsStock = () => {
   const [searchInput, setSearchInput] = useState("");
-  const debouncedSearch = useDebounce(searchInput, 500);
+  const debouncedSearch = useDebounce(searchInput, 800);
   const [typeFilter, setTypeFilter] = useState<string>("all");
   const [motifFilter, setMotifFilter] = useState<string>("all");
   const [page, setPage] = useState(1);

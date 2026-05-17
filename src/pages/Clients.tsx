@@ -31,7 +31,7 @@ type Filtre = "all" | "credits";
 const Clients = () => {
   const [filtre, setFiltre] = useState<Filtre>("all");
   const [searchInput, setSearchInput] = useState("");
-  const debouncedSearch = useDebounce(searchInput, 500);
+  const debouncedSearch = useDebounce(searchInput, 800);
   const [formOpen, setFormOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<any>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);

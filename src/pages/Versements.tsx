@@ -15,7 +15,7 @@ import { versementsApi } from "@/api/versements";
 
 const Versements = () => {
   const [searchInput, setSearchInput] = useState("");
-  const debouncedSearch = useDebounce(searchInput, 500);
+  const debouncedSearch = useDebounce(searchInput, 800);
   const [formOpen, setFormOpen] = useState(false);
   const [page, setPage] = useState(1);
   const [limit] = useState(15);
