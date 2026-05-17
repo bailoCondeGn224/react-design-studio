@@ -7,9 +7,7 @@ export const useStock = (params?: StockFilterParams) => {
   return useQuery({
     queryKey: ['stock', params],
     queryFn: () => stockApi.getAll(params),
-    staleTime: 0, // Considérer les données comme périmées immédiatement
-    refetchOnMount: true, // Toujours refetch au montage du composant
-    refetchOnWindowFocus: true, // Refetch quand la fenêtre reprend le focus
+    // Utilise les defaults globaux du QueryClient (30s staleTime, pas de refetch au focus)
   });
 };
 
