@@ -7,6 +7,7 @@ export const useVentes = (params?: VenteFilterParams) => {
   return useQuery({
     queryKey: ['ventes', params],
     queryFn: () => ventesApi.getAll(params),
+    placeholderData: (previousData) => previousData, // Garde les données précédentes pendant le chargement
   });
 };
 
@@ -23,6 +24,7 @@ export const useVenteVersements = (venteId: string | null, page: number = 1, lim
     queryKey: ['ventes', venteId, 'versements', page, limit],
     queryFn: () => ventesApi.getVersements(venteId!, page, limit),
     enabled: !!venteId,
+    placeholderData: (previousData) => previousData, // Garde les données précédentes pendant le chargement
   });
 };
 

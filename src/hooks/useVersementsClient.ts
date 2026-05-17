@@ -7,6 +7,7 @@ export const useVersementsClient = (params?: VersementClientFilterParams) => {
   return useQuery({
     queryKey: ['versements-client', params],
     queryFn: () => versementsClientApi.getAll(params),
+    placeholderData: (previousData) => previousData, // Garde les données précédentes pendant le chargement
   });
 };
 

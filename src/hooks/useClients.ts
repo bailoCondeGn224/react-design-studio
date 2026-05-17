@@ -7,6 +7,7 @@ export const useClients = (params?: ClientFilterParams) => {
   return useQuery({
     queryKey: ['clients', params],
     queryFn: () => clientsApi.getAll(params),
+    placeholderData: (previousData) => previousData, // Garde les données précédentes pendant le chargement
   });
 };
 
@@ -90,5 +91,6 @@ export const useClientHistorique = (id: string, params?: ClientHistoriqueParams)
     queryKey: ['clients', id, 'historique', params],
     queryFn: () => clientsApi.getHistorique(id, params),
     enabled: !!id,
+    placeholderData: (previousData) => previousData, // Garde les données précédentes pendant le chargement
   });
 };

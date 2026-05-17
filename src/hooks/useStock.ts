@@ -7,6 +7,7 @@ export const useStock = (params?: StockFilterParams) => {
   return useQuery({
     queryKey: ['stock', params],
     queryFn: () => stockApi.getAll(params),
+    placeholderData: (previousData) => previousData, // Garde les données précédentes pendant le chargement
     // Utilise les defaults globaux du QueryClient (30s staleTime, pas de refetch au focus)
   });
 };

@@ -41,7 +41,7 @@ const Clients = () => {
   const [limit] = useState(15);
 
   // Utiliser les filtres backend avec la recherche débouncée
-  const { data: clientsResponse, isLoading } = useClients({
+  const { data: clientsResponse, isLoading, isFetching } = useClients({
     page,
     limit,
     search: debouncedSearch || undefined,

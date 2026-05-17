@@ -52,6 +52,7 @@ export const useRetoursClients = (params?: PaginationParams) => {
   return useQuery({
     queryKey: ['retours-clients', params],
     queryFn: () => retoursClientsApi.getAll(params),
+    placeholderData: (previousData) => previousData, // Garde les données précédentes pendant le chargement
   });
 };
 
@@ -59,6 +60,7 @@ export const useRetoursFournisseurs = (params?: PaginationParams) => {
   return useQuery({
     queryKey: ['retours-fournisseurs', params],
     queryFn: () => retoursFournisseursApi.getAll(params),
+    placeholderData: (previousData) => previousData, // Garde les données précédentes pendant le chargement
   });
 };
 

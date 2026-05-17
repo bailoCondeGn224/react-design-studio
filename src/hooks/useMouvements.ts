@@ -6,6 +6,7 @@ export const useMouvements = (params?: MouvementFilterParams) => {
   return useQuery({
     queryKey: ['mouvements', params],
     queryFn: () => mouvementsApi.getAll(params),
+    placeholderData: (previousData) => previousData, // Garde les données précédentes pendant le chargement
     staleTime: 30 * 1000, // Cache pendant 30 secondes
     refetchOnWindowFocus: false, // Ne pas recharger au focus
   });
@@ -16,6 +17,7 @@ export const useMouvementsByArticle = (articleId: string, params?: PaginationPar
     queryKey: ['mouvements', 'article', articleId, params],
     queryFn: () => mouvementsApi.getByArticle(articleId, params),
     enabled: !!articleId,
+    placeholderData: (previousData) => previousData, // Garde les données précédentes pendant le chargement
   });
 };
 

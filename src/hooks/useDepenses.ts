@@ -15,6 +15,7 @@ export const useDepenses = (params?: DepenseFilterParams) => {
   return useQuery({
     queryKey: ['depenses', params],
     queryFn: () => depensesApi.getAll(params),
+    placeholderData: (previousData) => previousData, // Garde les données précédentes pendant le chargement
   });
 };
 

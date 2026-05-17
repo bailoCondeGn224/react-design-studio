@@ -7,6 +7,7 @@ export const useVersements = (params?: PaginationParams) => {
   return useQuery({
     queryKey: ['versements', params],
     queryFn: () => versementsApi.getAll(params),
+    placeholderData: (previousData) => previousData, // Garde les données précédentes pendant le chargement
   });
 };
 

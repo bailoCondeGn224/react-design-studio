@@ -12,6 +12,7 @@ export const useCommandes = (params?: CommandeFilterParams) => {
   return useQuery({
     queryKey: ['commandes', params],
     queryFn: () => commandesApi.getAll(params),
+    placeholderData: (previousData) => previousData, // Garde les données précédentes pendant le chargement
   });
 };
 
@@ -30,6 +31,7 @@ export const useCommandeLignes = (commandeId: string | null, page: number = 1, l
     queryKey: ['commandes', commandeId, 'lignes', page, limit],
     queryFn: () => commandesApi.getLignes(commandeId!, page, limit),
     enabled: !!commandeId,
+    placeholderData: (previousData) => previousData, // Garde les données précédentes pendant le chargement
   });
 };
 

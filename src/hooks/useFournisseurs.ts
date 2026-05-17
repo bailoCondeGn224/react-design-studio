@@ -7,6 +7,7 @@ export const useFournisseurs = (params?: PaginationParams) => {
   return useQuery({
     queryKey: ['fournisseurs', params],
     queryFn: () => fournisseursApi.getAll(params),
+    placeholderData: (previousData) => previousData, // Garde les données précédentes pendant le chargement
     // Utilise les defaults globaux du QueryClient (30s staleTime, pas de refetch au focus)
   });
 };
@@ -16,6 +17,7 @@ export const useFournisseurDetails = (id: string | null, approPage: number = 1, 
     queryKey: ['fournisseurs', id, 'details', approPage, approLimit],
     queryFn: () => fournisseursApi.getDetails(id!, approPage, approLimit),
     enabled: !!id, // Ne charge que si id existe
+    placeholderData: (previousData) => previousData, // Garde les données précédentes pendant le chargement
   });
 };
 

@@ -50,7 +50,7 @@ const Stock = () => {
   const [historyLimit] = useState(10);
 
   // Hooks React Query avec filtres backend et recherche débouncée
-  const { data: stockResponse, isLoading } = useStock({
+  const { data: stockResponse, isLoading, isFetching } = useStock({
     page,
     limit,
     search: debouncedSearch || undefined,
@@ -213,7 +213,8 @@ const Stock = () => {
     }
   }, [isLoading, articlesEnRupture, articlesStockCritique, articlesStockFaible]);
 
-  if (isLoading) {
+  // Afficher spinner pleine page SEULEMENT au premier chargement (pas de données)
+  if (isLoading && !articles.length) {
     return (
       <AppLayout>
         <div className="flex items-center justify-center h-96">
@@ -640,7 +641,13 @@ const Stock = () => {
         </div>
       </div>
 
-      <div className="bg-card border border-border rounded-xl shadow-card overflow-hidden">
+      <div className="bg-card border border-border rounded-xl shadow-card overflow-hidden relative">
+        {/* Indicateur de chargement subtil pendant le refetch */}
+        {isFetching && (
+          <div className="absolute top-0 left-0 right-0 h-1 bg-primary/20 overflow-hidden z-10">
+            <div className="h-full bg-primary w-1/3 animate-pulse" />
+          </div>
+        )}
         <div className="overflow-x-auto">
           <table className="w-full min-w-[900px]">
             <thead>

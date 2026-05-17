@@ -7,6 +7,7 @@ export const useApprovisionnements = (params?: PaginationParams) => {
   return useQuery({
     queryKey: ['approvisionnements', params],
     queryFn: () => approvisionnementsApi.getAll(params),
+    placeholderData: (previousData) => previousData, // Garde les données précédentes pendant le chargement
   });
 };
 
@@ -23,6 +24,7 @@ export const useApproLignes = (approId: string | null, page: number = 1, limit: 
     queryKey: ['approvisionnements', approId, 'lignes', page, limit],
     queryFn: () => approvisionnementsApi.getLignes(approId!, page, limit),
     enabled: !!approId,
+    placeholderData: (previousData) => previousData, // Garde les données précédentes pendant le chargement
   });
 };
 
