@@ -1,6 +1,7 @@
 import AppLayout from "@/components/AppLayout";
 import PageHeader from "@/components/PageHeader";
 import VenteForm from "@/components/VenteForm";
+import VenteMobileCard from "@/components/VenteMobileCard";
 import Pagination from "@/components/Pagination";
 import CanAccess from "@/components/CanAccess";
 import { Plus, Receipt, CreditCard, Banknote, Smartphone, Edit, Trash, MoreVertical, AlertCircle, Printer, Eye, TrendingUp, DollarSign, MessageCircle } from "lucide-react";
@@ -211,8 +212,8 @@ const Ventes = () => {
         description="Registre des transactions et suivi commercial"
         action={
           <CanAccess permissions={['ventes.create']}>
-            <button onClick={() => setFormOpen(true)} className="gradient-gold text-primary-foreground px-4 py-2.5 rounded-lg text-sm font-semibold flex items-center gap-2 shadow-elevated hover:opacity-90 transition-opacity">
-              <Plus className="w-4 h-4" /> Nouvelle Vente
+            <button onClick={() => setFormOpen(true)} className="gradient-gold text-primary-foreground px-4 h-11 rounded-lg text-sm sm:text-base font-semibold flex items-center gap-2 shadow-elevated hover:opacity-90 active:scale-[0.98] transition-all">
+              <Plus className="w-4 h-4" /> <span className="hidden sm:inline">Nouvelle Vente</span><span className="sm:hidden">Nouvelle</span>
             </button>
           </CanAccess>
         }
@@ -250,11 +251,11 @@ const Ventes = () => {
       <Dialog open={detailsId !== null} onOpenChange={() => setDetailsId(null)}>
         <DialogContent className="max-w-[95vw] sm:max-w-2xl max-h-[90vh] flex flex-col">
           <DialogHeader>
-            <DialogTitle className="font-heading">Détails de la Vente</DialogTitle>
+            <DialogTitle className="font-heading text-base sm:text-lg">Détails de la Vente</DialogTitle>
           </DialogHeader>
           {venteDetails && (
-            <div className="space-y-4 overflow-y-auto pr-2">
-              <div className="grid grid-cols-2 gap-4 text-sm">
+            <div className="space-y-3 sm:space-y-4 overflow-y-auto pr-2">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 text-sm">
                 <div>
                   <p className="text-muted-foreground">Numéro</p>
                   <p className="font-semibold">{venteDetails.numero}</p>
@@ -411,7 +412,31 @@ const Ventes = () => {
         </div>
       )}
 
-      <div className="bg-card border border-border rounded-xl shadow-card overflow-hidden">
+      {/* Version mobile: Cartes */}
+      <div className="md:hidden space-y-3 mb-6">
+        {ventes.length === 0 ? (
+          <div className="bg-card border border-border rounded-xl p-12 text-center">
+            <p className="text-muted-foreground">Aucune vente enregistrée</p>
+          </div>
+        ) : (
+          ventes.map((vente: any) => (
+            <VenteMobileCard
+              key={vente.id}
+              vente={vente}
+              onEdit={handleEdit}
+              onDelete={setDeleteId}
+              onViewDetails={setDetailsId}
+              onPrintInvoice={handlePrintInvoice}
+              onShareWhatsApp={handleShareWhatsApp}
+              formatPrix={formatPrix}
+              formatDate={formatDate}
+            />
+          ))
+        )}
+      </div>
+
+      {/* Version desktop: Tableau */}
+      <div className="hidden md:block bg-card border border-border rounded-xl shadow-card overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full min-w-[800px]">
             <thead>
@@ -554,12 +579,14 @@ const Ventes = () => {
             </tbody>
           </table>
         </div>
-
-        {/* Pagination */}
-        {meta && (
-          <Pagination meta={meta} onPageChange={setPage} />
-        )}
       </div>
+
+      {/* Pagination partagée */}
+      {meta && (
+        <div className="mt-6">
+          <Pagination meta={meta} onPageChange={setPage} />
+        </div>
+      )}
     </AppLayout>
   );
 };

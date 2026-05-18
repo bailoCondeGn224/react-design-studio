@@ -7,19 +7,20 @@ interface FormFieldProps extends InputHTMLAttributes<HTMLInputElement | HTMLSele
   children?: React.ReactNode;
 }
 
-const inputClasses = "w-full px-3 py-2.5 rounded-lg border border-border bg-card text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring/30 transition-colors";
+const inputClasses = "w-full px-3 h-11 rounded-lg border border-border bg-card text-base sm:text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring/30 transition-colors";
+const textareaClasses = "w-full px-3 py-2.5 rounded-lg border border-border bg-card text-base sm:text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring/30 transition-colors min-h-[80px] resize-none";
 
 const FormField = forwardRef<HTMLInputElement, FormFieldProps>(
   ({ label, error, as = "input", children, className, ...props }, ref) => {
     return (
-      <div className="space-y-1.5">
+      <div className="space-y-2">
         <label className="text-sm font-medium text-foreground">{label}</label>
         {as === "select" ? (
           <select className={inputClasses} {...(props as any)}>
             {children}
           </select>
         ) : as === "textarea" ? (
-          <textarea className={`${inputClasses} min-h-[80px] resize-none`} {...(props as any)} />
+          <textarea className={textareaClasses} {...(props as any)} />
         ) : (
           <input ref={ref} className={inputClasses} {...(props as any)} />
         )}

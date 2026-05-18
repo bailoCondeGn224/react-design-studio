@@ -2,6 +2,7 @@ import { useState } from "react";
 import AppLayout from "@/components/AppLayout";
 import PageHeader from "@/components/PageHeader";
 import CategorieForm from "@/components/CategorieForm";
+import CategoryMobileCard from "@/components/CategoryMobileCard";
 import Pagination from "@/components/Pagination";
 import CanAccess from "@/components/CanAccess";
 import { useCategories, useCreateCategorie, useUpdateCategorie, useDeleteCategorie } from "@/hooks/useCategories";
@@ -98,8 +99,8 @@ const Categories = () => {
         }
       />
 
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+      {/* Stats Cards - cachées sur mobile */}
+      <div className="hidden md:grid md:grid-cols-3 gap-4 mb-6">
         <div className="bg-card border border-border rounded-lg p-4 shadow-card">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-lg bg-blue-500/10 flex items-center justify-center">
@@ -140,93 +141,113 @@ const Categories = () => {
         </div>
       </div>
 
-      {/* Categories Table */}
-      <div className="bg-card border border-border rounded-lg shadow-card overflow-hidden">
+      {/* Version mobile: Cartes */}
+      <div className="md:hidden space-y-3 mb-6">
+        {categories.length > 0 ? (
+          categories.map((categorie) => (
+            <CategoryMobileCard
+              key={categorie.id}
+              categorie={categorie}
+              onEdit={handleEdit}
+              onDelete={setDeleteId}
+            />
+          ))
+        ) : (
+          <div className="bg-card border border-border rounded-xl p-12 text-center">
+            <FolderTree className="w-12 h-12 mx-auto mb-3 text-muted-foreground opacity-30" />
+            <p className="text-foreground font-medium">Aucune catégorie</p>
+            <p className="text-sm text-muted-foreground mt-1">Créez votre première catégorie</p>
+          </div>
+        )}
+      </div>
+
+      {/* Version desktop: Tableau */}
+      <div className="hidden md:block bg-card border border-border rounded-lg shadow-card overflow-hidden">
         <div className="p-4 border-b border-border">
           <h3 className="text-lg font-semibold text-foreground">Liste des Catégories</h3>
         </div>
 
-        {categories.length === 0 ? (
+        {categories.length > 0 ? (
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead className="bg-secondary/50">
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Code</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Nom</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Description</th>
+                  <th className="px-6 py-3 text-center text-xs font-medium text-muted-foreground uppercase tracking-wider">Statut</th>
+                  <th className="px-6 py-3 text-right text-xs font-medium text-muted-foreground uppercase tracking-wider">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-border">
+                {categories.map((categorie) => (
+                  <tr key={categorie.id} className="hover:bg-secondary/30 transition-colors">
+                    <td className="px-6 py-3">
+                      <span className="font-mono font-semibold text-primary text-sm">{categorie.code}</span>
+                    </td>
+                    <td className="px-6 py-3">
+                      <span className="font-medium text-foreground text-sm">{categorie.nom}</span>
+                    </td>
+                    <td className="px-6 py-3">
+                      <span className="text-sm text-muted-foreground">
+                        {categorie.description || '-'}
+                      </span>
+                    </td>
+                    <td className="px-6 py-3 text-center">
+                      {categorie.actif ? (
+                        <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-success/10 text-success text-xs font-medium">
+                          <CheckCircle className="w-3 h-3" />
+                          Active
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-muted text-muted-foreground text-xs font-medium">
+                          <XCircle className="w-3 h-3" />
+                          Inactive
+                        </span>
+                      )}
+                    </td>
+                    <td className="px-6 py-3">
+                      <div className="flex items-center justify-end gap-2">
+                        <CanAccess permissions={['categories.update']}>
+                          <button
+                            onClick={() => handleEdit(categorie)}
+                            className="p-2 hover:bg-primary/10 rounded-lg text-primary transition-colors"
+                            title="Modifier"
+                          >
+                            <Pencil className="w-4 h-4" />
+                          </button>
+                        </CanAccess>
+                        <CanAccess permissions={['categories.delete']}>
+                          <button
+                            onClick={() => setDeleteId(categorie.id)}
+                            className="p-2 hover:bg-destructive/10 rounded-lg text-destructive transition-colors"
+                            title="Supprimer"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </CanAccess>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        ) : (
           <div className="text-center py-12 text-muted-foreground">
             <FolderTree className="w-12 h-12 mx-auto mb-3 opacity-30" />
             <p className="text-foreground font-medium">Aucune catégorie</p>
             <p className="text-sm mt-1">Créez votre première catégorie pour commencer</p>
           </div>
-        ) : (
-          <>
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead className="bg-secondary/50">
-                  <tr>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Code</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Nom</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Description</th>
-                    <th className="px-4 py-3 text-center text-xs font-medium text-muted-foreground uppercase tracking-wider">Statut</th>
-                    <th className="px-4 py-3 text-right text-xs font-medium text-muted-foreground uppercase tracking-wider">Actions</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-border">
-                  {categories.map((categorie) => (
-                    <tr key={categorie.id} className="hover:bg-secondary/30 transition-colors">
-                      <td className="px-4 py-3">
-                        <span className="font-mono font-semibold text-primary text-sm">{categorie.code}</span>
-                      </td>
-                      <td className="px-4 py-3">
-                        <span className="font-medium text-foreground text-sm">{categorie.nom}</span>
-                      </td>
-                      <td className="px-4 py-3">
-                        <span className="text-sm text-muted-foreground">
-                          {categorie.description || '-'}
-                        </span>
-                      </td>
-                      <td className="px-4 py-3 text-center">
-                        {categorie.actif ? (
-                          <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-green-500/10 text-green-600 dark:text-green-400 text-xs font-medium">
-                            <CheckCircle className="w-3 h-3" />
-                            Active
-                          </span>
-                        ) : (
-                          <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-gray-500/10 text-gray-600 dark:text-gray-400 text-xs font-medium">
-                            <XCircle className="w-3 h-3" />
-                            Inactive
-                          </span>
-                        )}
-                      </td>
-                      <td className="px-4 py-3">
-                        <div className="flex items-center justify-end gap-2">
-                          <CanAccess permissions={['categories.update']}>
-                            <button
-                              onClick={() => handleEdit(categorie)}
-                              className="p-2 hover:bg-primary/10 rounded-lg text-primary transition-colors"
-                              title="Modifier"
-                            >
-                              <Pencil className="w-4 h-4" />
-                            </button>
-                          </CanAccess>
-                          <CanAccess permissions={['categories.delete']}>
-                            <button
-                              onClick={() => setDeleteId(categorie.id)}
-                              className="p-2 hover:bg-destructive/10 rounded-lg text-destructive transition-colors"
-                              title="Supprimer"
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </button>
-                          </CanAccess>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-
-            {/* Pagination */}
-            {meta && (
-              <Pagination meta={meta} onPageChange={setPage} />
-            )}
-          </>
         )}
       </div>
+
+      {/* Pagination partagée */}
+      {meta && (
+        <div className="mt-6">
+          <Pagination meta={meta} onPageChange={setPage} />
+        </div>
+      )}
 
       {/* Form Dialog */}
       <CategorieForm

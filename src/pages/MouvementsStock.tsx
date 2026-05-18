@@ -1,5 +1,6 @@
 import AppLayout from "@/components/AppLayout";
 import PageHeader from "@/components/PageHeader";
+import MouvementMobileCard from "@/components/MouvementMobileCard";
 import Pagination from "@/components/Pagination";
 import { Search, ArrowUpCircle, ArrowDownCircle, Filter, Calendar, Package, TrendingUp, TrendingDown } from "lucide-react";
 import { useState, useEffect } from "react";
@@ -89,8 +90,8 @@ const MouvementsStock = () => {
         description="Traçabilité complète des entrées et sorties de stock"
       />
 
-      {/* Statistiques */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+      {/* Statistiques - cachées sur mobile */}
+      <div className="hidden md:grid md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         {isLoadingStats ? (
           // Skeleton pendant le chargement
           <>
@@ -200,8 +201,30 @@ const MouvementsStock = () => {
         </div>
       </div>
 
-      {/* Tableau */}
-      <div className="bg-card border border-border rounded-xl shadow-card overflow-hidden">
+      {/* Version mobile: Cartes */}
+      <div className="md:hidden space-y-3 mb-6">
+        {mouvements.length > 0 ? (
+          mouvements.map((mouvement: any) => (
+            <MouvementMobileCard
+              key={mouvement.id}
+              mouvement={mouvement}
+              formatPrix={formatPrix}
+              formatDate={formatDate}
+              motifLabels={motifLabels}
+              motifColors={motifColors}
+            />
+          ))
+        ) : (
+          <div className="bg-card border border-border rounded-xl p-12 text-center">
+            <Package className="w-12 h-12 mx-auto mb-3 text-muted-foreground opacity-30" />
+            <p className="text-foreground font-medium">Aucun mouvement</p>
+            <p className="text-sm text-muted-foreground mt-1">Aucun historique de stock disponible</p>
+          </div>
+        )}
+      </div>
+
+      {/* Version desktop: Tableau */}
+      <div className="hidden md:block bg-card border border-border rounded-xl shadow-card overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full min-w-[900px]">
             <thead>
@@ -292,12 +315,14 @@ const MouvementsStock = () => {
             </tbody>
           </table>
         </div>
-
-        {/* Pagination */}
-        {meta && (
-          <Pagination meta={meta} onPageChange={setPage} />
-        )}
       </div>
+
+      {/* Pagination partagée */}
+      {meta && (
+        <div className="mt-6">
+          <Pagination meta={meta} onPageChange={setPage} />
+        </div>
+      )}
     </AppLayout>
   );
 };

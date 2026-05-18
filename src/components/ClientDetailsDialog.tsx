@@ -68,16 +68,24 @@ const ClientDetailsDialog = ({ open, onOpenChange, clientId, clientNom }: Client
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-5xl max-h-[90vh] overflow-hidden flex flex-col">
-        <DialogHeader className="flex-shrink-0">
-          <DialogTitle className="font-heading text-2xl">{clientNom}</DialogTitle>
-          <p className="text-sm text-muted-foreground mt-1">
-            Historique complet • {stats.nombreVentes} achats • {stats.nombrePaiements} paiements
-          </p>
+      <DialogContent className="max-w-[95vw] sm:max-w-5xl max-h-[90vh] overflow-hidden flex flex-col p-0 bg-gradient-to-br from-background via-background to-primary/5">
+        {/* Header avec gradient */}
+        <DialogHeader className="px-4 sm:px-6 py-4 border-b bg-gradient-to-r from-primary/10 via-primary/5 to-transparent flex-shrink-0">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br from-primary to-primary/70 flex items-center justify-center shadow-lg flex-shrink-0">
+              <Wallet className="w-5 h-5 sm:w-6 sm:h-6 text-primary-foreground" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <DialogTitle className="text-lg sm:text-2xl font-bold truncate">{clientNom}</DialogTitle>
+              <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">
+                {stats.nombreVentes} achats • {stats.nombrePaiements} paiements
+              </p>
+            </div>
+          </div>
         </DialogHeader>
 
-        {/* Statistiques */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 flex-shrink-0">
+        {/* Statistiques - masquées sur mobile */}
+        <div className="hidden md:grid md:grid-cols-4 gap-3 px-4 sm:px-6 py-4 flex-shrink-0 border-b">
           <div className="bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
             <div className="flex items-center gap-2 mb-2">
               <ShoppingCart className="w-4 h-4 text-blue-600 dark:text-blue-400" />
@@ -150,55 +158,55 @@ const ClientDetailsDialog = ({ open, onOpenChange, clientId, clientNom }: Client
         </div>
 
         {/* Onglets */}
-        <div className="flex gap-2 border-b border-border flex-shrink-0">
+        <div className="flex gap-1 sm:gap-2 px-4 sm:px-6 border-b border-border flex-shrink-0">
           <button
             onClick={() => setActiveTab('tous')}
-            className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
+            className={`flex-1 sm:flex-none px-3 sm:px-4 py-3 text-xs sm:text-sm font-semibold border-b-2 transition-all active:scale-[0.98] ${
               activeTab === 'tous'
-                ? 'border-primary text-primary'
-                : 'border-transparent text-muted-foreground hover:text-foreground'
+                ? 'border-primary text-primary bg-primary/5'
+                : 'border-transparent text-muted-foreground hover:text-foreground hover:bg-secondary/50'
             }`}
           >
-            Tous ({stats.nombreVentes + stats.nombrePaiements})
+            Tous <span className="hidden sm:inline">({stats.nombreVentes + stats.nombrePaiements})</span>
           </button>
           <button
             onClick={() => setActiveTab('achats')}
-            className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
+            className={`flex-1 sm:flex-none px-3 sm:px-4 py-3 text-xs sm:text-sm font-semibold border-b-2 transition-all active:scale-[0.98] ${
               activeTab === 'achats'
-                ? 'border-primary text-primary'
-                : 'border-transparent text-muted-foreground hover:text-foreground'
+                ? 'border-primary text-primary bg-primary/5'
+                : 'border-transparent text-muted-foreground hover:text-foreground hover:bg-secondary/50'
             }`}
           >
-            Achats ({stats.nombreVentes})
+            Achats <span className="hidden sm:inline">({stats.nombreVentes})</span>
           </button>
           <button
             onClick={() => setActiveTab('paiements')}
-            className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
+            className={`flex-1 sm:flex-none px-3 sm:px-4 py-3 text-xs sm:text-sm font-semibold border-b-2 transition-all active:scale-[0.98] ${
               activeTab === 'paiements'
-                ? 'border-primary text-primary'
-                : 'border-transparent text-muted-foreground hover:text-foreground'
+                ? 'border-primary text-primary bg-primary/5'
+                : 'border-transparent text-muted-foreground hover:text-foreground hover:bg-secondary/50'
             }`}
           >
-            Paiements ({stats.nombrePaiements})
+            Paiements <span className="hidden sm:inline">({stats.nombrePaiements})</span>
           </button>
         </div>
 
         {/* Contenu scrollable */}
-        <div className="flex-1 overflow-y-auto space-y-3 pr-2">
+        <div className="flex-1 overflow-y-auto space-y-3 px-4 sm:px-6 py-4">
           {activeTab === 'tous' && timeline.map((item) => (
-            <div key={item.id} className="flex items-start gap-3 p-4 bg-card border border-border rounded-lg hover:bg-secondary/30 transition-colors">
-              <div className="text-3xl flex-shrink-0">{getTimelineIcon(item.type)}</div>
+            <div key={item.id} className="flex items-start gap-2 sm:gap-3 p-3 sm:p-4 bg-card border border-border rounded-lg hover:bg-secondary/30 transition-colors">
+              <div className="text-2xl sm:text-3xl flex-shrink-0">{getTimelineIcon(item.type)}</div>
               <div className="flex-1 min-w-0">
-                <div className="flex items-start justify-between gap-2">
-                  <div className="flex-1">
-                    <p className="font-semibold text-foreground">{item.description}</p>
+                <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-1 sm:gap-2">
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm sm:text-base font-semibold text-foreground">{item.description}</p>
                     <p className="text-xs text-muted-foreground mt-0.5">{formatDate(item.date)}</p>
                     {item.reference && (
                       <p className="text-xs text-muted-foreground mt-1">Réf: {item.reference}</p>
                     )}
                   </div>
-                  <div className="text-right flex-shrink-0">
-                    <p className={`text-lg font-bold ${
+                  <div className="text-left sm:text-right flex-shrink-0">
+                    <p className={`text-base sm:text-lg font-bold ${
                       item.type === 'achat' ? 'text-blue-600 dark:text-blue-400' : 'text-green-600 dark:text-green-400'
                     }`}>
                       {formatPrix(item.montant)}
@@ -215,14 +223,14 @@ const ClientDetailsDialog = ({ open, onOpenChange, clientId, clientNom }: Client
           ))}
 
           {activeTab === 'achats' && ventes.map((vente) => (
-            <div key={vente.id} className="p-4 bg-card border border-border rounded-lg">
-              <div className="flex items-start justify-between mb-3">
+            <div key={vente.id} className="p-3 sm:p-4 bg-card border border-border rounded-lg">
+              <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 mb-3">
                 <div>
-                  <p className="font-semibold text-foreground">{vente.numero}</p>
+                  <p className="text-sm sm:text-base font-semibold text-foreground">{vente.numero}</p>
                   <p className="text-xs text-muted-foreground">{formatDate(vente.date)}</p>
                 </div>
-                <div className="text-right">
-                  <p className="text-lg font-bold text-blue-600 dark:text-blue-400">
+                <div className="text-left sm:text-right">
+                  <p className="text-base sm:text-lg font-bold text-blue-600 dark:text-blue-400">
                     {formatPrix(vente.total)}
                   </p>
                   {vente.benefice > 0 && (
@@ -235,16 +243,16 @@ const ClientDetailsDialog = ({ open, onOpenChange, clientId, clientNom }: Client
 
               <div className="space-y-1.5 mb-3">
                 {vente.lignes.map((ligne, idx) => (
-                  <div key={idx} className="flex items-center justify-between text-sm bg-secondary/30 rounded px-3 py-1.5">
-                    <span className="text-foreground">
+                  <div key={idx} className="flex items-center justify-between text-xs sm:text-sm bg-secondary/30 rounded px-2 sm:px-3 py-1.5">
+                    <span className="text-foreground truncate flex-1 min-w-0 mr-2">
                       {ligne.quantite}x {ligne.articleNom}
                     </span>
-                    <span className="font-medium text-foreground">{formatPrix(ligne.sousTotal)}</span>
+                    <span className="font-medium text-foreground flex-shrink-0">{formatPrix(ligne.sousTotal)}</span>
                   </div>
                 ))}
               </div>
 
-              <div className="flex items-center justify-between pt-2 border-t border-border text-xs">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 sm:gap-0 pt-2 border-t border-border text-xs">
                 <span className="text-muted-foreground">
                   {vente.modePaiement} • Payé: {formatPrix(vente.montantPaye)}
                 </span>
@@ -261,12 +269,12 @@ const ClientDetailsDialog = ({ open, onOpenChange, clientId, clientNom }: Client
           ))}
 
           {activeTab === 'paiements' && paiements.map((paiement) => (
-            <div key={paiement.id} className="flex items-start gap-3 p-4 bg-card border border-border rounded-lg">
-              <div className="text-3xl">💰</div>
-              <div className="flex-1">
-                <div className="flex items-start justify-between">
-                  <div>
-                    <p className="font-semibold text-foreground">Paiement {paiement.modePaiement}</p>
+            <div key={paiement.id} className="flex items-start gap-2 sm:gap-3 p-3 sm:p-4 bg-card border border-border rounded-lg">
+              <div className="text-2xl sm:text-3xl flex-shrink-0">💰</div>
+              <div className="flex-1 min-w-0">
+                <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-1 sm:gap-2">
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm sm:text-base font-semibold text-foreground">Paiement {paiement.modePaiement}</p>
                     <p className="text-xs text-muted-foreground mt-0.5">{formatDate(paiement.date)}</p>
                     {paiement.venteNumero && (
                       <p className="text-xs text-muted-foreground mt-1">Pour: {paiement.venteNumero}</p>
@@ -278,7 +286,7 @@ const ClientDetailsDialog = ({ open, onOpenChange, clientId, clientNom }: Client
                       <p className="text-xs text-muted-foreground mt-1 italic">{paiement.note}</p>
                     )}
                   </div>
-                  <p className="text-lg font-bold text-green-600 dark:text-green-400">
+                  <p className="text-base sm:text-lg font-bold text-green-600 dark:text-green-400 flex-shrink-0">
                     {formatPrix(paiement.montant)}
                   </p>
                 </div>
@@ -295,7 +303,7 @@ const ClientDetailsDialog = ({ open, onOpenChange, clientId, clientNom }: Client
 
         {/* Pagination */}
         {historique?.meta && historique.meta.totalPages > 1 && (
-          <div className="flex-shrink-0 border-t border-border pt-4">
+          <div className="flex-shrink-0 border-t border-border px-4 sm:px-6 pt-4">
             <Pagination meta={historique.meta} onPageChange={setPage} />
           </div>
         )}

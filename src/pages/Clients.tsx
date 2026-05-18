@@ -1,6 +1,7 @@
 import AppLayout from "@/components/AppLayout";
 import PageHeader from "@/components/PageHeader";
 import ClientForm from "@/components/ClientForm";
+import ClientMobileCard from "@/components/ClientMobileCard";
 import ClientDetailsDialog from "@/components/ClientDetailsDialog";
 import Pagination from "@/components/Pagination";
 import CanAccess from "@/components/CanAccess";
@@ -174,7 +175,7 @@ const Clients = () => {
       </AlertDialog>
 
       {/* Statistiques */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 mb-6">
+      <div className="hidden md:grid md:grid-cols-3 gap-3 sm:gap-4 mb-6">
         <div className="bg-card border border-border rounded-lg p-3 sm:p-4 shadow-card">
           <div className="flex items-center gap-2 sm:gap-3">
             <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
@@ -244,8 +245,28 @@ const Clients = () => {
         </div>
       </div>
 
-      {/* Tableau */}
-      <div className="bg-card border border-border rounded-xl shadow-card overflow-hidden">
+      {/* Version mobile: Cartes */}
+      <div className="md:hidden space-y-3 mb-6">
+        {clients.length === 0 ? (
+          <div className="bg-card border border-border rounded-xl p-12 text-center">
+            <p className="text-muted-foreground">Aucun client trouvé</p>
+          </div>
+        ) : (
+          clients.map((client: any) => (
+            <ClientMobileCard
+              key={client.id}
+              client={client}
+              onViewDetails={handleViewDetails}
+              onEdit={handleEdit}
+              onDelete={setDeleteId}
+              formatPrix={formatPrix}
+            />
+          ))
+        )}
+      </div>
+
+      {/* Version desktop: Tableau */}
+      <div className="hidden md:block bg-card border border-border rounded-xl shadow-card overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full min-w-[700px]">
             <thead>
@@ -329,12 +350,14 @@ const Clients = () => {
             </tbody>
           </table>
         </div>
-
-        {/* Pagination */}
-        {meta && (
-          <Pagination meta={meta} onPageChange={setPage} />
-        )}
       </div>
+
+      {/* Pagination partagée */}
+      {meta && (
+        <div className="mt-6">
+          <Pagination meta={meta} onPageChange={setPage} />
+        </div>
+      )}
     </AppLayout>
   );
 };

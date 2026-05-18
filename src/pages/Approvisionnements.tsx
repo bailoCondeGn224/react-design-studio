@@ -1,6 +1,7 @@
 import AppLayout from "@/components/AppLayout";
 import PageHeader from "@/components/PageHeader";
 import ApprovisionnementForm from "@/components/ApprovisionnementForm";
+import ApprovisionnementMobileCard from "@/components/ApprovisionnementMobileCard";
 import Pagination from "@/components/Pagination";
 import CanAccess from "@/components/CanAccess";
 import { Truck, Package, CreditCard, Search, Plus, Edit, Trash, MoreVertical, Eye, Printer } from "lucide-react";
@@ -389,8 +390,8 @@ const Approvisionnements = () => {
         </div>
       )}
 
-      {/* Statistiques */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 mb-6">
+      {/* Statistiques - cachées sur mobile */}
+      <div className="hidden md:grid md:grid-cols-3 gap-4 mb-6">
         <div className="bg-card border border-border rounded-lg p-3 sm:p-4 shadow-card">
           <div className="flex items-center gap-2 sm:gap-3">
             <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
@@ -442,59 +443,81 @@ const Approvisionnements = () => {
         </div>
       </div>
 
-      {/* Tableau - Chaque article sur une ligne séparée */}
-      <div className="bg-card border border-border rounded-xl shadow-card overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full min-w-[700px]">
-            <thead>
-              <tr className="bg-secondary border-b border-border">
-                <th className="text-left text-[10px] sm:text-xs font-bold uppercase tracking-wide text-foreground px-4 sm:px-6 py-3 sm:py-4">Numéro</th>
-                <th className="text-left text-[10px] sm:text-xs font-bold uppercase tracking-wide text-foreground px-4 sm:px-6 py-3 sm:py-4">Fournisseur</th>
-                <th className="text-left text-[10px] sm:text-xs font-bold uppercase tracking-wide text-foreground px-4 sm:px-6 py-3 sm:py-4">Article</th>
-                <th className="text-center text-[10px] sm:text-xs font-bold uppercase tracking-wide text-foreground px-4 sm:px-6 py-3 sm:py-4">Quantité</th>
-                <th className="text-right text-[10px] sm:text-xs font-bold uppercase tracking-wide text-foreground px-4 sm:px-6 py-3 sm:py-4 hidden md:table-cell">Prix Unit.</th>
-                <th className="text-right text-[10px] sm:text-xs font-bold uppercase tracking-wide text-foreground px-4 sm:px-6 py-3 sm:py-4">Sous-total</th>
-                <th className="text-left text-[10px] sm:text-xs font-bold uppercase tracking-wide text-foreground px-4 sm:px-6 py-3 sm:py-4 hidden lg:table-cell">Date</th>
-                <th className="text-center text-[10px] sm:text-xs font-bold uppercase tracking-wide text-foreground px-4 sm:px-6 py-3 sm:py-4">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-border">
-              {approvisionnements.length === 0 ? (
+      {/* Version mobile: Cartes */}
+      <div className="md:hidden space-y-3 mb-6">
+        {approvisionnements.length > 0 ? (
+          approvisionnements.map((item: any) => (
+            <ApprovisionnementMobileCard
+              key={item.id}
+              item={item}
+              formatPrix={formatPrix}
+              formatDate={formatDate}
+              onEdit={handleEdit}
+              onDelete={setDeleteId}
+              onViewDetails={setDetailsId}
+              onPrintReceipt={handlePrintReceipt}
+            />
+          ))
+        ) : (
+          <div className="bg-card border border-border rounded-xl p-12 text-center">
+            <Truck className="w-12 h-12 mx-auto mb-3 text-muted-foreground opacity-30" />
+            <p className="text-foreground font-medium">Aucun approvisionnement</p>
+            <p className="text-sm text-muted-foreground mt-1">Créez votre premier approvisionnement</p>
+          </div>
+        )}
+      </div>
+
+      {/* Version desktop: Tableau */}
+      <div className="hidden md:block bg-card border border-border rounded-xl shadow-card overflow-hidden">
+        <div className="p-4 border-b border-border">
+          <h3 className="text-lg font-semibold text-foreground">Liste des Approvisionnements</h3>
+        </div>
+
+        {approvisionnements.length > 0 ? (
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-[700px]">
+              <thead className="bg-secondary/50">
                 <tr>
-                  <td colSpan={8} className="px-6 py-12 text-center text-muted-foreground">
-                    Aucun approvisionnement trouvé
-                  </td>
+                  <th className="text-left text-xs font-medium text-muted-foreground uppercase tracking-wider px-6 py-3">Numéro</th>
+                  <th className="text-left text-xs font-medium text-muted-foreground uppercase tracking-wider px-6 py-3">Fournisseur</th>
+                  <th className="text-left text-xs font-medium text-muted-foreground uppercase tracking-wider px-6 py-3">Article</th>
+                  <th className="text-center text-xs font-medium text-muted-foreground uppercase tracking-wider px-6 py-3">Quantité</th>
+                  <th className="text-right text-xs font-medium text-muted-foreground uppercase tracking-wider px-6 py-3">Prix Unit.</th>
+                  <th className="text-right text-xs font-medium text-muted-foreground uppercase tracking-wider px-6 py-3">Sous-total</th>
+                  <th className="text-left text-xs font-medium text-muted-foreground uppercase tracking-wider px-6 py-3">Date</th>
+                  <th className="text-center text-xs font-medium text-muted-foreground uppercase tracking-wider px-6 py-3">Actions</th>
                 </tr>
-              ) : (
-                approvisionnements.flatMap((item: any) =>
+              </thead>
+              <tbody className="divide-y divide-border">
+                {approvisionnements.flatMap((item: any) =>
                   item.lignes && item.lignes.length > 0 ? (
                     item.lignes.map((ligne: any, idx: number) => (
                       <tr key={`${item.id}-${idx}`} className="hover:bg-secondary/30 transition-colors">
-                        <td className="px-4 sm:px-6 py-3 sm:py-4">
+                        <td className="px-6 py-3">
                           <p className="text-sm font-semibold text-foreground">{item.numero}</p>
                           {item.numeroFacture && idx === 0 && (
                             <p className="text-xs text-muted-foreground">Fact. {item.numeroFacture}</p>
                           )}
                         </td>
-                        <td className="px-4 sm:px-6 py-3 sm:py-4">
+                        <td className="px-6 py-3">
                           <p className="text-sm font-medium text-foreground">{item.fournisseurNom}</p>
                         </td>
-                        <td className="px-4 sm:px-6 py-3 sm:py-4">
+                        <td className="px-6 py-3">
                           <p className="text-sm font-medium text-foreground">{ligne.nom}</p>
                         </td>
-                        <td className="px-4 sm:px-6 py-3 sm:py-4 text-center">
+                        <td className="px-6 py-3 text-center">
                           <p className="text-sm font-semibold text-foreground">×{ligne.quantite}</p>
                         </td>
-                        <td className="px-4 sm:px-6 py-3 sm:py-4 text-right text-sm text-muted-foreground hidden md:table-cell">
+                        <td className="px-6 py-3 text-right text-sm text-muted-foreground">
                           {formatPrix(ligne.prixUnitaire)}
                         </td>
-                        <td className="px-4 sm:px-6 py-3 sm:py-4 text-right text-sm font-bold text-foreground">
+                        <td className="px-6 py-3 text-right text-sm font-bold text-foreground">
                           {formatPrix(ligne.sousTotal)}
                         </td>
-                        <td className="px-4 sm:px-6 py-3 sm:py-4 text-sm text-muted-foreground hidden lg:table-cell">
+                        <td className="px-6 py-3 text-sm text-muted-foreground">
                           {formatDate(item.dateLivraison)}
                         </td>
-                        <td className="px-4 sm:px-6 py-4 text-center">
+                        <td className="px-6 py-3 text-center">
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
                               <button className="text-muted-foreground hover:text-foreground transition-colors">
@@ -534,31 +557,39 @@ const Approvisionnements = () => {
                     ))
                   ) : (
                     <tr key={item.id} className="hover:bg-secondary/30 transition-colors">
-                      <td className="px-4 sm:px-6 py-3 sm:py-4">
+                      <td className="px-6 py-3">
                         <p className="text-sm font-semibold text-foreground">{item.numero}</p>
                         {item.numeroFacture && (
                           <p className="text-xs text-muted-foreground">Fact. {item.numeroFacture}</p>
                         )}
                       </td>
-                      <td className="px-4 sm:px-6 py-3 sm:py-4">
+                      <td className="px-6 py-3">
                         <p className="text-sm font-medium text-foreground">{item.fournisseurNom}</p>
                       </td>
-                      <td colSpan={6} className="px-4 sm:px-6 py-3 sm:py-4 text-center text-sm text-muted-foreground">
+                      <td colSpan={6} className="px-6 py-3 text-center text-sm text-muted-foreground">
                         Aucun article
                       </td>
                     </tr>
                   )
-                )
-              )}
-            </tbody>
-          </table>
-        </div>
-
-        {/* Pagination */}
-        {meta && (
-          <Pagination meta={meta} onPageChange={setPage} />
+                )}
+              </tbody>
+            </table>
+          </div>
+        ) : (
+          <div className="text-center py-12 text-muted-foreground">
+            <Truck className="w-12 h-12 mx-auto mb-3 opacity-30" />
+            <p className="text-foreground font-medium">Aucun approvisionnement enregistré</p>
+            <p className="text-sm mt-1">Créez votre premier approvisionnement pour commencer</p>
+          </div>
         )}
       </div>
+
+      {/* Pagination partagée */}
+      {meta && (
+        <div className="mt-6">
+          <Pagination meta={meta} onPageChange={setPage} />
+        </div>
+      )}
     </AppLayout>
   );
 };

@@ -1,11 +1,12 @@
 import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
 import FormField from "@/components/FormField";
 import ArticleCombobox from "@/components/ArticleCombobox";
 import FournisseurCombobox from "@/components/FournisseurCombobox";
 import NouvelArticleModal from "@/components/NouvelArticleModal";
 import { toast } from "sonner";
-import { Plus, Trash2, TrendingUp, Package } from "lucide-react";
+import { Plus, Trash2, TrendingUp, Package, Truck, DollarSign, FileText, Check, Calendar } from "lucide-react";
 import { formatPrixInput, handlePrixChange } from "@/utils/format-prix";
 
 interface ApprovisionnementFormProps {
@@ -220,52 +221,82 @@ const ApprovisionnementForm = ({ open, onOpenChange, onSubmit, initialData = nul
   return (
     <>
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-[95vw] sm:max-w-3xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle className="font-heading">
-            {mode === 'edit' ? 'Modifier l\'Approvisionnement' : 'Nouvel Approvisionnement'}
-          </DialogTitle>
-          <DialogDescription>
-            {mode === 'edit' ? 'Modifiez les informations de l\'approvisionnement' : 'Enregistrez une livraison fournisseur'}
-          </DialogDescription>
+      <DialogContent className="max-w-[95vw] sm:max-w-4xl max-h-[90vh] flex flex-col p-0 bg-gradient-to-br from-background via-background to-primary/5">
+        {/* Header avec gradient */}
+        <DialogHeader className="px-4 sm:px-6 py-4 sm:py-5 border-b bg-gradient-to-r from-primary/10 via-primary/5 to-transparent flex-shrink-0">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br from-primary to-primary/70 flex items-center justify-center shadow-lg">
+              <Truck className="w-5 h-5 sm:w-6 sm:h-6 text-primary-foreground" />
+            </div>
+            <div>
+              <DialogTitle className="text-lg sm:text-xl font-bold bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text">
+                {mode === 'edit' ? 'Modifier l\'Approvisionnement' : 'Nouvel Approvisionnement'}
+              </DialogTitle>
+              <DialogDescription className="text-xs sm:text-sm text-muted-foreground mt-0.5">
+                {mode === 'edit' ? 'Modifiez les informations de l\'approvisionnement' : 'Enregistrez une livraison fournisseur'}
+              </DialogDescription>
+            </div>
+          </div>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          {/* Sélection Fournisseur */}
-          <div className="space-y-2">
-            <label className="text-sm font-medium">Fournisseur *</label>
-            <FournisseurCombobox
-              value={form.fournisseurId}
-              onChange={(fournisseur) => {
-                if (fournisseur) {
-                  setSelectedFournisseur(fournisseur);
-                  update("fournisseurId", fournisseur.id);
-                } else {
-                  setSelectedFournisseur(null);
-                  update("fournisseurId", "");
-                }
-              }}
-              placeholder="Rechercher un fournisseur..."
-            />
+
+        {/* Zone scrollable */}
+        <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto px-4 sm:px-6 py-4 sm:py-5 space-y-5">
+          {/* Section Fournisseur */}
+          <div className="relative overflow-hidden rounded-xl bg-gradient-to-br from-primary/5 via-background to-background border-2 border-border p-4 sm:p-5">
+            <div className="absolute top-0 right-0 w-24 h-24 bg-primary/5 rounded-full -mr-12 -mt-12"></div>
+            <div className="relative space-y-3">
+              <div className="flex items-center gap-2 mb-2">
+                <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
+                  <Truck className="w-4 h-4 text-primary" />
+                </div>
+                <h3 className="text-sm font-bold text-foreground">Fournisseur *</h3>
+              </div>
+              <FournisseurCombobox
+                value={form.fournisseurId}
+                onChange={(fournisseur) => {
+                  if (fournisseur) {
+                    setSelectedFournisseur(fournisseur);
+                    update("fournisseurId", fournisseur.id);
+                  } else {
+                    setSelectedFournisseur(null);
+                    update("fournisseurId", "");
+                  }
+                }}
+                placeholder="Rechercher un fournisseur..."
+              />
+            </div>
           </div>
 
-          {/* Lignes d'articles */}
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <label className="text-sm font-semibold text-foreground">Articles *</label>
-              <button
+          {/* Section Articles - Vert */}
+          <div className="relative overflow-hidden rounded-xl bg-gradient-to-br from-emerald-500/5 via-background to-background border-2 border-border p-4 sm:p-5">
+            <div className="absolute top-0 right-0 w-24 h-24 bg-emerald-500/5 rounded-full -mr-12 -mt-12"></div>
+            <div className="relative space-y-3">
+              <div className="flex items-center gap-2 mb-2">
+                <div className="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center">
+                  <Package className="w-4 h-4 text-emerald-600" />
+                </div>
+                <h3 className="text-sm font-bold text-foreground">Articles à approvisionner *</h3>
+              </div>
+
+              <Button
                 type="button"
                 onClick={ajouterLigne}
-                className="flex items-center gap-1 text-xs text-primary hover:text-primary/80"
+                size="sm"
+                variant="outline"
+                className="w-full h-11 border-emerald-500/30 hover:bg-emerald-500/10"
               >
-                <Plus className="w-4 h-4" />
-                Ajouter
-              </button>
-            </div>
+                <Plus className="w-4 h-4 mr-2" />
+                Ajouter un article
+              </Button>
 
-            {form.lignes.length === 0 ? (
-              <p className="text-sm text-muted-foreground italic">Aucun article ajouté</p>
-            ) : (
-              <div className="space-y-2">
+              {form.lignes.length === 0 ? (
+                <div className="p-6 text-center bg-muted/30 rounded-lg border border-dashed border-border">
+                  <Package className="w-8 h-8 mx-auto mb-2 text-muted-foreground opacity-30" />
+                  <p className="text-sm text-muted-foreground">Aucun article ajouté</p>
+                  <p className="text-xs text-muted-foreground mt-1">Cliquez sur "Ajouter" pour commencer</p>
+                </div>
+              ) : (
+                <div className="space-y-3">
                 {form.lignes.map((ligne: any, index: number) => {
                   const stockActuel = ligne.stockActuel || 0;
                   const nouveauStock = stockActuel + (ligne.quantite || 0);
@@ -275,9 +306,10 @@ const ApprovisionnementForm = ({ open, onOpenChange, onSubmit, initialData = nul
                   const ancienPMP = ligne.ancienPMP || 0;
 
                   return (
-                    <div key={index} className="p-3 bg-secondary/30 rounded-lg space-y-2">
-                      <div className="grid grid-cols-12 gap-2">
-                        <div className="col-span-4">
+                    <div key={index} className="p-3 sm:p-4 bg-card border border-border rounded-lg space-y-3 hover:shadow-md transition-shadow">
+                      <div className="flex flex-col sm:grid sm:grid-cols-12 gap-2 sm:gap-3">
+                        <div className="sm:col-span-4">
+                          <label className="block text-xs font-medium text-muted-foreground mb-1.5 sm:hidden">Article</label>
                           <ArticleCombobox
                             value={ligne.articleId}
                             onChange={(article) => {
@@ -323,71 +355,78 @@ const ApprovisionnementForm = ({ open, onOpenChange, onSubmit, initialData = nul
                             </div>
                           )}
                         </div>
-                        <div className="col-span-1 flex items-start">
-                          <button
+                        <div className="sm:col-span-1 flex items-start">
+                          <Button
                             type="button"
                             onClick={() => handleOpenNouvelArticleModal(index)}
-                            className="w-full h-[42px] rounded-lg border border-border bg-primary/10 hover:bg-primary/20 text-primary transition-colors flex items-center justify-center"
+                            variant="outline"
+                            size="sm"
+                            className="w-full h-11 sm:h-10 border-primary/30 hover:bg-primary/10 text-primary"
                             title="Créer un nouvel article"
                           >
                             <Plus className="w-4 h-4" />
-                          </button>
+                            <span className="sm:hidden ml-2">Nouvel article</span>
+                          </Button>
                         </div>
-                        <div className="col-span-2">
+                        <div className="sm:col-span-2">
+                          <label className="block text-xs font-medium text-muted-foreground mb-1.5 sm:hidden">Quantité</label>
                           <input
                             type="number"
-                            className="w-full px-3 py-2 rounded-lg border border-border bg-card text-sm text-foreground"
-                            placeholder="Qté"
+                            className="w-full px-3 h-11 sm:h-10 rounded-lg border border-border bg-background text-foreground focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
+                            placeholder="Quantité"
                             min="1"
                             value={ligne.quantite}
                             onChange={e => updateLigne(index, "quantite", e.target.value)}
                           />
                         </div>
-                        <div className="col-span-3">
+                        <div className="sm:col-span-3">
+                          <label className="block text-xs font-medium text-muted-foreground mb-1.5 sm:hidden">Prix unitaire</label>
                           <input
                             type="text"
                             inputMode="numeric"
-                            className="w-full px-3 py-2 rounded-lg border border-border bg-card text-sm text-foreground"
-                            placeholder="Prix unit."
+                            className="w-full px-3 h-11 sm:h-10 rounded-lg border border-border bg-background text-foreground focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
+                            placeholder="Prix unitaire"
                             value={formatPrixInput(ligne.prixUnitaire)}
                             onChange={e => updateLigne(index, "prixUnitaire", handlePrixChange(e.target.value))}
                           />
                         </div>
-                        <div className="col-span-1 flex items-center justify-center">
-                          <button
+                        <div className="sm:col-span-1 flex items-center justify-center">
+                          <Button
                             type="button"
                             onClick={() => supprimerLigne(index)}
-                            className="text-destructive hover:text-destructive/80"
+                            variant="ghost"
+                            size="icon"
+                            className="text-destructive hover:text-destructive hover:bg-destructive/10"
                           >
                             <Trash2 className="w-4 h-4" />
-                          </button>
+                          </Button>
                         </div>
                       </div>
 
                       {/* Affichage de l'impact */}
                       {ligne.articleId && ligne.quantite > 0 && ligne.prixUnitaire > 0 && (
-                        <div className="grid grid-cols-3 gap-2 pt-2 border-t border-border">
-                          <div className="bg-success/10 rounded p-2">
-                            <p className="text-[9px] text-muted-foreground mb-0.5">Nouveau stock</p>
-                            <p className="text-sm font-bold text-success flex items-center gap-1">
-                              <TrendingUp className="w-3 h-3" />
+                        <div className="space-y-2 pt-2 border-t border-border">
+                          <div className="bg-success/10 rounded p-2 sm:p-3">
+                            <p className="text-xs text-muted-foreground mb-1">Nouveau stock</p>
+                            <p className="text-base sm:text-lg font-bold text-success flex items-center gap-1">
+                              <TrendingUp className="w-4 h-4" />
                               {nouveauStock}
                             </p>
                           </div>
-                          <div className="bg-primary/10 rounded p-2">
-                            <p className="text-[9px] text-muted-foreground mb-0.5">Nouveau PMP</p>
-                            <p className="text-[10px] font-bold text-primary">
+                          <div className="bg-primary/10 rounded p-2 sm:p-3">
+                            <p className="text-xs text-muted-foreground mb-1">Nouveau PMP</p>
+                            <p className="text-sm sm:text-base font-bold text-primary">
                               {formatPrix(nouveauPMP)}
                             </p>
                             {ancienPMP > 0 && Math.abs(nouveauPMP - ancienPMP) > 1 && (
-                              <p className={`text-[8px] ${nouveauPMP > ancienPMP ? 'text-warning' : 'text-success'}`}>
+                              <p className={`text-xs ${nouveauPMP > ancienPMP ? 'text-warning' : 'text-success'}`}>
                                 {nouveauPMP > ancienPMP ? '↑' : '↓'} {formatPrix(Math.abs(nouveauPMP - ancienPMP))}
                               </p>
                             )}
                           </div>
-                          <div className="bg-secondary rounded p-2">
-                            <p className="text-[9px] text-muted-foreground mb-0.5">Sous-total</p>
-                            <p className="text-[10px] font-bold text-foreground">
+                          <div className="bg-secondary rounded p-2 sm:p-3">
+                            <p className="text-xs text-muted-foreground mb-1">Sous-total</p>
+                            <p className="text-sm sm:text-base font-bold text-foreground">
                               {formatPrix(ligne.sousTotal)}
                             </p>
                           </div>
@@ -396,104 +435,168 @@ const ApprovisionnementForm = ({ open, onOpenChange, onSubmit, initialData = nul
                     </div>
                   );
                 })}
-              </div>
-            )}
+                </div>
+              )}
+            </div>
           </div>
 
           {/* Récapitulatif Impact Stock */}
           {impactStock.totalArticles > 0 && (
-            <div className="bg-gradient-to-r from-success/5 via-primary/5 to-success/5 border border-success/20 rounded-lg p-4">
-              <h3 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
-                <Package className="w-4 h-4 text-success" />
-                Impact sur le Stock
-              </h3>
-              <div className="grid grid-cols-3 gap-3">
-                <div className="text-center">
-                  <p className="text-xs text-muted-foreground mb-1">Articles</p>
-                  <p className="text-xl font-bold text-foreground">{impactStock.totalArticles}</p>
+            <div className="relative overflow-hidden rounded-xl bg-gradient-to-r from-success/5 via-primary/5 to-success/5 border-2 border-success/20 p-4 sm:p-5">
+              <div className="absolute top-0 right-0 w-24 h-24 bg-success/10 rounded-full -mr-12 -mt-12"></div>
+              <div className="relative">
+                <div className="flex items-center gap-2 mb-4">
+                  <div className="w-8 h-8 rounded-lg bg-success/10 flex items-center justify-center">
+                    <TrendingUp className="w-4 h-4 text-success" />
+                  </div>
+                  <h3 className="text-sm font-bold text-foreground">Impact sur le Stock</h3>
                 </div>
-                <div className="text-center">
-                  <p className="text-xs text-muted-foreground mb-1">Quantité +</p>
-                  <p className="text-xl font-bold text-success">+{impactStock.totalQuantiteAjoutee}</p>
-                </div>
-                <div className="text-center">
-                  <p className="text-xs text-muted-foreground mb-1">Valeur</p>
-                  <p className="text-sm font-bold text-primary">{formatPrix(impactStock.valeurAjoutee)}</p>
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between p-3 bg-card rounded-lg border border-border">
+                    <p className="text-sm text-muted-foreground">Articles</p>
+                    <p className="text-xl font-bold text-foreground">{impactStock.totalArticles}</p>
+                  </div>
+                  <div className="flex items-center justify-between p-3 bg-card rounded-lg border border-border">
+                    <p className="text-sm text-muted-foreground">Quantité ajoutée</p>
+                    <p className="text-xl font-bold text-success">+{impactStock.totalQuantiteAjoutee}</p>
+                  </div>
+                  <div className="flex items-center justify-between p-3 bg-card rounded-lg border border-border">
+                    <p className="text-sm text-muted-foreground">Valeur totale</p>
+                    <p className="text-base font-bold text-primary">{formatPrix(impactStock.valeurAjoutee)}</p>
+                  </div>
                 </div>
               </div>
             </div>
           )}
 
-          {/* Total et Paiement */}
-          <div className="bg-primary/5 p-4 rounded-lg space-y-3">
-            <div className="flex justify-between items-center">
-              <span className="text-sm font-semibold">Total Approvisionnement:</span>
-              <span className="text-lg font-bold text-primary">{formatPrix(total)}</span>
-            </div>
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className="block text-sm font-medium text-foreground mb-2">Montant payé (GNF)</label>
-                <input
-                  type="text"
-                  inputMode="numeric"
-                  placeholder="0"
-                  value={formatPrixInput(form.montantPaye)}
-                  onChange={e => update("montantPaye", handlePrixChange(e.target.value))}
-                  onFocus={e => e.target.select()}
-                  className="w-full px-4 py-2.5 rounded-lg border border-border bg-card text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring/30"
-                />
+          {/* Section Paiement - Violet */}
+          <div className="relative overflow-hidden rounded-xl bg-gradient-to-br from-violet-500/5 via-background to-background border-2 border-border p-4 sm:p-5">
+            <div className="absolute top-0 right-0 w-24 h-24 bg-violet-500/5 rounded-full -mr-12 -mt-12"></div>
+            <div className="relative space-y-4">
+              <div className="flex items-center gap-2 mb-3">
+                <div className="w-8 h-8 rounded-lg bg-violet-500/10 flex items-center justify-center">
+                  <DollarSign className="w-4 h-4 text-violet-600" />
+                </div>
+                <h3 className="text-sm font-bold text-foreground">Paiement</h3>
               </div>
-              <div>
-                <label className="text-sm font-medium text-muted-foreground mb-2 block">Montant restant</label>
-                <div className="px-3 py-2 rounded-lg bg-secondary text-sm font-semibold">
-                  {formatPrix(montantRestant)}
+
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 p-3 bg-violet-500/10 rounded-lg border border-violet-500/20">
+                <span className="text-xs sm:text-sm font-medium text-foreground">Total Approvisionnement</span>
+                <span className="text-lg sm:text-xl font-black text-primary">{formatPrix(total)}</span>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                <div>
+                  <label className="block text-xs font-medium text-muted-foreground mb-1.5">Montant payé</label>
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    placeholder="0"
+                    value={formatPrixInput(form.montantPaye)}
+                    onChange={e => update("montantPaye", handlePrixChange(e.target.value))}
+                    onFocus={e => e.target.select()}
+                    className="w-full px-3 h-11 rounded-lg border border-border bg-background text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-muted-foreground mb-1.5">Montant restant</label>
+                  <div className="flex items-center h-11 px-3 rounded-lg bg-muted border border-border">
+                    <span className="text-sm font-bold text-foreground">{formatPrix(montantRestant)}</span>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Informations complémentaires */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <FormField
-              label="Date de livraison *"
-              type="date"
-              value={form.dateLivraison}
-              onChange={e => update("dateLivraison", (e.target as HTMLInputElement).value)}
-            />
-            <FormField
-              label="Numéro de facture"
-              placeholder="Ex: FACT-2024-001"
-              value={form.numeroFacture}
-              onChange={e => update("numeroFacture", (e.target as HTMLInputElement).value)}
-              maxLength={50}
-            />
+          {/* Section Informations - Gris */}
+          <div className="relative overflow-hidden rounded-xl bg-gradient-to-br from-muted/30 via-background to-background border-2 border-border p-4 sm:p-5">
+            <div className="absolute top-0 right-0 w-24 h-24 bg-muted/20 rounded-full -mr-12 -mt-12"></div>
+            <div className="relative space-y-4">
+              <div className="flex items-center gap-2 mb-3">
+                <div className="w-8 h-8 rounded-lg bg-muted/50 flex items-center justify-center">
+                  <FileText className="w-4 h-4 text-muted-foreground" />
+                </div>
+                <h3 className="text-sm font-bold text-foreground">Informations complémentaires</h3>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                <div>
+                  <label className="block text-xs font-medium text-muted-foreground mb-1.5">
+                    Date de livraison *
+                  </label>
+                  <input
+                    type="date"
+                    value={form.dateLivraison}
+                    onChange={e => update("dateLivraison", e.target.value)}
+                    className="w-full px-3 h-11 rounded-lg border border-border bg-background text-foreground focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-muted-foreground mb-1.5">
+                    Numéro de facture
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="Ex: FACT-2024-001"
+                    value={form.numeroFacture}
+                    onChange={e => update("numeroFacture", e.target.value)}
+                    maxLength={50}
+                    className="w-full px-3 h-11 rounded-lg border border-border bg-background text-foreground focus:ring-2 focus:ring-primary/20 focus:border-primary placeholder:text-muted-foreground"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-medium text-muted-foreground mb-1.5">
+                  Note (optionnelle)
+                </label>
+                <textarea
+                  placeholder="Notes ou remarques sur cet approvisionnement"
+                  value={form.note}
+                  onChange={e => update("note", e.target.value)}
+                  maxLength={500}
+                  rows={3}
+                  className="w-full px-3 py-2.5 rounded-lg border border-border bg-background text-foreground focus:ring-2 focus:ring-primary/20 focus:border-primary placeholder:text-muted-foreground resize-none"
+                />
+              </div>
+            </div>
           </div>
 
-          <FormField
-            label="Note"
-            as="textarea"
-            placeholder="Notes ou remarques sur cet approvisionnement"
-            value={form.note}
-            onChange={e => update("note", (e.target as HTMLTextAreaElement).value)}
-            maxLength={500}
-          />
+        </form>
 
-          <div className="flex gap-2 pt-2">
-            <button
+        {/* Footer avec actions - fixe en bas */}
+        <div className="px-4 sm:px-6 py-4 border-t bg-muted/30 flex-shrink-0">
+          <div className="flex flex-col-reverse sm:flex-row justify-end gap-2 sm:gap-3">
+            <Button
               type="button"
+              variant="outline"
               onClick={() => onOpenChange(false)}
-              className="flex-1 py-2.5 rounded-lg border border-border text-sm font-medium text-muted-foreground hover:bg-secondary transition-colors"
+              className="w-full sm:w-auto"
             >
               Annuler
-            </button>
-            <button
+            </Button>
+            <Button
               type="submit"
-              className="flex-1 py-2.5 rounded-lg gradient-gold text-primary-foreground text-sm font-semibold hover:opacity-90 transition-opacity"
+              onClick={(e: any) => {
+                const form = e.target.closest('form');
+                if (!form) {
+                  // Si on est dans le footer, chercher le form dans le DialogContent
+                  const dialogContent = e.target.closest('[role="dialog"]');
+                  const formElement = dialogContent?.querySelector('form');
+                  if (formElement) {
+                    formElement.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
+                  }
+                } else {
+                  form.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
+                }
+              }}
+              className="w-full sm:w-auto"
             >
-              {mode === 'edit' ? 'Enregistrer' : 'Valider'}
-            </button>
+              <Check className="w-4 h-4 mr-2" />
+              {mode === 'edit' ? 'Enregistrer' : 'Valider l\'approvisionnement'}
+            </Button>
           </div>
-        </form>
+        </div>
       </DialogContent>
     </Dialog>
 

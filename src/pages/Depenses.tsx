@@ -2,6 +2,7 @@ import { useState } from "react";
 import AppLayout from "@/components/AppLayout";
 import PageHeader from "@/components/PageHeader";
 import DepenseForm from "@/components/DepenseForm";
+import DepenseMobileCard from "@/components/DepenseMobileCard";
 import Pagination from "@/components/Pagination";
 import CanAccess from "@/components/CanAccess";
 import { useDepenses, useDepensesStats, useCreateDepense, useUpdateDepense, useDeleteDepense } from "@/hooks/useDepenses";
@@ -145,9 +146,9 @@ const Depenses = () => {
         )}
       </div>
 
-      {/* Stats Cards */}
+      {/* Stats Cards - cachées sur mobile */}
       {stats && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        <div className="hidden md:grid md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
           <div className="bg-card border border-border rounded-lg p-4 shadow-card">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-lg bg-red-500/10 flex items-center justify-center">
@@ -210,8 +211,29 @@ const Depenses = () => {
         </div>
       )}
 
-      {/* Table des dépenses */}
-      <div className="bg-card border border-border rounded-lg shadow-card overflow-hidden">
+      {/* Version mobile: Cartes */}
+      <div className="md:hidden space-y-3 mb-6">
+        {depenses.length > 0 ? (
+          depenses.map((depense) => (
+            <DepenseMobileCard
+              key={depense.id}
+              depense={depense}
+              formatPrix={formatPrix}
+              onEdit={handleEdit}
+              onDelete={setDeleteId}
+            />
+          ))
+        ) : (
+          <div className="bg-card border border-border rounded-xl p-12 text-center">
+            <Wallet className="w-12 h-12 mx-auto mb-3 text-muted-foreground opacity-30" />
+            <p className="text-foreground font-medium">Aucune dépense</p>
+            <p className="text-sm text-muted-foreground mt-1">Enregistrez votre première dépense</p>
+          </div>
+        )}
+      </div>
+
+      {/* Version desktop: Tableau */}
+      <div className="hidden md:block bg-card border border-border rounded-lg shadow-card overflow-hidden">
         <div className="p-4 border-b border-border">
           <h3 className="text-lg font-semibold text-foreground">Liste des Dépenses</h3>
         </div>
@@ -307,14 +329,16 @@ const Depenses = () => {
                 </tbody>
               </table>
             </div>
-
-            {/* Pagination */}
-            {meta && (
-              <Pagination meta={meta} onPageChange={setPage} />
-            )}
           </>
         )}
       </div>
+
+      {/* Pagination partagée */}
+      {meta && (
+        <div className="mt-6">
+          <Pagination meta={meta} onPageChange={setPage} />
+        </div>
+      )}
 
       {/* Form Dialog */}
       <DepenseForm

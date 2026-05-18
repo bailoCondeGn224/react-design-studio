@@ -2,6 +2,7 @@ import AppLayout from "@/components/AppLayout";
 import PageHeader from "@/components/PageHeader";
 import Pagination from "@/components/Pagination";
 import RetourClientForm from "@/components/RetourClientForm";
+import RetourClientMobileCard from "@/components/RetourClientMobileCard";
 import CanAccess from "@/components/CanAccess";
 import { Plus, RotateCcw, Calendar, DollarSign } from "lucide-react";
 import { useState } from "react";
@@ -68,7 +69,7 @@ const RetoursClients = () => {
       />
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+      <div className="hidden md:grid md:grid-cols-3 gap-4 mb-6">
         <div className="bg-card border border-border rounded-lg p-4 shadow-card">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-lg bg-orange-500/10 flex items-center justify-center">
@@ -109,8 +110,8 @@ const RetoursClients = () => {
         </div>
       </div>
 
-      {/* Info Message */}
-      <div className="bg-blue-500/10 border border-blue-500/20 rounded-lg p-4 mb-6">
+      {/* Info Message - masqué sur mobile */}
+      <div className="hidden md:block bg-blue-500/10 border border-blue-500/20 rounded-lg p-4 mb-6">
         <div className="flex items-start gap-3">
           <RotateCcw className="w-5 h-5 text-blue-600 dark:text-blue-400 mt-0.5 flex-shrink-0" />
           <div className="text-sm text-muted-foreground">
@@ -123,16 +124,35 @@ const RetoursClients = () => {
         </div>
       </div>
 
-      {/* Historique des retours */}
-      <div className="bg-card border border-border rounded-lg shadow-card overflow-hidden">
+      {/* Version mobile: Cartes */}
+      <div className="md:hidden space-y-3 mb-6">
+        {retoursData && retoursData.data && retoursData.data.length > 0 ? (
+          retoursData.data.map((retour: any) => (
+            <RetourClientMobileCard
+              key={retour.id}
+              retour={retour}
+              formatPrix={formatPrix}
+              formatDate={formatDate}
+            />
+          ))
+        ) : (
+          <div className="bg-card border border-border rounded-xl p-12 text-center">
+            <RotateCcw className="w-12 h-12 mx-auto mb-3 text-muted-foreground opacity-30" />
+            <p className="text-foreground font-medium">Aucun retour client</p>
+            <p className="text-sm text-muted-foreground mt-1">Créez votre premier retour</p>
+          </div>
+        )}
+      </div>
+
+      {/* Version desktop: Tableau */}
+      <div className="hidden md:block bg-card border border-border rounded-lg shadow-card overflow-hidden">
         <div className="p-4 border-b border-border">
           <h3 className="text-lg font-semibold text-foreground">Historique des Retours</h3>
         </div>
 
         {retoursData && retoursData.data && retoursData.data.length > 0 ? (
-          <>
-            <div className="overflow-x-auto">
-              <table className="w-full">
+          <div className="overflow-x-auto">
+            <table className="w-full">
                 <thead className="bg-secondary/50">
                   <tr>
                     <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Date</th>
@@ -159,15 +179,6 @@ const RetoursClients = () => {
                 </tbody>
               </table>
             </div>
-
-            {/* Pagination */}
-            {retoursData.meta && (
-              <Pagination
-                meta={retoursData.meta}
-                onPageChange={setPage}
-              />
-            )}
-          </>
         ) : (
           <div className="text-center py-12 text-muted-foreground">
             <RotateCcw className="w-12 h-12 mx-auto mb-3 opacity-30" />
@@ -176,6 +187,16 @@ const RetoursClients = () => {
           </div>
         )}
       </div>
+
+      {/* Pagination partagée */}
+      {retoursData && retoursData.meta && (
+        <div className="mt-6">
+          <Pagination
+            meta={retoursData.meta}
+            onPageChange={setPage}
+          />
+        </div>
+      )}
 
       {/* Formulaire de retour */}
       <RetourClientForm

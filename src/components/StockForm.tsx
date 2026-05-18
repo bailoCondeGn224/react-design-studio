@@ -130,24 +130,69 @@ const StockForm = ({ open, onOpenChange, onSubmit, initialData = null, mode = 'c
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-[95vw] sm:max-w-md max-h-[90vh] flex flex-col">
         <DialogHeader className="flex-shrink-0">
-          <DialogTitle className="font-heading">
+          <DialogTitle className="font-heading text-base sm:text-lg">
             Modifier l'Article
           </DialogTitle>
-          <DialogDescription>
+          <DialogDescription className="text-xs sm:text-sm">
             Modifiez les informations de l'article (sauf la quantité qui est gérée par les approvisionnements et ventes)
           </DialogDescription>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4 overflow-y-auto flex-1 pr-2">
+        <form onSubmit={handleSubmit} className="space-y-3 sm:space-y-4 overflow-y-auto flex-1 pr-2">
           <FormField label="Nom de l'article *" placeholder="Ex: Abaya Noire Premium" value={form.nom} onChange={e => update("nom", (e.target as HTMLInputElement).value)} maxLength={100} />
           <FormField label="Référence (SKU)" placeholder="Ex: ABY-001" value={form.reference} onChange={e => update("reference", (e.target as HTMLInputElement).value)} maxLength={50} />
 
-          {/* Photo Upload */}
+          {/* Photo Upload - Optimisé mobile */}
           <div className="space-y-2">
             <label className="block text-sm font-medium text-foreground">
               Photo de l'article (optionnel)
             </label>
 
-            <div className="flex items-center gap-4">
+            {/* Version mobile: pleine largeur */}
+            <div className="md:hidden">
+              {photoPreview ? (
+                <div className="relative w-full rounded-xl border-2 border-border overflow-hidden bg-muted/30">
+                  <img
+                    src={photoPreview}
+                    alt="Aperçu"
+                    className="w-full h-40 object-cover"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end p-3">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setPhotoFile(null);
+                        setPhotoPreview(null);
+                      }}
+                      className="flex items-center gap-2 px-4 h-11 rounded-lg bg-destructive text-destructive-foreground text-sm font-semibold active:scale-95 transition-transform"
+                    >
+                      <X className="w-4 h-4" />
+                      Supprimer
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div className="w-full">
+                  <input
+                    type="file"
+                    id="photo-upload-edit-mobile"
+                    accept="image/jpeg,image/png,image/webp,image/jpg"
+                    onChange={handlePhotoChange}
+                    className="hidden"
+                  />
+                  <label
+                    htmlFor="photo-upload-edit-mobile"
+                    className="flex flex-col items-center justify-center w-full h-32 rounded-xl border-2 border-dashed border-primary/30 bg-primary/5 active:scale-[0.98] transition-transform cursor-pointer"
+                  >
+                    <Upload className="w-8 h-8 text-primary mb-2" />
+                    <span className="text-sm font-semibold text-foreground">Ajouter une photo</span>
+                    <span className="text-xs text-muted-foreground mt-1">JPG, PNG, WEBP - Max 5MB</span>
+                  </label>
+                </div>
+              )}
+            </div>
+
+            {/* Version desktop: horizontal */}
+            <div className="hidden md:flex items-center gap-4">
               {photoPreview ? (
                 <div className="relative w-24 h-24 rounded-lg border border-border overflow-hidden">
                   <img
@@ -175,13 +220,13 @@ const StockForm = ({ open, onOpenChange, onSubmit, initialData = null, mode = 'c
               <div className="flex-1">
                 <input
                   type="file"
-                  id="photo-upload-edit"
+                  id="photo-upload-edit-desktop"
                   accept="image/jpeg,image/png,image/webp,image/jpg"
                   onChange={handlePhotoChange}
                   className="hidden"
                 />
                 <label
-                  htmlFor="photo-upload-edit"
+                  htmlFor="photo-upload-edit-desktop"
                   className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-border bg-card text-sm font-medium cursor-pointer hover:bg-secondary transition-colors"
                 >
                   <Upload className="w-4 h-4" />
@@ -194,7 +239,7 @@ const StockForm = ({ open, onOpenChange, onSubmit, initialData = null, mode = 'c
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 gap-3">
             <FormField
               label="Catégorie *"
               as="select"
@@ -224,13 +269,15 @@ const StockForm = ({ open, onOpenChange, onSubmit, initialData = null, mode = 'c
               <option value="E">Zone E</option>
             </FormField>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+
+          {/* Stock et seuils */}
+          <div className="grid grid-cols-1 gap-3">
             {/* Stock en lecture seule - géré par approvisionnements/ventes */}
             <div>
               <label className="block text-sm font-medium text-foreground mb-2">
                 Stock actuel
               </label>
-              <div className="px-4 py-2.5 rounded-lg border border-border bg-muted text-foreground font-semibold">
+              <div className="px-4 h-11 rounded-lg border border-border bg-muted text-foreground font-semibold flex items-center">
                 {form.stock || 0}
               </div>
               <p className="text-xs text-muted-foreground mt-1">Géré par approvisionnements/ventes</p>
@@ -238,7 +285,9 @@ const StockForm = ({ open, onOpenChange, onSubmit, initialData = null, mode = 'c
             <FormField label="Seuil alerte *" type="number" placeholder="10" value={form.seuilAlerte} onChange={e => update("seuilAlerte", (e.target as HTMLInputElement).value)} min="0" />
             <FormField label="Stock max *" type="number" placeholder="50" value={form.max} onChange={e => update("max", (e.target as HTMLInputElement).value)} min="0" />
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+
+          {/* Prix */}
+          <div className="grid grid-cols-1 gap-3">
             <div>
               <label className="block text-sm font-medium text-foreground mb-2">Prix de vente (GNF) *</label>
               <input
@@ -247,7 +296,7 @@ const StockForm = ({ open, onOpenChange, onSubmit, initialData = null, mode = 'c
                 placeholder="85 000"
                 value={formatPrixInput(form.prixVente)}
                 onChange={e => update("prixVente", handlePrixChange(e.target.value))}
-                className="w-full px-4 py-2.5 rounded-lg border border-border bg-card text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring/30"
+                className="w-full px-4 h-11 rounded-lg border border-border bg-card text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring/30 text-base"
               />
             </div>
             <div>
@@ -258,15 +307,24 @@ const StockForm = ({ open, onOpenChange, onSubmit, initialData = null, mode = 'c
                 placeholder="50 000"
                 value={formatPrixInput(form.prixAchat)}
                 onChange={e => update("prixAchat", handlePrixChange(e.target.value))}
-                className="w-full px-4 py-2.5 rounded-lg border border-border bg-card text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring/30"
+                className="w-full px-4 h-11 rounded-lg border border-border bg-card text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring/30 text-base"
               />
             </div>
           </div>
-          <div className="flex gap-2 pt-2">
-            <button type="button" onClick={() => onOpenChange(false)} className="flex-1 py-2.5 rounded-lg border border-border text-sm font-medium text-muted-foreground hover:bg-secondary transition-colors">
+
+          {/* Boutons - Touch-friendly */}
+          <div className="flex flex-col sm:flex-row gap-3 pt-2">
+            <button
+              type="button"
+              onClick={() => onOpenChange(false)}
+              className="w-full sm:flex-1 h-12 rounded-lg border border-border text-base font-medium text-muted-foreground hover:bg-secondary active:scale-[0.98] transition-all"
+            >
               Annuler
             </button>
-            <button type="submit" className="flex-1 py-2.5 rounded-lg gradient-gold text-primary-foreground text-sm font-semibold hover:opacity-90 transition-opacity">
+            <button
+              type="submit"
+              className="w-full sm:flex-1 h-12 rounded-lg gradient-gold text-primary-foreground text-base font-semibold hover:opacity-90 active:scale-[0.98] transition-all"
+            >
               Enregistrer
             </button>
           </div>

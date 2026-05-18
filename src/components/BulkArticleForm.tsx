@@ -213,9 +213,9 @@ const BulkArticleForm = ({ open, onOpenChange, onSubmit }: BulkArticleFormProps)
         </DialogHeader>
 
         {/* Zone de scroll */}
-        <div className="flex-1 overflow-y-auto px-6 py-5">
-          {/* Cartes statistiques */}
-          <div className="grid grid-cols-3 gap-4 mb-6">
+        <div className="flex-1 overflow-y-auto px-3 sm:px-6 py-3 sm:py-5">
+          {/* Cartes statistiques - Stack sur mobile */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 mb-4 sm:mb-6">
             <div className="group relative overflow-hidden rounded-xl bg-gradient-to-br from-blue-500/10 via-blue-500/5 to-transparent border border-blue-500/20 p-4 hover:shadow-lg hover:shadow-blue-500/10 transition-all duration-300">
               <div className="absolute top-0 right-0 w-20 h-20 bg-blue-500/10 rounded-full -mr-10 -mt-10 group-hover:scale-150 transition-transform duration-500"></div>
               <div className="relative">
@@ -306,87 +306,76 @@ const BulkArticleForm = ({ open, onOpenChange, onSubmit }: BulkArticleFormProps)
                   </div>
 
                   {/* Corps de la carte */}
-                  <div className="p-4">
-                    {/* Section Photo */}
-                    <div className="mb-5">
-                      <label className="text-xs font-semibold text-foreground mb-2 block">
+                  <div className="p-3 sm:p-4">
+                    {/* Section Photo - Optimisé mobile */}
+                    <div className="mb-4 sm:mb-5">
+                      <label className="text-xs sm:text-sm font-semibold text-foreground mb-2 block">
                         Photo de l'article
                       </label>
 
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) handlePhotoChange(index, file);
+                        }}
+                        className="hidden"
+                        id={`photo-input-${index}`}
+                      />
+
                       {!ligne.photoPreview ? (
-                        <div className="relative group">
-                          <input
-                            type="file"
-                            accept="image/*"
-                            onChange={(e) => {
-                              const file = e.target.files?.[0];
-                              if (file) handlePhotoChange(index, file);
-                            }}
-                            className="hidden"
-                            id={`photo-input-${index}`}
-                          />
-                          <label
-                            htmlFor={`photo-input-${index}`}
-                            className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-primary/30 rounded-xl cursor-pointer bg-primary/5 hover:bg-primary/10 hover:border-primary/50 transition-all duration-300 group"
-                          >
-                            <div className="flex flex-col items-center gap-2">
-                              <div className="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center group-hover:scale-110 transition-transform">
-                                <Upload className="w-6 h-6 text-primary" />
-                              </div>
-                              <p className="text-sm font-medium text-foreground">
-                                Cliquez pour ajouter une photo
-                              </p>
-                              <p className="text-xs text-muted-foreground">
-                                PNG, JPG jusqu'à 5MB
-                              </p>
+                        <label
+                          htmlFor={`photo-input-${index}`}
+                          className="flex flex-col items-center justify-center w-full h-32 sm:h-36 border-2 border-dashed border-primary/30 rounded-xl cursor-pointer bg-primary/5 active:bg-primary/10 active:scale-[0.99] transition-all"
+                        >
+                          <div className="flex flex-col items-center gap-2">
+                            <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-primary/20 flex items-center justify-center">
+                              <Upload className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
                             </div>
-                          </label>
-                        </div>
+                            <p className="text-sm font-medium text-foreground px-4 text-center">
+                              Ajouter une photo
+                            </p>
+                            <p className="text-xs text-muted-foreground">
+                              PNG, JPG - Max 5MB
+                            </p>
+                          </div>
+                        </label>
                       ) : (
-                        <div className="relative group w-full h-32 rounded-xl overflow-hidden border-2 border-primary/30">
+                        <div className="relative w-full rounded-xl overflow-hidden border-2 border-primary/30 bg-muted/30">
                           <img
                             src={ligne.photoPreview}
                             alt="Preview"
-                            className="w-full h-full object-cover"
+                            className="w-full h-40 sm:h-32 object-cover"
                           />
-                          {/* Overlay avec boutons */}
-                          <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center gap-2">
+                          {/* Boutons toujours visibles sur mobile, overlay hover sur desktop */}
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent sm:bg-black/60 sm:opacity-0 sm:hover:opacity-100 transition-opacity flex items-end sm:items-center justify-center gap-2 p-3 sm:p-0">
                             <label
                               htmlFor={`photo-input-${index}`}
-                              className="px-4 py-2 bg-primary text-primary-foreground rounded-lg text-sm font-medium cursor-pointer hover:bg-primary/90 transition-colors flex items-center gap-2"
+                              className="flex items-center gap-2 px-4 h-11 sm:h-auto sm:py-2 bg-primary text-primary-foreground rounded-lg text-sm font-semibold cursor-pointer active:scale-95 transition-transform"
                             >
                               <ImageIcon className="w-4 h-4" />
-                              Changer
+                              <span className="hidden sm:inline">Changer</span>
                             </label>
                             <Button
                               type="button"
                               onClick={() => removePhoto(index)}
                               size="sm"
                               variant="destructive"
-                              className="flex items-center gap-2"
+                              className="flex items-center gap-2 h-11 sm:h-auto px-4 active:scale-95 transition-transform"
                             >
                               <X className="w-4 h-4" />
-                              Supprimer
+                              <span className="sm:inline">Supprimer</span>
                             </Button>
                           </div>
-                          <input
-                            type="file"
-                            accept="image/*"
-                            onChange={(e) => {
-                              const file = e.target.files?.[0];
-                              if (file) handlePhotoChange(index, file);
-                            }}
-                            className="hidden"
-                            id={`photo-input-${index}`}
-                          />
                         </div>
                       )}
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
                       {/* Code Article */}
                       <div className="space-y-2">
-                        <label className="text-xs font-semibold text-foreground flex items-center gap-1">
+                        <label className="text-xs sm:text-sm font-semibold text-foreground flex items-center gap-1">
                           Code Article <span className="text-destructive">*</span>
                         </label>
                         <input
@@ -394,13 +383,13 @@ const BulkArticleForm = ({ open, onOpenChange, onSubmit }: BulkArticleFormProps)
                           value={ligne.code}
                           onChange={(e) => updateLigne(index, 'code', e.target.value)}
                           placeholder="ex: ART001"
-                          className="w-full px-3 py-2.5 text-sm border-2 border-border rounded-xl bg-background/50 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                          className="w-full px-3 h-11 text-base sm:text-sm border-2 border-border rounded-xl bg-background/50 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
                         />
                       </div>
 
                       {/* Nom */}
                       <div className="space-y-2">
-                        <label className="text-xs font-semibold text-foreground flex items-center gap-1">
+                        <label className="text-xs sm:text-sm font-semibold text-foreground flex items-center gap-1">
                           Nom <span className="text-destructive">*</span>
                         </label>
                         <input
@@ -408,19 +397,19 @@ const BulkArticleForm = ({ open, onOpenChange, onSubmit }: BulkArticleFormProps)
                           value={ligne.nom}
                           onChange={(e) => updateLigne(index, 'nom', e.target.value)}
                           placeholder="Nom de l'article"
-                          className="w-full px-3 py-2.5 text-sm border-2 border-border rounded-xl bg-background/50 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                          className="w-full px-3 h-11 text-base sm:text-sm border-2 border-border rounded-xl bg-background/50 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
                         />
                       </div>
 
                       {/* Catégorie */}
                       <div className="space-y-2">
-                        <label className="text-xs font-semibold text-foreground flex items-center gap-1">
+                        <label className="text-xs sm:text-sm font-semibold text-foreground flex items-center gap-1">
                           Catégorie <span className="text-destructive">*</span>
                         </label>
                         <select
                           value={ligne.categorieId}
                           onChange={(e) => updateLigne(index, 'categorieId', e.target.value)}
-                          className="w-full px-3 py-2.5 text-sm border-2 border-border rounded-xl bg-background/50 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all cursor-pointer"
+                          className="w-full px-3 h-11 text-base sm:text-sm border-2 border-border rounded-xl bg-background/50 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all cursor-pointer"
                         >
                           <option value="">Sélectionner...</option>
                           {categories.map((cat: any) => (
@@ -431,13 +420,13 @@ const BulkArticleForm = ({ open, onOpenChange, onSubmit }: BulkArticleFormProps)
 
                       {/* Zone */}
                       <div className="space-y-2">
-                        <label className="text-xs font-semibold text-foreground flex items-center gap-1">
+                        <label className="text-xs sm:text-sm font-semibold text-foreground flex items-center gap-1">
                           Zone <span className="text-destructive">*</span>
                         </label>
                         <select
                           value={ligne.zone}
                           onChange={(e) => updateLigne(index, 'zone', e.target.value)}
-                          className="w-full px-3 py-2.5 text-sm border-2 border-border rounded-xl bg-background/50 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all cursor-pointer"
+                          className="w-full px-3 h-11 text-base sm:text-sm border-2 border-border rounded-xl bg-background/50 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all cursor-pointer"
                         >
                           <option value="">Sélectionner...</option>
                           {zones.map((zone: any) => (
@@ -448,29 +437,31 @@ const BulkArticleForm = ({ open, onOpenChange, onSubmit }: BulkArticleFormProps)
 
                       {/* Prix d'achat */}
                       <div className="space-y-2">
-                        <label className="text-xs font-semibold text-foreground">
+                        <label className="text-xs sm:text-sm font-semibold text-foreground">
                           Prix d'achat (GNF)
                         </label>
                         <input
                           type="text"
+                          inputMode="numeric"
                           value={formatPrixInput(ligne.prixAchat)}
                           onChange={(e) => updateLigne(index, 'prixAchat', handlePrixChange(e.target.value))}
                           placeholder="0"
-                          className="w-full px-3 py-2.5 text-sm border-2 border-border rounded-xl bg-background/50 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                          className="w-full px-3 h-11 text-base sm:text-sm border-2 border-border rounded-xl bg-background/50 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
                         />
                       </div>
 
                       {/* Prix de vente */}
                       <div className="space-y-2">
-                        <label className="text-xs font-semibold text-foreground">
+                        <label className="text-xs sm:text-sm font-semibold text-foreground">
                           Prix de vente (GNF)
                         </label>
                         <input
                           type="text"
+                          inputMode="numeric"
                           value={formatPrixInput(ligne.prixVente)}
                           onChange={(e) => updateLigne(index, 'prixVente', handlePrixChange(e.target.value))}
                           placeholder="0"
-                          className="w-full px-3 py-2.5 text-sm border-2 border-border rounded-xl bg-background/50 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                          className="w-full px-3 h-11 text-base sm:text-sm border-2 border-border rounded-xl bg-background/50 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
                         />
                         {Number(ligne.prixVente) > 0 && Number(ligne.prixAchat) > 0 && (
                           <div className="flex items-center gap-1.5 mt-1">
@@ -484,37 +475,39 @@ const BulkArticleForm = ({ open, onOpenChange, onSubmit }: BulkArticleFormProps)
 
                       {/* Stock initial */}
                       <div className="space-y-2">
-                        <label className="text-xs font-semibold text-foreground">
+                        <label className="text-xs sm:text-sm font-semibold text-foreground">
                           Stock initial
                         </label>
                         <input
                           type="number"
+                          inputMode="numeric"
                           min="0"
                           value={ligne.stock}
                           onChange={(e) => updateLigne(index, 'stock', e.target.value)}
                           placeholder="0"
-                          className="w-full px-3 py-2.5 text-sm border-2 border-border rounded-xl bg-background/50 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                          className="w-full px-3 h-11 text-base sm:text-sm border-2 border-border rounded-xl bg-background/50 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
                         />
                       </div>
 
                       {/* Seuil d'alerte */}
                       <div className="space-y-2">
-                        <label className="text-xs font-semibold text-foreground">
+                        <label className="text-xs sm:text-sm font-semibold text-foreground">
                           Seuil d'alerte
                         </label>
                         <input
                           type="number"
+                          inputMode="numeric"
                           min="0"
                           value={ligne.seuilAlerte}
                           onChange={(e) => updateLigne(index, 'seuilAlerte', e.target.value)}
                           placeholder="10"
-                          className="w-full px-3 py-2.5 text-sm border-2 border-border rounded-xl bg-background/50 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                          className="w-full px-3 h-11 text-base sm:text-sm border-2 border-border rounded-xl bg-background/50 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
                         />
                       </div>
 
                       {/* Description */}
-                      <div className="md:col-span-2 space-y-2">
-                        <label className="text-xs font-semibold text-foreground">
+                      <div className="sm:col-span-2 space-y-2">
+                        <label className="text-xs sm:text-sm font-semibold text-foreground">
                           Description
                         </label>
                         <textarea
@@ -522,7 +515,7 @@ const BulkArticleForm = ({ open, onOpenChange, onSubmit }: BulkArticleFormProps)
                           onChange={(e) => updateLigne(index, 'description', e.target.value)}
                           placeholder="Description de l'article (optionnel)"
                           rows={2}
-                          className="w-full px-3 py-2.5 text-sm border-2 border-border rounded-xl bg-background/50 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all resize-none"
+                          className="w-full px-3 py-2.5 text-base sm:text-sm border-2 border-border rounded-xl bg-background/50 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all resize-none"
                         />
                       </div>
                     </div>
@@ -532,13 +525,13 @@ const BulkArticleForm = ({ open, onOpenChange, onSubmit }: BulkArticleFormProps)
             })}
           </div>
 
-          {/* Bouton ajouter ligne */}
-          <div className="mt-5">
+          {/* Bouton ajouter ligne - Touch-friendly */}
+          <div className="mt-4 sm:mt-5">
             <Button
               type="button"
               variant="outline"
               onClick={ajouterLigne}
-              className="w-full h-14 border-2 border-dashed border-primary/30 hover:border-primary hover:bg-primary/5 rounded-xl text-primary font-semibold transition-all duration-300 group"
+              className="w-full h-12 sm:h-14 border-2 border-dashed border-primary/30 hover:border-primary hover:bg-primary/5 active:scale-[0.98] rounded-xl text-primary font-semibold transition-all group text-base"
             >
               <Plus className="w-5 h-5 mr-2 group-hover:rotate-90 transition-transform duration-300" />
               Ajouter un article
@@ -546,20 +539,20 @@ const BulkArticleForm = ({ open, onOpenChange, onSubmit }: BulkArticleFormProps)
           </div>
         </div>
 
-        {/* Footer avec boutons */}
-        <div className="px-6 py-4 border-t bg-gradient-to-r from-muted/50 to-transparent flex gap-3 flex-shrink-0">
+        {/* Footer avec boutons - Stack sur mobile */}
+        <div className="px-3 sm:px-6 py-3 sm:py-4 border-t bg-gradient-to-r from-muted/50 to-transparent flex flex-col sm:flex-row gap-3 flex-shrink-0">
           <Button
             type="button"
             variant="outline"
             onClick={() => onOpenChange(false)}
-            className="flex-1 h-12 rounded-xl font-semibold"
+            className="w-full sm:flex-1 h-12 rounded-xl font-semibold text-base active:scale-[0.98] transition-transform"
           >
             Annuler
           </Button>
           <Button
             type="button"
             onClick={handleSubmit}
-            className="flex-1 h-12 rounded-xl font-semibold bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-lg shadow-primary/25"
+            className="w-full sm:flex-1 h-12 rounded-xl font-semibold text-base bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 active:scale-[0.98] transition-transform shadow-lg shadow-primary/25"
             disabled={totaux.totalArticles === 0}
           >
             <CheckCircle2 className="w-5 h-5 mr-2" />

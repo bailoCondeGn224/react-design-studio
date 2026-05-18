@@ -1,6 +1,7 @@
 import AppLayout from "@/components/AppLayout";
 import PageHeader from "@/components/PageHeader";
 import UserForm from "@/components/UserForm";
+import UtilisateurMobileCard from "@/components/UtilisateurMobileCard";
 import Pagination from "@/components/Pagination";
 import CanAccess from "@/components/CanAccess";
 import { Plus, Edit, Trash, Shield, MoreVertical, UserCircle } from "lucide-react";
@@ -139,7 +140,29 @@ const Utilisateurs = () => {
         </AlertDialogContent>
       </AlertDialog>
 
-      <div className="bg-card border border-border rounded-xl shadow-card overflow-hidden">
+      {/* Version mobile: Cartes */}
+      <div className="md:hidden space-y-3 mb-6">
+        {users.length > 0 ? (
+          users.map((user: any) => (
+            <UtilisateurMobileCard
+              key={user.id}
+              user={user}
+              onEdit={handleEdit}
+              onDelete={setDeleteId}
+              getRoleBadgeColor={getRoleBadgeColor}
+            />
+          ))
+        ) : (
+          <div className="bg-card border border-border rounded-xl p-12 text-center">
+            <UserCircle className="w-12 h-12 mx-auto mb-3 text-muted-foreground opacity-30" />
+            <p className="text-foreground font-medium">Aucun utilisateur</p>
+            <p className="text-sm text-muted-foreground mt-1">Créez le premier utilisateur</p>
+          </div>
+        )}
+      </div>
+
+      {/* Version desktop: Tableau */}
+      <div className="hidden md:block bg-card border border-border rounded-xl shadow-card overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full min-w-[700px]">
             <thead>
@@ -228,11 +251,14 @@ const Utilisateurs = () => {
             </tbody>
           </table>
         </div>
-
-        {meta && (
-          <Pagination meta={meta} onPageChange={setPage} />
-        )}
       </div>
+
+      {/* Pagination partagée */}
+      {meta && (
+        <div className="mt-6">
+          <Pagination meta={meta} onPageChange={setPage} />
+        </div>
+      )}
     </AppLayout>
   );
 };

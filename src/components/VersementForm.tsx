@@ -1,10 +1,12 @@
 import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
 import FormField from "@/components/FormField";
 import FournisseurVersementSelector from "@/components/FournisseurVersementSelector";
 import { toast } from "sonner";
 import { Versement } from "@/types";
 import { formatPrixInput, handlePrixChange } from "@/utils/format-prix";
+import { Wallet, Truck, DollarSign, CreditCard, FileText, Check, AlertCircle, Calendar } from "lucide-react";
 
 interface VersementFormProps {
   open: boolean;
@@ -107,118 +109,205 @@ const VersementForm = ({ open, onOpenChange, onSubmit, versement, fournisseurId 
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-[95vw] sm:max-w-md max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle className="font-heading">
-            {versement ? 'Modifier le Versement' : 'Enregistrer un Versement'}
-          </DialogTitle>
-          <DialogDescription>
-            {versement
-              ? 'Modifiez les informations du versement'
-              : 'Enregistrez un paiement effectué à un fournisseur'}
-          </DialogDescription>
-        </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <FournisseurVersementSelector
-            value={form.fournisseurId}
-            onChange={(fournisseur) => {
-              if (fournisseur) {
-                setSelectedFournisseur(fournisseur);
-                update("fournisseurId", fournisseur.id);
-              } else {
-                setSelectedFournisseur(null);
-                update("fournisseurId", "");
-              }
-            }}
-            selectedFournisseur={selectedFournisseur}
-            placeholder="Rechercher un fournisseur..."
-          />
-
-          <div>
-            <label className="block text-sm font-medium text-foreground mb-2">Montant versé (GNF) *</label>
-            <input
-              type="text"
-              inputMode="numeric"
-              placeholder="0"
-              value={formatPrixInput(form.montant)}
-              onChange={e => update("montant", handlePrixChange(e.target.value))}
-              onFocus={e => e.target.select()}
-              className={`w-full px-4 py-2.5 rounded-lg border bg-card text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring/30 ${
-                selectedFournisseur && form.montant && parseFloat(form.montant) > selectedFournisseur.dette
-                  ? "border-red-500 focus:ring-red-500/30"
-                  : "border-border"
-              }`}
-            />
-            {selectedFournisseur && form.montant && parseFloat(form.montant) > selectedFournisseur.dette && (
-              <p className="text-xs text-red-500 mt-1">
-                ⚠️ Le montant dépasse la dette actuelle ({formatPrix(selectedFournisseur.dette)})
-              </p>
-            )}
+      <DialogContent className="max-w-[95vw] sm:max-w-2xl max-h-[90vh] flex flex-col p-0 bg-gradient-to-br from-background via-background to-success/5">
+        {/* Header avec gradient */}
+        <div className="px-4 sm:px-6 py-4 sm:py-5 border-b bg-gradient-to-r from-success/10 via-success/5 to-transparent flex-shrink-0">
+          <div className="flex items-start justify-between gap-4">
+            <div className="flex items-center gap-3 flex-1 min-w-0">
+              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br from-success to-success/70 flex items-center justify-center shadow-lg flex-shrink-0">
+                <Wallet className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <h2 className="text-lg sm:text-xl font-bold text-foreground">
+                  {versement ? 'Modifier le Versement' : 'Enregistrer un Versement'}
+                </h2>
+                <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">
+                  {versement
+                    ? 'Modifiez les informations du versement'
+                    : 'Enregistrez un paiement effectué à un fournisseur'}
+                </p>
+              </div>
+            </div>
           </div>
+        </div>
 
-          <div className="space-y-1.5">
-            <label className="text-sm font-medium text-foreground">Mode de paiement *</label>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-              {["especes", "mobile", "virement", "cheque"].map(mode => (
-                <button
-                  key={mode}
-                  type="button"
-                  onClick={() => update("modePaiement", mode)}
-                  className={`text-sm px-3 py-2 rounded-lg font-medium transition-colors ${
-                    form.modePaiement === mode
-                      ? "gradient-gold text-primary-foreground"
-                      : "bg-secondary text-secondary-foreground hover:bg-accent/20 border border-border"
-                  }`}
-                >
-                  {getModeLabel(mode)}
-                </button>
-              ))}
+        {/* Zone scrollable */}
+        <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto px-4 sm:px-6 py-4 sm:py-5 space-y-5">
+          {/* Section Fournisseur */}
+          <div className="relative overflow-hidden rounded-xl bg-gradient-to-br from-primary/5 via-background to-background border-2 border-border p-4 sm:p-5">
+            <div className="absolute top-0 right-0 w-24 h-24 bg-primary/5 rounded-full -mr-12 -mt-12"></div>
+            <div className="relative space-y-3">
+              <div className="flex items-center gap-2 mb-2">
+                <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
+                  <Truck className="w-4 h-4 text-primary" />
+                </div>
+                <h3 className="text-sm font-bold text-foreground">Fournisseur *</h3>
+              </div>
+              <FournisseurVersementSelector
+                value={form.fournisseurId}
+                onChange={(fournisseur) => {
+                  if (fournisseur) {
+                    setSelectedFournisseur(fournisseur);
+                    update("fournisseurId", fournisseur.id);
+                  } else {
+                    setSelectedFournisseur(null);
+                    update("fournisseurId", "");
+                  }
+                }}
+                selectedFournisseur={selectedFournisseur}
+                placeholder="Rechercher un fournisseur..."
+              />
             </div>
           </div>
 
-          {(form.modePaiement === "mobile" || form.modePaiement === "virement" || form.modePaiement === "cheque") && (
-            <FormField
-              label="Référence transaction"
-              placeholder={form.modePaiement === "mobile" ? "Ex: MM123456" : form.modePaiement === "cheque" ? "N° Chèque" : "Référence"}
-              value={form.reference}
-              onChange={e => update("reference", (e.target as HTMLInputElement).value)}
-              maxLength={50}
-            />
-          )}
+          {/* Section Montant */}
+          <div className="relative overflow-hidden rounded-xl bg-gradient-to-br from-success/5 via-background to-background border-2 border-border p-4 sm:p-5">
+            <div className="absolute top-0 right-0 w-24 h-24 bg-success/5 rounded-full -mr-12 -mt-12"></div>
+            <div className="relative space-y-3">
+              <div className="flex items-center gap-2 mb-2">
+                <div className="w-8 h-8 rounded-lg bg-success/10 flex items-center justify-center">
+                  <DollarSign className="w-4 h-4 text-success" />
+                </div>
+                <h3 className="text-sm font-bold text-foreground">Montant du versement *</h3>
+              </div>
+              <div>
+                <input
+                  type="text"
+                  inputMode="numeric"
+                  placeholder="0"
+                  value={formatPrixInput(form.montant)}
+                  onChange={e => update("montant", handlePrixChange(e.target.value))}
+                  onFocus={e => e.target.select()}
+                  className={`w-full px-4 h-11 rounded-lg border bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 ${
+                    selectedFournisseur && form.montant && parseFloat(form.montant) > selectedFournisseur.dette
+                      ? "border-destructive focus:ring-destructive/20"
+                      : "border-border focus:ring-success/20"
+                  }`}
+                />
+                {selectedFournisseur && form.montant && parseFloat(form.montant) > selectedFournisseur.dette && (
+                  <div className="flex items-start gap-2 mt-2 p-2 bg-destructive/10 rounded-lg border border-destructive/20">
+                    <AlertCircle className="w-4 h-4 text-destructive flex-shrink-0 mt-0.5" />
+                    <p className="text-xs text-destructive">
+                      Le montant dépasse la dette actuelle ({formatPrix(selectedFournisseur.dette)})
+                    </p>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
 
-          <FormField
-            label="Date du versement *"
-            type="date"
-            value={form.date}
-            onChange={e => update("date", (e.target as HTMLInputElement).value)}
-          />
+          {/* Section Mode de paiement */}
+          <div className="relative overflow-hidden rounded-xl bg-gradient-to-br from-secondary/5 via-background to-background border-2 border-border p-4 sm:p-5">
+            <div className="absolute top-0 right-0 w-24 h-24 bg-secondary/5 rounded-full -mr-12 -mt-12"></div>
+            <div className="relative space-y-4">
+              <div className="flex items-center gap-2 mb-2">
+                <div className="w-8 h-8 rounded-lg bg-secondary/10 flex items-center justify-center">
+                  <CreditCard className="w-4 h-4 text-secondary-foreground" />
+                </div>
+                <h3 className="text-sm font-bold text-foreground">Mode de paiement *</h3>
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                {["especes", "mobile", "virement", "cheque"].map(mode => (
+                  <button
+                    key={mode}
+                    type="button"
+                    onClick={() => update("modePaiement", mode)}
+                    className={`px-3 h-11 rounded-lg font-medium transition-all text-sm ${
+                      form.modePaiement === mode
+                        ? "bg-primary text-primary-foreground shadow-md scale-105"
+                        : "bg-muted text-foreground hover:bg-primary/10 hover:border-primary/30 border border-transparent"
+                    }`}
+                  >
+                    {getModeLabel(mode)}
+                  </button>
+                ))}
+              </div>
 
-          <FormField
-            label="Note (optionnel)"
-            as="textarea"
-            placeholder="Informations complémentaires..."
-            value={form.note}
-            onChange={e => update("note", (e.target as HTMLTextAreaElement).value)}
-            maxLength={200}
-            rows={2}
-          />
+              {(form.modePaiement === "mobile" || form.modePaiement === "virement" || form.modePaiement === "cheque") && (
+                <div className="pt-2">
+                  <label className="block text-xs font-medium text-muted-foreground mb-1.5">
+                    Référence transaction
+                  </label>
+                  <input
+                    type="text"
+                    placeholder={form.modePaiement === "mobile" ? "Ex: MM123456" : form.modePaiement === "cheque" ? "N° Chèque" : "Référence"}
+                    value={form.reference}
+                    onChange={e => update("reference", e.target.value)}
+                    maxLength={50}
+                    className="w-full px-3 h-11 rounded-lg border border-border bg-background text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                  />
+                </div>
+              )}
+            </div>
+          </div>
 
-          <div className="flex gap-2 pt-2">
-            <button
-              type="button"
-              onClick={() => onOpenChange(false)}
-              className="flex-1 py-2.5 rounded-lg border border-border text-sm font-medium text-muted-foreground hover:bg-secondary transition-colors"
-            >
-              Annuler
-            </button>
-            <button
-              type="submit"
-              className="flex-1 py-2.5 rounded-lg gradient-gold text-primary-foreground text-sm font-semibold hover:opacity-90 transition-opacity"
-            >
-              {versement ? 'Modifier' : 'Enregistrer'}
-            </button>
+          {/* Section Informations complémentaires - Gris */}
+          <div className="relative overflow-hidden rounded-xl bg-gradient-to-br from-muted/30 via-background to-background border-2 border-border p-4 sm:p-5">
+            <div className="absolute top-0 right-0 w-24 h-24 bg-muted/20 rounded-full -mr-12 -mt-12"></div>
+            <div className="relative space-y-4">
+              <div className="flex items-center gap-2 mb-2">
+                <div className="w-8 h-8 rounded-lg bg-muted/50 flex items-center justify-center">
+                  <FileText className="w-4 h-4 text-muted-foreground" />
+                </div>
+                <h3 className="text-sm font-bold text-foreground">Informations complémentaires</h3>
+              </div>
+
+              <div>
+                <label className="block text-xs font-medium text-muted-foreground mb-1.5">
+                  Date du versement *
+                </label>
+                <input
+                  type="date"
+                  value={form.date}
+                  onChange={e => update("date", e.target.value)}
+                  className="w-full px-3 h-11 rounded-lg border border-border bg-background text-foreground focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-medium text-muted-foreground mb-1.5">
+                  Note (optionnelle)
+                </label>
+                <textarea
+                  placeholder="Informations complémentaires..."
+                  value={form.note}
+                  onChange={e => update("note", e.target.value)}
+                  maxLength={200}
+                  rows={3}
+                  className="w-full px-3 py-2.5 rounded-lg border border-border bg-background text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-primary/20 focus:border-primary resize-none"
+                />
+              </div>
+            </div>
           </div>
         </form>
+
+        {/* Footer avec actions - fixe en bas */}
+        <div className="px-4 sm:px-6 py-4 border-t bg-muted/30 flex-shrink-0">
+          <div className="flex flex-col-reverse sm:flex-row justify-end gap-2 sm:gap-3">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => onOpenChange(false)}
+              className="w-full sm:w-auto"
+            >
+              Annuler
+            </Button>
+            <Button
+              type="submit"
+              onClick={(e: any) => {
+                const dialogContent = e.target.closest('[role="dialog"]');
+                const formElement = dialogContent?.querySelector('form');
+                if (formElement) {
+                  formElement.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
+                }
+              }}
+              className="w-full sm:w-auto"
+            >
+              <Check className="w-4 h-4 mr-2" />
+              {versement ? 'Modifier le versement' : 'Enregistrer le versement'}
+            </Button>
+          </div>
+        </div>
       </DialogContent>
     </Dialog>
   );

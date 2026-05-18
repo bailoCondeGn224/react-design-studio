@@ -2,6 +2,7 @@ import AppLayout from "@/components/AppLayout";
 import PageHeader from "@/components/PageHeader";
 import StatCard from "@/components/StatCard";
 import VersementClientForm from "@/components/VersementClientForm";
+import VersementClientMobileCard from "@/components/VersementClientMobileCard";
 import Pagination from "@/components/Pagination";
 import CanAccess from "@/components/CanAccess";
 import { Plus, Wallet, AlertCircle, Search, ArrowDownLeft, CheckCircle, Eye, Edit2, Trash2 } from "lucide-react";
@@ -489,8 +490,8 @@ const VersementsClient = () => {
         </DialogContent>
       </Dialog>
 
-      {/* Stats */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-5 mb-6 sm:mb-8">
+      {/* Stats - cachées sur mobile */}
+      <div className="hidden sm:grid sm:grid-cols-3 gap-4 sm:gap-5 mb-6 sm:mb-8">
         <StatCard
           title="Crédits en Cours"
           value={formatPrix(totalCreditsEnCours)}
@@ -522,8 +523,34 @@ const VersementsClient = () => {
         />
       </div>
 
-      {/* Tableau Unifié - Tous les Clients avec Statuts */}
-      <div className="bg-card border border-border rounded-xl shadow-card overflow-hidden">
+      {/* Version mobile: Cartes */}
+      <div className="md:hidden space-y-3 mb-6">
+        {clients.length > 0 ? (
+          clients
+            .sort((a: any, b: any) => b.totalCredits - a.totalCredits)
+            .map((client: any) => (
+              <VersementClientMobileCard
+                key={client.id}
+                client={client}
+                onOpenPaymentForm={() => setFormOpen(true)}
+                onViewHistory={(client) => {
+                  setSelectedClientForHistory(client);
+                  setHistoryDialogOpen(true);
+                }}
+                formatPrix={formatPrix}
+              />
+            ))
+        ) : (
+          <div className="bg-card border border-border rounded-xl p-12 text-center">
+            <Wallet className="w-12 h-12 mx-auto mb-3 text-muted-foreground opacity-30" />
+            <p className="text-foreground font-medium">Aucun client</p>
+            <p className="text-sm text-muted-foreground mt-1">Aucun client trouvé</p>
+          </div>
+        )}
+      </div>
+
+      {/* Version desktop: Tableau Unifié - Tous les Clients avec Statuts */}
+      <div className="hidden md:block bg-card border border-border rounded-xl shadow-card overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full min-w-[700px]">
             <thead>

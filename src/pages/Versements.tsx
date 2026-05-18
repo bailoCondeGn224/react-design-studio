@@ -2,6 +2,7 @@ import AppLayout from "@/components/AppLayout";
 import PageHeader from "@/components/PageHeader";
 import StatCard from "@/components/StatCard";
 import VersementForm from "@/components/VersementForm";
+import FournisseurVersementMobileCard from "@/components/FournisseurVersementMobileCard";
 import Pagination from "@/components/Pagination";
 import CanAccess from "@/components/CanAccess";
 import { Plus, Wallet, AlertCircle, Search, ArrowDownRight, CheckCircle, Eye, Edit2, X, Trash2 } from "lucide-react";
@@ -294,8 +295,8 @@ const Versements = () => {
         </DialogContent>
       </Dialog>
 
-      {/* Stats */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-5 mb-6 sm:mb-8">
+      {/* Stats - cachées sur mobile */}
+      <div className="hidden md:grid md:grid-cols-3 gap-5 mb-8">
         <StatCard
           title="Dette Totale"
           value={formatPrix(totalDette)}
@@ -327,110 +328,140 @@ const Versements = () => {
         />
       </div>
 
-      {/* Tableau unifié des fournisseurs */}
-      <div className="bg-card border border-border rounded-xl shadow-card overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead className="bg-secondary/50 border-b border-border">
-              <tr>
-                <th className="text-left py-3 px-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                  Fournisseur
-                </th>
-                <th className="text-left py-3 px-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                  Total Achats
-                </th>
-                <th className="text-left py-3 px-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                  Dette Actuelle
-                </th>
-                <th className="text-left py-3 px-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                  Statut
-                </th>
-                <th className="text-right py-3 px-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                  Actions
-                </th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-border">
-              {fournisseurs
-                .sort((a: any, b: any) => b.dette - a.dette)
-                .map((fournisseur: any) => {
-                  const hasDebt = fournisseur.dette > 0;
-                  return (
-                    <tr key={fournisseur.id} className="hover:bg-secondary/30 transition-colors">
-                      <td className="py-3 px-4">
-                        <p className="text-sm font-semibold text-foreground">{fournisseur.nom}</p>
-                        {fournisseur.telephone && (
-                          <p className="text-xs text-muted-foreground mt-0.5">{fournisseur.telephone}</p>
-                        )}
-                      </td>
-                      <td className="py-3 px-4">
-                        <p className="text-sm text-foreground font-medium">{formatPrix(fournisseur.totalAchats || 0)}</p>
-                        <p className="text-xs text-muted-foreground mt-0.5">
-                          Payé: {formatPrix(fournisseur.totalPaye || 0)}
-                        </p>
-                      </td>
-                      <td className="py-3 px-4">
-                        <p className={`text-sm font-bold ${hasDebt ? 'text-destructive' : 'text-success'}`}>
-                          {formatPrix(fournisseur.dette)}
-                        </p>
-                      </td>
-                      <td className="py-3 px-4">
-                        {hasDebt ? (
-                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-destructive/10 text-destructive border border-destructive/20">
-                            <AlertCircle className="w-3 h-3" />
-                            En Dette
-                          </span>
-                        ) : (
-                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-success/10 text-success border border-success/20">
-                            <CheckCircle className="w-3 h-3" />
-                            À Jour
-                          </span>
-                        )}
-                      </td>
-                      <td className="py-3 px-4">
-                        <div className="flex items-center justify-end gap-2">
-                          {hasDebt && (
-                            <CanAccess permissions={['versements.create']}>
-                              <button
-                                onClick={() => handlePayFournisseur(fournisseur)}
-                                className="p-2 rounded-lg hover:bg-primary/10 text-primary transition-colors"
-                                title="Enregistrer un paiement"
-                              >
-                                <Wallet className="w-4 h-4" />
-                              </button>
-                            </CanAccess>
-                          )}
-                          <button
-                            onClick={() => handleShowHistory(fournisseur)}
-                            className="p-2 rounded-lg hover:bg-primary/10 text-primary transition-colors"
-                            title="Voir l'historique"
-                          >
-                            <Eye className="w-4 h-4" />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })}
-              {fournisseurs.length === 0 && (
-                <tr>
-                  <td colSpan={5} className="py-12 text-center">
-                    <p className="text-sm text-muted-foreground">Aucun fournisseur trouvé</p>
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
+      {/* Version mobile: Cartes */}
+      <div className="md:hidden space-y-3 mb-6">
+        {fournisseurs.length > 0 ? (
+          fournisseurs
+            .sort((a: any, b: any) => b.dette - a.dette)
+            .map((fournisseur: any) => (
+              <FournisseurVersementMobileCard
+                key={fournisseur.id}
+                fournisseur={fournisseur}
+                formatPrix={formatPrix}
+                onPay={handlePayFournisseur}
+                onViewHistory={handleShowHistory}
+              />
+            ))
+        ) : (
+          <div className="bg-card border border-border rounded-xl p-12 text-center">
+            <Wallet className="w-12 h-12 mx-auto mb-3 text-muted-foreground opacity-30" />
+            <p className="text-foreground font-medium">Aucun fournisseur</p>
+            <p className="text-sm text-muted-foreground mt-1">Aucun fournisseur à afficher</p>
+          </div>
+        )}
+      </div>
+
+      {/* Version desktop: Tableau */}
+      <div className="hidden md:block bg-card border border-border rounded-xl shadow-card overflow-hidden">
+        <div className="p-4 border-b border-border">
+          <h3 className="text-lg font-semibold text-foreground">Liste des Fournisseurs</h3>
         </div>
 
-        {/* Pagination */}
-        {fournisseursMeta && fournisseursMeta.totalPages > 1 && (
+        {fournisseurs.length > 0 ? (
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead className="bg-secondary/50">
+                <tr>
+                  <th className="text-left py-3 px-6 text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                    Fournisseur
+                  </th>
+                  <th className="text-left py-3 px-6 text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                    Total Achats
+                  </th>
+                  <th className="text-left py-3 px-6 text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                    Dette Actuelle
+                  </th>
+                  <th className="text-left py-3 px-6 text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                    Statut
+                  </th>
+                  <th className="text-right py-3 px-6 text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                    Actions
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-border">
+                {fournisseurs
+                  .sort((a: any, b: any) => b.dette - a.dette)
+                  .map((fournisseur: any) => {
+                    const hasDebt = fournisseur.dette > 0;
+                    return (
+                      <tr key={fournisseur.id} className="hover:bg-secondary/30 transition-colors">
+                        <td className="py-3 px-6">
+                          <p className="text-sm font-semibold text-foreground">{fournisseur.nom}</p>
+                          {fournisseur.telephone && (
+                            <p className="text-xs text-muted-foreground mt-0.5">{fournisseur.telephone}</p>
+                          )}
+                        </td>
+                        <td className="py-3 px-6">
+                          <p className="text-sm text-foreground font-medium">{formatPrix(fournisseur.totalAchats || 0)}</p>
+                          <p className="text-xs text-muted-foreground mt-0.5">
+                            Payé: {formatPrix(fournisseur.totalPaye || 0)}
+                          </p>
+                        </td>
+                        <td className="py-3 px-6">
+                          <p className={`text-sm font-bold ${hasDebt ? 'text-destructive' : 'text-success'}`}>
+                            {formatPrix(fournisseur.dette)}
+                          </p>
+                        </td>
+                        <td className="py-3 px-6">
+                          {hasDebt ? (
+                            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-destructive/10 text-destructive border border-destructive/20">
+                              <AlertCircle className="w-3 h-3" />
+                              En Dette
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-success/10 text-success border border-success/20">
+                              <CheckCircle className="w-3 h-3" />
+                              À Jour
+                            </span>
+                          )}
+                        </td>
+                        <td className="py-3 px-6">
+                          <div className="flex items-center justify-end gap-2">
+                            {hasDebt && (
+                              <CanAccess permissions={['versements.create']}>
+                                <button
+                                  onClick={() => handlePayFournisseur(fournisseur)}
+                                  className="p-2 rounded-lg hover:bg-primary/10 text-primary transition-colors"
+                                  title="Enregistrer un paiement"
+                                >
+                                  <Wallet className="w-4 h-4" />
+                                </button>
+                              </CanAccess>
+                            )}
+                            <button
+                              onClick={() => handleShowHistory(fournisseur)}
+                              className="p-2 rounded-lg hover:bg-primary/10 text-primary transition-colors"
+                              title="Voir l'historique"
+                            >
+                              <Eye className="w-4 h-4" />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
+              </tbody>
+            </table>
+          </div>
+        ) : (
+          <div className="text-center py-12 text-muted-foreground">
+            <Wallet className="w-12 h-12 mx-auto mb-3 opacity-30" />
+            <p className="text-foreground font-medium">Aucun fournisseur trouvé</p>
+            <p className="text-sm mt-1">Commencez par ajouter des fournisseurs</p>
+          </div>
+        )}
+      </div>
+
+      {/* Pagination partagée */}
+      {fournisseursMeta && fournisseursMeta.totalPages > 1 && (
+        <div className="mt-6">
           <Pagination
             meta={fournisseursMeta}
             onPageChange={setPage}
           />
-        )}
-      </div>
+        </div>
+      )}
 
       {/* Dialog Historique Fournisseur */}
       <Dialog open={historyDialogOpen} onOpenChange={setHistoryDialogOpen}>

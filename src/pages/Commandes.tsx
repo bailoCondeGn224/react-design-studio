@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import AppLayout from "@/components/AppLayout";
 import PageHeader from "@/components/PageHeader";
 import CommandeForm from "@/components/CommandeForm";
+import CommandeMobileCard from "@/components/CommandeMobileCard";
 import CommandeReceipt from "@/components/CommandeReceipt";
 import Pagination from "@/components/Pagination";
 import CanAccess from "@/components/CanAccess";
@@ -154,9 +155,10 @@ const Commandes = () => {
         description="Commandes clients en attente et historique"
         action={
           <CanAccess permissions={['commandes.create']}>
-            <Button onClick={() => setFormOpen(true)}>
+            <Button onClick={() => setFormOpen(true)} className="h-11">
               <Plus className="h-4 w-4 mr-2" />
-              Nouvelle Commande
+              <span className="hidden sm:inline">Nouvelle Commande</span>
+              <span className="sm:hidden">Nouvelle</span>
             </Button>
           </CanAccess>
         }
@@ -164,7 +166,7 @@ const Commandes = () => {
 
       {/* Statistiques */}
       {stats && (
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-6">
+        <div className="hidden md:grid md:grid-cols-3 lg:grid-cols-6 gap-4 mb-6">
           <div className="bg-card p-4 rounded-lg border">
             <div className="text-sm text-muted-foreground">Total</div>
             <div className="text-2xl font-bold">{stats.total}</div>
@@ -233,8 +235,37 @@ const Commandes = () => {
         />
       </div>
 
-      {/* Tableau */}
-      <div className="bg-card rounded-lg border overflow-hidden">
+      {/* Version mobile: Cartes */}
+      <div className="md:hidden space-y-3 mb-6">
+        {isLoading ? (
+          <div className="bg-card border border-border rounded-xl p-12 text-center">
+            <p className="text-muted-foreground">Chargement...</p>
+          </div>
+        ) : commandes.length === 0 ? (
+          <div className="bg-card border border-border rounded-xl p-12 text-center">
+            <p className="text-muted-foreground">Aucune commande trouvée</p>
+          </div>
+        ) : (
+          commandes.map((commande: Commande) => (
+            <CommandeMobileCard
+              key={commande.id}
+              commande={commande}
+              clientNom={clients.find((c: any) => c.id === commande.clientId)?.nom || 'Client inconnu'}
+              onViewDetails={setDetailsCommande}
+              onLivrer={setLivrerCommande}
+              onEdit={setEditingCommande}
+              onAnnuler={setAnnulerId}
+              onDelete={setDeleteId}
+              onPrint={setPrintCommande}
+              formatPrix={formatPrix}
+              formatDate={formatDate}
+            />
+          ))
+        )}
+      </div>
+
+      {/* Version desktop: Tableau */}
+      <div className="hidden md:block bg-card rounded-lg border overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead className="bg-muted/50">

@@ -1,6 +1,7 @@
 import AppLayout from "@/components/AppLayout";
 import PageHeader from "@/components/PageHeader";
 import StockForm from "@/components/StockForm";
+import StockMobileCard from "@/components/StockMobileCard";
 import Pagination from "@/components/Pagination";
 import CanAccess from "@/components/CanAccess";
 import { Package, AlertTriangle, Search, Plus, Edit, Trash, MoreVertical, AlertCircle, TrendingDown, History, ArrowUpCircle, ArrowDownCircle, Flame, Zap, Clock, Snail, Snowflake, TrendingUp as TrendUp } from "lucide-react";
@@ -452,9 +453,9 @@ const Stock = () => {
         </div>
       )}
 
-      {/* Section Analyse de Rotation */}
+      {/* Section Analyse de Rotation - Cachée sur mobile */}
       {statsRotation && (statsRotation.topVentes?.length > 0 || statsRotation.stockMort?.length > 0) && (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4 lg:gap-6 mb-6">
+        <div className="hidden md:grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4 lg:gap-6 mb-6">
           {/* Top Produits à Rotation Rapide */}
           {statsRotation.topVentes && statsRotation.topVentes.length > 0 && (
             <div className="bg-gradient-to-br from-success/5 via-card to-card border border-success/20 rounded-xl p-3 sm:p-4 lg:p-5 shadow-card">
@@ -550,7 +551,7 @@ const Stock = () => {
       )}
 
       {/* Statistiques du stock */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6">
+      <div className="hidden md:grid md:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6">
         <div className="bg-card border border-border rounded-lg p-3 sm:p-4 shadow-card">
           <div className="flex items-center gap-2 sm:gap-3">
             <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
@@ -600,9 +601,9 @@ const Stock = () => {
         </div>
       </div>
 
-      {/* Zones */}
+      {/* Zones - Cachées sur mobile */}
       {zones.length > 0 && (
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2 sm:gap-3 mb-4 sm:mb-6">
+        <div className="hidden md:grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2 sm:gap-3 mb-4 sm:mb-6">
           {zones.map((zone: any) => (
             <div key={zone.id} className="bg-card border border-border rounded-lg p-2 sm:p-3 text-center shadow-card">
               <p className="text-[10px] sm:text-xs text-muted-foreground">Zone</p>
@@ -641,7 +642,37 @@ const Stock = () => {
         </div>
       </div>
 
-      <div className="bg-card border border-border rounded-xl shadow-card overflow-hidden relative">
+      {/* Version Mobile - Cards (< md) */}
+      <div className="md:hidden space-y-3 mb-6">
+        {isFetching && (
+          <div className="h-1 bg-primary/20 rounded-full overflow-hidden mb-2">
+            <div className="h-full bg-primary w-1/3 animate-pulse" />
+          </div>
+        )}
+        {articles.length === 0 ? (
+          <div className="text-center py-16">
+            <Package className="w-16 h-16 text-muted-foreground mx-auto mb-4 opacity-50" />
+            <p className="text-sm text-muted-foreground">Aucun article trouvé</p>
+          </div>
+        ) : (
+          articles.map((item: any) => (
+            <StockMobileCard
+              key={item.id}
+              article={item}
+              onEdit={handleEdit}
+              onDelete={setDeleteId}
+              onViewHistory={setHistoryArticleId}
+              onViewPhoto={(photo, nom) => setSelectedImage({ url: getPhotoUrl(photo) || '', nom })}
+              formatPrix={formatPrix}
+              getStockStatus={getStockStatus}
+              categorieName={item.categorie?.nom || categories.find(c => c.id === item.categorieId)?.nom || '-'}
+            />
+          ))
+        )}
+      </div>
+
+      {/* Version Desktop - Tableau (≥ md) */}
+      <div className="hidden md:block bg-card border border-border rounded-xl shadow-card overflow-hidden relative">
         {/* Indicateur de chargement subtil pendant le refetch */}
         {isFetching && (
           <div className="absolute top-0 left-0 right-0 h-1 bg-primary/20 overflow-hidden z-10">
@@ -841,12 +872,14 @@ const Stock = () => {
           </tbody>
         </table>
         </div>
-
-        {/* Pagination */}
-        {meta && (
-          <Pagination meta={meta} onPageChange={setPage} />
-        )}
       </div>
+
+      {/* Pagination partagée entre mobile et desktop */}
+      {meta && (
+        <div className="mt-6">
+          <Pagination meta={meta} onPageChange={setPage} />
+        </div>
+      )}
     </AppLayout>
   );
 };

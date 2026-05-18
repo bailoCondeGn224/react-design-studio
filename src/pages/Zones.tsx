@@ -2,11 +2,12 @@ import { useState } from "react";
 import AppLayout from "@/components/AppLayout";
 import PageHeader from "@/components/PageHeader";
 import ZoneForm from "@/components/ZoneForm";
+import ZoneMobileCard from "@/components/ZoneMobileCard";
 import Pagination from "@/components/Pagination";
 import CanAccess from "@/components/CanAccess";
 import { useZones, useCreateZone, useUpdateZone, useDeleteZone } from "@/hooks/useZones";
 import { Zone } from "@/api/zones";
-import { Plus, Edit, Trash, CheckCircle, XCircle } from "lucide-react";
+import { Plus, Edit, Trash, CheckCircle, XCircle, MapPin } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -80,8 +81,33 @@ const Zones = () => {
           }
         />
 
-      {/* Zones Table */}
-      <div className="bg-card border border-border rounded-xl shadow-card overflow-hidden">
+      {/* Version mobile: Cartes */}
+      <div className="md:hidden space-y-3 mb-6">
+        {isLoading ? (
+          <div className="bg-card border border-border rounded-xl p-12 text-center">
+            <div className="w-12 h-12 border-4 border-primary/30 border-t-primary rounded-full animate-spin mx-auto mb-4" />
+            <p className="text-muted-foreground">Chargement...</p>
+          </div>
+        ) : zones.length > 0 ? (
+          zones.map((zone) => (
+            <ZoneMobileCard
+              key={zone.id}
+              zone={zone}
+              onEdit={handleEdit}
+              onDelete={setDeleteId}
+            />
+          ))
+        ) : (
+          <div className="bg-card border border-border rounded-xl p-12 text-center">
+            <MapPin className="w-12 h-12 mx-auto mb-3 text-muted-foreground opacity-30" />
+            <p className="text-foreground font-medium">Aucune zone</p>
+            <p className="text-sm text-muted-foreground mt-1">Créez votre première zone</p>
+          </div>
+        )}
+      </div>
+
+      {/* Version desktop: Tableau */}
+      <div className="hidden md:block bg-card border border-border rounded-xl shadow-card overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead className="bg-secondary border-b border-border">
@@ -161,12 +187,14 @@ const Zones = () => {
             </tbody>
           </table>
         </div>
-
-        {/* Pagination */}
-        {meta && (
-          <Pagination meta={meta} onPageChange={setPage} />
-        )}
       </div>
+
+      {/* Pagination partagée */}
+      {meta && (
+        <div className="mt-6">
+          <Pagination meta={meta} onPageChange={setPage} />
+        </div>
+      )}
 
       {/* Form Dialog */}
       <ZoneForm
