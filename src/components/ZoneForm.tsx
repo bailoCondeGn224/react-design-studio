@@ -208,7 +208,6 @@ const ZoneForm = ({ open, onOpenChange, onSubmit, initialData, mode }: ZoneFormP
             </Button>
           </div>
         </div>
-        </form>
       </DialogContent>
     </Dialog>
   );

@@ -251,7 +251,6 @@ const UserForm = ({ open, onOpenChange, onSubmit, initialData = null, mode = 'cr
             </Button>
           </div>
         </div>
-        </form>
       </DialogContent>
     </Dialog>
   );

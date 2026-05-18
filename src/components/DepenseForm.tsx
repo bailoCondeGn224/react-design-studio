@@ -292,7 +292,6 @@ const DepenseForm = ({ open, onOpenChange, onSubmit, initialData = null, mode = 
             </Button>
           </div>
         </div>
-        </form>
       </DialogContent>
     </Dialog>
   );
