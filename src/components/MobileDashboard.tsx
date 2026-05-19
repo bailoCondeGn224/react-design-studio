@@ -57,25 +57,24 @@ const MobileDashboard = () => {
           <p className="text-sm opacity-90">{ventesStats?.jour.count || 0} ventes</p>
         </div>
 
-        {/* CA semaine et mois - Plus compact */}
-        <div className="grid grid-cols-2 gap-2">
-          <div className="bg-card rounded-xl p-4 border border-border">
-            <div className="flex items-center gap-2 mb-2">
-              <TrendingUp className="w-4 h-4 text-primary" />
-              <span className="text-xs text-muted-foreground">Semaine</span>
-            </div>
-            <p className="text-lg font-bold">{formatPrix(caSemaine)}</p>
-            <p className="text-xs text-muted-foreground">{ventesStats?.semaine.count || 0} ventes</p>
+        {/* CA semaine */}
+        <div className="bg-card rounded-xl p-4 border border-border">
+          <div className="flex items-center gap-2 mb-2">
+            <TrendingUp className="w-4 h-4 text-primary" />
+            <span className="text-xs text-muted-foreground">Cette Semaine</span>
           </div>
+          <p className="text-2xl font-bold">{formatPrix(caSemaine)} <span className="text-base font-normal">GNF</span></p>
+          <p className="text-xs text-muted-foreground">{ventesStats?.semaine.count || 0} ventes</p>
+        </div>
 
-          <div className="bg-card rounded-xl p-4 border border-border">
-            <div className="flex items-center gap-2 mb-2">
-              <ShoppingCart className="w-4 h-4 text-accent" />
-              <span className="text-xs text-muted-foreground">Mois</span>
-            </div>
-            <p className="text-lg font-bold">{formatPrix(caMois)}</p>
-            <p className="text-xs text-muted-foreground">{ventesStats?.mois.count || 0} ventes</p>
+        {/* CA mois */}
+        <div className="bg-card rounded-xl p-4 border border-border">
+          <div className="flex items-center gap-2 mb-2">
+            <ShoppingCart className="w-4 h-4 text-accent" />
+            <span className="text-xs text-muted-foreground">Ce Mois</span>
           </div>
+          <p className="text-2xl font-bold">{formatPrix(caMois)} <span className="text-base font-normal">GNF</span></p>
+          <p className="text-xs text-muted-foreground">{ventesStats?.mois.count || 0} ventes</p>
         </div>
 
         {/* Actions rapides - Plus proéminentes */}
