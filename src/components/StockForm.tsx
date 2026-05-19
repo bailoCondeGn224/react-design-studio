@@ -118,7 +118,13 @@ const StockForm = ({ open, onOpenChange, onSubmit, initialData = null, mode = 'c
       prixAchat: form.prixAchat ? Number(form.prixAchat) : undefined,
     };
 
-    onSubmit({ ...articleData, id: form.id, photo: photoFile || undefined });
+    // Ne passer photo que si un nouveau fichier a été sélectionné
+    const submitData: any = { ...articleData, id: form.id };
+    if (photoFile) {
+      submitData.photo = photoFile;
+    }
+
+    onSubmit(submitData);
 
     setForm(getInitialState());
     setPhotoFile(null);
