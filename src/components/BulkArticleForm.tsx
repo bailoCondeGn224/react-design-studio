@@ -216,11 +216,11 @@ const BulkArticleForm = ({ open, onOpenChange, onSubmit }: BulkArticleFormProps)
         <div className="flex-1 overflow-y-auto px-3 sm:px-6 py-3 sm:py-5">
           {/* Cartes statistiques - Stack sur mobile */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 mb-4 sm:mb-6">
-            <div className="group relative overflow-hidden rounded-xl bg-gradient-to-br from-blue-500/10 via-blue-500/5 to-transparent border border-blue-500/20 p-4 hover:shadow-lg hover:shadow-blue-500/10 transition-all duration-300">
-              <div className="absolute top-0 right-0 w-20 h-20 bg-blue-500/10 rounded-full -mr-10 -mt-10 group-hover:scale-150 transition-transform duration-500"></div>
+            <div className="group relative overflow-hidden rounded-xl bg-gradient-to-br from-primary/10 via-primary/5 to-transparent border border-primary/20 p-4 hover:shadow-lg hover:shadow-primary/10 transition-all duration-300">
+              <div className="absolute top-0 right-0 w-20 h-20 bg-primary/10 rounded-full -mr-10 -mt-10 group-hover:scale-150 transition-transform duration-500"></div>
               <div className="relative">
                 <div className="flex items-center gap-2 mb-2">
-                  <div className="w-8 h-8 rounded-lg bg-blue-500/20 flex items-center justify-center">
+                  <div className="w-8 h-8 rounded-lg bg-primary/20 flex items-center justify-center">
                     <Layers className="w-4 h-4 text-blue-600" />
                   </div>
                   <p className="text-xs font-medium text-muted-foreground">Articles</p>
@@ -230,11 +230,11 @@ const BulkArticleForm = ({ open, onOpenChange, onSubmit }: BulkArticleFormProps)
               </div>
             </div>
 
-            <div className="group relative overflow-hidden rounded-xl bg-gradient-to-br from-emerald-500/10 via-emerald-500/5 to-transparent border border-emerald-500/20 p-4 hover:shadow-lg hover:shadow-emerald-500/10 transition-all duration-300">
-              <div className="absolute top-0 right-0 w-20 h-20 bg-emerald-500/10 rounded-full -mr-10 -mt-10 group-hover:scale-150 transition-transform duration-500"></div>
+            <div className="group relative overflow-hidden rounded-xl bg-gradient-to-br from-success/10 via-success/5 to-transparent border border-success/20 p-4 hover:shadow-lg hover:shadow-success/10 transition-all duration-300">
+              <div className="absolute top-0 right-0 w-20 h-20 bg-success/10 rounded-full -mr-10 -mt-10 group-hover:scale-150 transition-transform duration-500"></div>
               <div className="relative">
                 <div className="flex items-center gap-2 mb-2">
-                  <div className="w-8 h-8 rounded-lg bg-emerald-500/20 flex items-center justify-center">
+                  <div className="w-8 h-8 rounded-lg bg-success/20 flex items-center justify-center">
                     <Package className="w-4 h-4 text-emerald-600" />
                   </div>
                   <p className="text-xs font-medium text-muted-foreground">Quantité</p>
@@ -244,11 +244,11 @@ const BulkArticleForm = ({ open, onOpenChange, onSubmit }: BulkArticleFormProps)
               </div>
             </div>
 
-            <div className="group relative overflow-hidden rounded-xl bg-gradient-to-br from-violet-500/10 via-violet-500/5 to-transparent border border-violet-500/20 p-4 hover:shadow-lg hover:shadow-violet-500/10 transition-all duration-300">
-              <div className="absolute top-0 right-0 w-20 h-20 bg-violet-500/10 rounded-full -mr-10 -mt-10 group-hover:scale-150 transition-transform duration-500"></div>
+            <div className="group relative overflow-hidden rounded-xl bg-gradient-to-br from-secondary/10 via-secondary/5 to-transparent border border-secondary/20 p-4 hover:shadow-lg hover:shadow-secondary/10 transition-all duration-300">
+              <div className="absolute top-0 right-0 w-20 h-20 bg-secondary/10 rounded-full -mr-10 -mt-10 group-hover:scale-150 transition-transform duration-500"></div>
               <div className="relative">
                 <div className="flex items-center gap-2 mb-2">
-                  <div className="w-8 h-8 rounded-lg bg-violet-500/20 flex items-center justify-center">
+                  <div className="w-8 h-8 rounded-lg bg-secondary/20 flex items-center justify-center">
                     <TrendingUp className="w-4 h-4 text-violet-600" />
                   </div>
                   <p className="text-xs font-medium text-muted-foreground">Valeur</p>
@@ -268,7 +268,7 @@ const BulkArticleForm = ({ open, onOpenChange, onSubmit }: BulkArticleFormProps)
                   key={index}
                   className={`group relative rounded-xl border-2 transition-all duration-300 ${
                     valide
-                      ? 'border-emerald-500/30 bg-gradient-to-br from-emerald-500/5 via-background to-background hover:shadow-xl hover:shadow-emerald-500/10'
+                      ? 'border-success/30 bg-gradient-to-br from-success/5 via-background to-background hover:shadow-xl hover:shadow-success/10'
                       : 'border-border/50 bg-card hover:shadow-lg'
                   }`}
                 >
@@ -277,7 +277,7 @@ const BulkArticleForm = ({ open, onOpenChange, onSubmit }: BulkArticleFormProps)
                     <div className="flex items-center gap-3">
                       <div className={`w-10 h-10 rounded-xl flex items-center justify-center font-bold text-sm shadow-md transition-all duration-300 ${
                         valide
-                          ? 'bg-gradient-to-br from-emerald-500 to-emerald-600 text-white'
+                          ? 'bg-gradient-to-br from-success to-emerald-600 text-white'
                           : 'bg-gradient-to-br from-muted to-muted/70 text-muted-foreground'
                       }`}>
                         {valide ? <CheckCircle2 className="w-5 h-5" /> : `#${index + 1}`}
@@ -465,7 +465,7 @@ const BulkArticleForm = ({ open, onOpenChange, onSubmit }: BulkArticleFormProps)
                         />
                         {Number(ligne.prixVente) > 0 && Number(ligne.prixAchat) > 0 && (
                           <div className="flex items-center gap-1.5 mt-1">
-                            <div className="w-1.5 h-1.5 rounded-full bg-emerald-500"></div>
+                            <div className="w-1.5 h-1.5 rounded-full bg-success"></div>
                             <p className="text-xs font-semibold text-emerald-600">
                               Marge: {(((Number(ligne.prixVente) - Number(ligne.prixAchat)) / Number(ligne.prixVente)) * 100).toFixed(1)}%
                             </p>

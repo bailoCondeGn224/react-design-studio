@@ -267,13 +267,13 @@ const ApprovisionnementForm = ({ open, onOpenChange, onSubmit, initialData = nul
             </div>
           </div>
 
-          {/* Section Articles - Vert */}
-          <div className="relative overflow-hidden rounded-xl bg-gradient-to-br from-emerald-500/5 via-background to-background border-2 border-border p-4 sm:p-5">
-            <div className="absolute top-0 right-0 w-24 h-24 bg-emerald-500/5 rounded-full -mr-12 -mt-12"></div>
+          {/* Section Articles */}
+          <div className="relative overflow-hidden rounded-xl bg-gradient-to-br from-success/5 via-background to-background border-2 border-border p-4 sm:p-5">
+            <div className="absolute top-0 right-0 w-24 h-24 bg-success/5 rounded-full -mr-12 -mt-12"></div>
             <div className="relative space-y-3">
               <div className="flex items-center gap-2 mb-2">
-                <div className="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center">
-                  <Package className="w-4 h-4 text-emerald-600" />
+                <div className="w-8 h-8 rounded-lg bg-success/10 flex items-center justify-center">
+                  <Package className="w-4 h-4 text-success" />
                 </div>
                 <h3 className="text-sm font-bold text-foreground">Articles à approvisionner *</h3>
               </div>
@@ -283,7 +283,7 @@ const ApprovisionnementForm = ({ open, onOpenChange, onSubmit, initialData = nul
                 onClick={ajouterLigne}
                 size="sm"
                 variant="outline"
-                className="w-full h-11 border-emerald-500/30 hover:bg-emerald-500/10"
+                className="w-full h-11 border-success/30 hover:bg-success/10"
               >
                 <Plus className="w-4 h-4 mr-2" />
                 Ajouter un article
@@ -372,7 +372,7 @@ const ApprovisionnementForm = ({ open, onOpenChange, onSubmit, initialData = nul
                           <label className="block text-xs font-medium text-muted-foreground mb-1.5 sm:hidden">Quantité</label>
                           <input
                             type="number"
-                            className="w-full px-3 h-11 sm:h-10 rounded-lg border border-border bg-background text-foreground focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
+                            className="w-full px-3 h-11 sm:h-10 rounded-lg border border-border bg-background text-foreground focus:ring-2 focus:ring-success/20 focus:border-success"
                             placeholder="Quantité"
                             min="1"
                             value={ligne.quantite}
@@ -384,7 +384,7 @@ const ApprovisionnementForm = ({ open, onOpenChange, onSubmit, initialData = nul
                           <input
                             type="text"
                             inputMode="numeric"
-                            className="w-full px-3 h-11 sm:h-10 rounded-lg border border-border bg-background text-foreground focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
+                            className="w-full px-3 h-11 sm:h-10 rounded-lg border border-border bg-background text-foreground focus:ring-2 focus:ring-success/20 focus:border-success"
                             placeholder="Prix unitaire"
                             value={formatPrixInput(ligne.prixUnitaire)}
                             onChange={e => updateLigne(index, "prixUnitaire", handlePrixChange(e.target.value))}
@@ -469,18 +469,18 @@ const ApprovisionnementForm = ({ open, onOpenChange, onSubmit, initialData = nul
             </div>
           )}
 
-          {/* Section Paiement - Violet */}
-          <div className="relative overflow-hidden rounded-xl bg-gradient-to-br from-violet-500/5 via-background to-background border-2 border-border p-4 sm:p-5">
-            <div className="absolute top-0 right-0 w-24 h-24 bg-violet-500/5 rounded-full -mr-12 -mt-12"></div>
+          {/* Section Paiement */}
+          <div className="relative overflow-hidden rounded-xl bg-gradient-to-br from-warning/5 via-background to-background border-2 border-border p-4 sm:p-5">
+            <div className="absolute top-0 right-0 w-24 h-24 bg-warning/5 rounded-full -mr-12 -mt-12"></div>
             <div className="relative space-y-4">
               <div className="flex items-center gap-2 mb-3">
-                <div className="w-8 h-8 rounded-lg bg-violet-500/10 flex items-center justify-center">
-                  <DollarSign className="w-4 h-4 text-violet-600" />
+                <div className="w-8 h-8 rounded-lg bg-warning/10 flex items-center justify-center">
+                  <DollarSign className="w-4 h-4 text-warning" />
                 </div>
                 <h3 className="text-sm font-bold text-foreground">Paiement</h3>
               </div>
 
-              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 p-3 bg-violet-500/10 rounded-lg border border-violet-500/20">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 p-3 bg-warning/10 rounded-lg border border-warning/20">
                 <span className="text-xs sm:text-sm font-medium text-foreground">Total Approvisionnement</span>
                 <span className="text-lg sm:text-xl font-black text-primary">{formatPrix(total)}</span>
               </div>
@@ -495,7 +495,7 @@ const ApprovisionnementForm = ({ open, onOpenChange, onSubmit, initialData = nul
                     value={formatPrixInput(form.montantPaye)}
                     onChange={e => update("montantPaye", handlePrixChange(e.target.value))}
                     onFocus={e => e.target.select()}
-                    className="w-full px-3 h-11 rounded-lg border border-border bg-background text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500"
+                    className="w-full px-3 h-11 rounded-lg border border-border bg-background text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-warning/20 focus:border-warning"
                   />
                 </div>
                 <div>

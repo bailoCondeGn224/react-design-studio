@@ -2,6 +2,7 @@ import AppLayout from "@/components/AppLayout";
 import PageHeader from "@/components/PageHeader";
 import StockForm from "@/components/StockForm";
 import StockMobileCard from "@/components/StockMobileCard";
+import ArticleCard from "@/components/ArticleCard";
 import Pagination from "@/components/Pagination";
 import CanAccess from "@/components/CanAccess";
 import { Package, AlertTriangle, Search, Plus, Edit, Trash, MoreVertical, AlertCircle, TrendingDown, History, ArrowUpCircle, ArrowDownCircle, Flame, Zap, Clock, Snail, Snowflake, TrendingUp as TrendUp } from "lucide-react";
@@ -642,37 +643,45 @@ const Stock = () => {
         </div>
       </div>
 
-      {/* Version Mobile - Cards (< md) */}
-      <div className="md:hidden space-y-3 mb-6">
+      {/* Grille d'articles - Style Facebook Feed */}
+      <div className="mb-6">
+        {/* Indicateur de chargement */}
         {isFetching && (
-          <div className="h-1 bg-primary/20 rounded-full overflow-hidden mb-2">
+          <div className="h-1 bg-primary/20 rounded-full overflow-hidden mb-4">
             <div className="h-full bg-primary w-1/3 animate-pulse" />
           </div>
         )}
+
+        {/* Grille responsive: 1 col mobile, 2 cols tablet, 3 cols desktop */}
         {articles.length === 0 ? (
-          <div className="text-center py-16">
+          <div className="text-center py-16 bg-card rounded-xl border border-border">
             <Package className="w-16 h-16 text-muted-foreground mx-auto mb-4 opacity-50" />
             <p className="text-sm text-muted-foreground">Aucun article trouvé</p>
           </div>
         ) : (
-          articles.map((item: any) => (
-            <StockMobileCard
-              key={item.id}
-              article={item}
-              onEdit={handleEdit}
-              onDelete={setDeleteId}
-              onViewHistory={setHistoryArticleId}
-              onViewPhoto={(photo, nom) => setSelectedImage({ url: getPhotoUrl(photo) || '', nom })}
-              formatPrix={formatPrix}
-              getStockStatus={getStockStatus}
-              categorieName={item.categorie?.nom || categories.find(c => c.id === item.categorieId)?.nom || '-'}
-            />
-          ))
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {articles.map((item: any) => (
+              <ArticleCard
+                key={item.id}
+                article={{
+                  ...item,
+                  categorieNom: item.categorie?.nom || categories.find(c => c.id === item.categorieId)?.nom || '-'
+                }}
+                formatPrix={formatPrix}
+                getStockStatus={getStockStatus}
+                onEdit={handleEdit}
+                onDelete={setDeleteId}
+                onViewHistory={setHistoryArticleId}
+                onViewPhoto={(photo, nom) => setSelectedImage({ url: getPhotoUrl(photo) || '', nom })}
+              />
+            ))}
+          </div>
         )}
       </div>
 
-      {/* Version Desktop - Tableau (≥ md) */}
-      <div className="hidden md:block bg-card border border-border rounded-xl shadow-card overflow-hidden relative">
+      {/* Ancien tableau Desktop caché - À supprimer plus tard si tout fonctionne */}
+      <div className="hidden">
+      <div className="bg-card border border-border rounded-xl shadow-card overflow-hidden relative">
         {/* Indicateur de chargement subtil pendant le refetch */}
         {isFetching && (
           <div className="absolute top-0 left-0 right-0 h-1 bg-primary/20 overflow-hidden z-10">
@@ -873,8 +882,9 @@ const Stock = () => {
         </table>
         </div>
       </div>
+      </div>
 
-      {/* Pagination partagée entre mobile et desktop */}
+      {/* Pagination partagée */}
       {meta && (
         <div className="mt-6">
           <Pagination meta={meta} onPageChange={setPage} />
