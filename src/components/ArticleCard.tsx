@@ -94,15 +94,35 @@ const ArticleCard = ({
             )}
           </div>
 
-          {/* Stock */}
-          <div className="text-right">
-            <div className="flex items-center justify-end gap-1">
-              <Package className={`w-4 h-4 ${status.color}`} />
-              <span className={`text-lg font-bold ${status.color}`}>
-                {article.stock}
-              </span>
+          {/* Badge Stock - Moderne et visible */}
+          <div className="flex flex-col items-end gap-1">
+            <div className={`px-3 py-2 rounded-lg ${
+              article.stock === 0
+                ? 'bg-destructive/20 border-2 border-destructive/50'
+                : article.stock <= article.seuilAlerte
+                ? 'bg-warning/20 border-2 border-warning/50'
+                : 'bg-success/20 border-2 border-success/50'
+            }`}>
+              <div className="flex items-center gap-1.5">
+                <Package className={`w-4 h-4 ${
+                  article.stock === 0
+                    ? 'text-destructive'
+                    : article.stock <= article.seuilAlerte
+                    ? 'text-warning'
+                    : 'text-success'
+                }`} />
+                <span className={`text-xl font-black ${
+                  article.stock === 0
+                    ? 'text-destructive'
+                    : article.stock <= article.seuilAlerte
+                    ? 'text-warning'
+                    : 'text-success'
+                }`}>
+                  {article.stock}
+                </span>
+              </div>
             </div>
-            <p className="text-xs text-muted-foreground">en stock</p>
+            <p className="text-[10px] text-muted-foreground font-medium">en stock</p>
           </div>
         </div>
 
