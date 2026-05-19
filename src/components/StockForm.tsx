@@ -106,12 +106,12 @@ const StockForm = ({ open, onOpenChange, onSubmit, initialData = null, mode = 'c
       return;
     }
 
-    // En mode édition, on ne modifie PAS la quantité en stock
     const articleData = {
       nom: form.nom,
       reference: form.reference || undefined,
       categorieId: form.categorieId,
       zone: form.zone,
+      stock: Number(form.stock) || 0,
       seuilAlerte: Number(form.seuilAlerte),
       max: form.max ? Number(form.max) : undefined,
       prixVente: Number(form.prixVente),
@@ -134,7 +134,7 @@ const StockForm = ({ open, onOpenChange, onSubmit, initialData = null, mode = 'c
             Modifier l'Article
           </DialogTitle>
           <DialogDescription className="text-xs sm:text-sm">
-            Modifiez les informations de l'article (sauf la quantité qui est gérée par les approvisionnements et ventes)
+            Modifiez toutes les informations de l'article
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-3 sm:space-y-4 overflow-y-auto flex-1 pr-2">
@@ -272,18 +272,30 @@ const StockForm = ({ open, onOpenChange, onSubmit, initialData = null, mode = 'c
 
           {/* Stock et seuils */}
           <div className="grid grid-cols-1 gap-3">
-            {/* Stock en lecture seule - géré par approvisionnements/ventes */}
-            <div>
-              <label className="block text-sm font-medium text-foreground mb-2">
-                Stock actuel
-              </label>
-              <div className="px-4 h-11 rounded-lg border border-border bg-muted text-foreground font-semibold flex items-center">
-                {form.stock || 0}
-              </div>
-              <p className="text-xs text-muted-foreground mt-1">Géré par approvisionnements/ventes</p>
-            </div>
-            <FormField label="Seuil alerte *" type="number" placeholder="10" value={form.seuilAlerte} onChange={e => update("seuilAlerte", (e.target as HTMLInputElement).value)} min="0" />
-            <FormField label="Stock max *" type="number" placeholder="50" value={form.max} onChange={e => update("max", (e.target as HTMLInputElement).value)} min="0" />
+            <FormField
+              label="Stock actuel *"
+              type="number"
+              placeholder="100"
+              value={form.stock}
+              onChange={e => update("stock", (e.target as HTMLInputElement).value)}
+              min="0"
+            />
+            <FormField
+              label="Seuil alerte *"
+              type="number"
+              placeholder="10"
+              value={form.seuilAlerte}
+              onChange={e => update("seuilAlerte", (e.target as HTMLInputElement).value)}
+              min="0"
+            />
+            <FormField
+              label="Stock max"
+              type="number"
+              placeholder="50"
+              value={form.max}
+              onChange={e => update("max", (e.target as HTMLInputElement).value)}
+              min="0"
+            />
           </div>
 
           {/* Prix */}

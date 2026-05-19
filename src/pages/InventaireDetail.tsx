@@ -24,6 +24,7 @@ import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import ValiderInventaireDialog from '@/components/inventaires/ValiderInventaireDialog';
 import FinancesSummary from '@/components/inventaires/FinancesSummary';
+import MobileInventaireDetail from '@/components/inventaires/MobileInventaireDetail';
 import { Article, ComptageInventaire } from '@/types';
 
 export default function InventaireDetail() {
@@ -197,9 +198,44 @@ export default function InventaireDetail() {
     );
   }
 
+  // Fonction helper pour ajouter un comptage
+  const handleAddComptage = async (articleId: string, quantite: number) => {
+    try {
+      await addComptageMutation.mutateAsync({
+        inventaireId: inventaire!.id,
+        data: {
+          articleId,
+          quantiteComptee: quantite,
+        },
+      });
+    } catch (error) {
+      // Erreur gérée par le hook
+    }
+  };
+
   return (
-    <AppLayout>
-      <PageHeader
+    <>
+      {/* Version Mobile */}
+      <div className="lg:hidden">
+        <MobileInventaireDetail
+          inventaire={inventaire}
+          articles={filteredArticles}
+          onAddComptage={handleAddComptage}
+          onValidate={() => setValiderDialogOpen(true)}
+          getComptageForArticle={getComptageForArticle}
+          isArticleCompte={isArticleCompte}
+        />
+        <ValiderInventaireDialog
+          open={validerDialogOpen}
+          onOpenChange={setValiderDialogOpen}
+          inventaire={inventaire}
+        />
+      </div>
+
+      {/* Version Desktop */}
+      <AppLayout>
+        <div className="hidden lg:block">
+          <PageHeader
         title={inventaire.note || 'Inventaire'}
         description={`${format(new Date(inventaire.date), 'dd MMMM yyyy', { locale: fr })} — Responsable: ${inventaire.responsableNom}`}
         backButton
@@ -613,11 +649,13 @@ export default function InventaireDetail() {
         </>
       )}
 
-      <ValiderInventaireDialog
-        open={validerDialogOpen}
-        onOpenChange={setValiderDialogOpen}
-        inventaire={inventaire}
-      />
-    </AppLayout>
+          <ValiderInventaireDialog
+            open={validerDialogOpen}
+            onOpenChange={setValiderDialogOpen}
+            inventaire={inventaire}
+          />
+        </div>
+      </AppLayout>
+    </>
   );
 }
