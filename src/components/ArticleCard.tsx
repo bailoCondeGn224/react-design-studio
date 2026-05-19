@@ -23,6 +23,11 @@ const ArticleCard = ({
   const status = getStockStatus(article.stock, article.seuilAlerte);
   const photoUrl = article.photo ? getPhotoUrl(article.photo) : null;
 
+  // Couleurs du badge stock
+  const isRupture = article.stock === 0;
+  const isFaible = article.stock > 0 && article.stock <= article.seuilAlerte;
+  const badgeColor = isRupture ? 'destructive' : isFaible ? 'warning' : 'success';
+
   // Badge de rotation
   const getRotationIcon = () => {
     const vitesse = article.vitesseRotation;
@@ -94,35 +99,26 @@ const ArticleCard = ({
             )}
           </div>
 
-          {/* Badge Stock - Moderne et visible */}
-          <div className="flex flex-col items-end gap-1">
-            <div className={`px-3 py-2 rounded-lg ${
-              article.stock === 0
-                ? 'bg-destructive/20 border-2 border-destructive/50'
-                : article.stock <= article.seuilAlerte
-                ? 'bg-warning/20 border-2 border-warning/50'
-                : 'bg-success/20 border-2 border-success/50'
-            }`}>
-              <div className="flex items-center gap-1.5">
-                <Package className={`w-4 h-4 ${
-                  article.stock === 0
-                    ? 'text-destructive'
-                    : article.stock <= article.seuilAlerte
-                    ? 'text-warning'
-                    : 'text-success'
-                }`} />
-                <span className={`text-xl font-black ${
-                  article.stock === 0
-                    ? 'text-destructive'
-                    : article.stock <= article.seuilAlerte
-                    ? 'text-warning'
-                    : 'text-success'
-                }`}>
-                  {article.stock}
-                </span>
-              </div>
+          {/* Badge Stock - Simple et élégant */}
+          <div className={`px-4 py-2.5 rounded-xl shadow-sm ${
+            badgeColor === 'destructive'
+              ? 'bg-destructive/10 border-2 border-destructive/30'
+              : badgeColor === 'warning'
+              ? 'bg-warning/10 border-2 border-warning/30'
+              : 'bg-success/10 border-2 border-success/30'
+          }`}>
+            <div className="flex items-baseline gap-1.5">
+              <span className={`text-2xl font-black ${
+                badgeColor === 'destructive'
+                  ? 'text-destructive'
+                  : badgeColor === 'warning'
+                  ? 'text-warning'
+                  : 'text-success'
+              }`}>
+                {article.stock}
+              </span>
+              <span className="text-[11px] text-muted-foreground font-medium">unités</span>
             </div>
-            <p className="text-[10px] text-muted-foreground font-medium">en stock</p>
           </div>
         </div>
 
