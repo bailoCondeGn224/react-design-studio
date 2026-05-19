@@ -23,12 +23,9 @@ const MobileDashboard = () => {
   const { data: clientsStats } = useStatsClients();
 
   const formatPrix = (prix: number) => {
-    if (prix >= 1000000) {
-      return `${(prix / 1000000).toFixed(1)}M`;
-    } else if (prix >= 1000) {
-      return `${(prix / 1000).toFixed(0)}K`;
-    }
-    return `${prix}`;
+    return new Intl.NumberFormat('fr-FR', {
+      maximumFractionDigits: 0,
+    }).format(prix);
   };
 
   const caJour = ventesStats?.jour.total || 0;
@@ -102,55 +99,48 @@ const MobileDashboard = () => {
           </button>
         </div>
 
-        {/* Stock - Design unifié */}
-        <div className="bg-card rounded-xl border border-border overflow-hidden">
-          <div className="px-4 py-3 border-b border-border">
-            <h3 className="text-sm font-semibold">Stock</h3>
+        {/* Nombre d'articles */}
+        <button
+          onClick={() => navigate('/stock')}
+          className="w-full bg-card rounded-xl border border-border p-4 text-left active:bg-accent/5 transition-colors"
+        >
+          <div className="flex items-center gap-2 mb-2">
+            <Package className="w-4 h-4 text-primary" />
+            <span className="text-xs text-muted-foreground">Articles en Stock</span>
           </div>
+          <p className="text-2xl font-bold">{stockStats?.totalArticles || 0}</p>
+        </button>
 
-          <div className="grid grid-cols-2 divide-x divide-border">
-            <button
-              onClick={() => navigate('/stock')}
-              className="p-4 text-left active:bg-accent/5 transition-colors"
-            >
-              <div className="flex items-center gap-2 mb-2">
-                <Package className="w-4 h-4 text-primary" />
-                <span className="text-xs text-muted-foreground">Articles</span>
-              </div>
-              <p className="text-2xl font-bold">{stockStats?.totalArticles || 0}</p>
-            </button>
-
-            <button
-              onClick={() => navigate('/stock')}
-              className="p-4 text-left active:bg-accent/5 transition-colors"
-            >
-              <div className="flex items-center gap-2 mb-2">
-                <Warehouse className="w-4 h-4 text-accent" />
-                <span className="text-xs text-muted-foreground">Valeur</span>
-              </div>
-              <p className="text-lg font-bold">{formatPrix(stockStats?.valeurTotaleStock || 0)} GNF</p>
-            </button>
+        {/* Valeur du stock */}
+        <button
+          onClick={() => navigate('/stock')}
+          className="w-full bg-card rounded-xl border border-border p-4 text-left active:bg-accent/5 transition-colors"
+        >
+          <div className="flex items-center gap-2 mb-2">
+            <Warehouse className="w-4 h-4 text-accent" />
+            <span className="text-xs text-muted-foreground">Valeur du Stock</span>
           </div>
+          <p className="text-2xl font-bold">{formatPrix(stockStats?.valeurTotaleStock || 0)} <span className="text-base font-normal">GNF</span></p>
+        </button>
 
-          {/* Alertes dans la même card */}
-          {((stockStats?.articlesEnRupture || 0) > 0 || (stockStats?.articlesStockFaible || 0) > 0) && (
-            <button
-              onClick={() => navigate('/stock')}
-              className="w-full px-4 py-3 bg-destructive/5 border-t border-destructive/20 text-left active:bg-destructive/10 transition-colors"
-            >
-              <div className="flex items-center gap-3">
-                <AlertTriangle className="w-5 h-5 text-destructive flex-shrink-0" />
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-destructive">
-                    {(stockStats?.articlesEnRupture || 0) + (stockStats?.articlesStockFaible || 0)} articles en alerte
-                  </p>
-                  <p className="text-xs text-muted-foreground truncate">Tapez pour voir</p>
-                </div>
-                <ChevronRight className="w-4 h-4 text-destructive flex-shrink-0" />
+        {/* Alertes stock */}
+        {((stockStats?.articlesEnRupture || 0) > 0 || (stockStats?.articlesStockFaible || 0) > 0) && (
+          <button
+            onClick={() => navigate('/stock')}
+            className="w-full bg-destructive/5 border-l-4 border-destructive rounded-xl p-4 text-left active:bg-destructive/10 transition-colors"
+          >
+            <div className="flex items-center gap-3">
+              <AlertTriangle className="w-5 h-5 text-destructive flex-shrink-0" />
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-semibold text-destructive">
+                  {(stockStats?.articlesEnRupture || 0) + (stockStats?.articlesStockFaible || 0)} articles en alerte
+                </p>
+                <p className="text-xs text-muted-foreground truncate">Stock critique - Tapez pour voir</p>
               </div>
-            </button>
-          )}
-        </div>
+              <ChevronRight className="w-5 h-5 text-destructive flex-shrink-0" />
+            </div>
+          </button>
+        )}
 
         {/* Clients - Card épurée */}
         <button
