@@ -2,6 +2,7 @@ import { useNavigate } from 'react-router-dom';
 import AppLayout from '@/components/AppLayout';
 import PageHeader from '@/components/PageHeader';
 import StatCard from '@/components/StatCard';
+import MobileDashboard from '@/components/MobileDashboard';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -97,10 +98,17 @@ const AdminDashboard = () => {
 
   return (
     <AppLayout>
-      <PageHeader
-        title="Dashboard Administrateur"
-        description="Vue d'ensemble complète de votre entreprise"
-      />
+      {/* Version Mobile */}
+      <div className="lg:hidden">
+        <MobileDashboard />
+      </div>
+
+      {/* Version Desktop */}
+      <div className="hidden lg:block">
+        <PageHeader
+          title="Dashboard Administrateur"
+          description="Vue d'ensemble complète de votre entreprise"
+        />
 
       {/* KPIs Principaux */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
@@ -369,6 +377,7 @@ const AdminDashboard = () => {
           </div>
         </CardContent>
       </Card>
+      </div>
     </AppLayout>
   );
 };
