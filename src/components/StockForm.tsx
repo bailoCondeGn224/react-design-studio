@@ -138,7 +138,8 @@ const StockForm = ({ open, onOpenChange, onSubmit, initialData = null, mode = 'c
       <DialogContent className="max-w-[95vw] sm:max-w-md max-h-[90vh] flex flex-col">
         <DialogHeader className="flex-shrink-0">
           <DialogTitle className="font-heading text-base sm:text-lg">
-            Modifier l'Article
+            <span className="md:hidden">Article</span>
+            <span className="hidden md:inline">Modifier l'Article</span>
           </DialogTitle>
           <DialogDescription className="text-xs sm:text-sm">
             Modifiez toutes les informations de l'article
@@ -335,14 +336,6 @@ const StockForm = ({ open, onOpenChange, onSubmit, initialData = null, mode = 'c
               placeholder="10"
               value={form.seuilAlerte}
               onChange={e => update("seuilAlerte", (e.target as HTMLInputElement).value)}
-              min="0"
-            />
-            <FormField
-              label="Stock max"
-              type="number"
-              placeholder="50"
-              value={form.max}
-              onChange={e => update("max", (e.target as HTMLInputElement).value)}
               min="0"
             />
           </div>

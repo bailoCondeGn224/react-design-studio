@@ -145,18 +145,19 @@ const VersementClientForm = ({ open, onOpenChange, onSubmit, versementClient }: 
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-[95vw] sm:max-w-md max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle className="font-heading">
-            {versementClient ? 'Modifier le Paiement' : 'Enregistrer un Paiement Client'}
+      <DialogContent className="max-w-[95vw] sm:max-w-md max-h-[90vh] flex flex-col">
+        <DialogHeader className="flex-shrink-0">
+          <DialogTitle className="font-heading text-base sm:text-lg">
+            <span className="md:hidden">{versementClient ? 'Modifier' : 'Paiement Client'}</span>
+            <span className="hidden md:inline">{versementClient ? 'Modifier le Paiement' : 'Enregistrer un Paiement Client'}</span>
           </DialogTitle>
-          <DialogDescription>
+          <DialogDescription className="text-xs sm:text-sm">
             {versementClient
               ? 'Modifiez les informations du paiement'
               : 'Enregistrez un paiement de dette effectué par un client'}
           </DialogDescription>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto space-y-4 px-1">
           <div>
             <label className="block text-sm font-medium text-foreground mb-2">Client *</label>
             <select

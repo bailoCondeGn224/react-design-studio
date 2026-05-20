@@ -81,13 +81,14 @@ const CategorieForm = ({ open, onOpenChange, onSubmit, initialData = null, mode 
         {/* Header avec gradient */}
         <div className="px-4 sm:px-6 py-4 sm:py-5 border-b bg-gradient-to-r from-primary/10 via-primary/5 to-transparent flex-shrink-0">
           <div className="flex items-start justify-between gap-4">
-            <div className="flex items-center gap-3 flex-1 min-w-0">
-              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center shadow-lg flex-shrink-0">
+            <div className="flex items-center gap-3 flex-1 min-w-0 pr-12">
+              <div className="hidden md:flex w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center shadow-lg flex-shrink-0">
                 <FolderTree className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
               </div>
               <div className="flex-1 min-w-0">
-                <h2 className="text-lg sm:text-xl font-bold text-foreground">
-                  {mode === 'edit' ? 'Modifier la Catégorie' : 'Nouvelle Catégorie'}
+                <h2 className="text-base sm:text-lg font-bold text-foreground">
+                  <span className="md:hidden">{mode === 'edit' ? 'Modifier' : 'Catégorie'}</span>
+                  <span className="hidden md:inline">{mode === 'edit' ? 'Modifier la Catégorie' : 'Nouvelle Catégorie'}</span>
                 </h2>
                 <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">
                   {mode === 'edit' ? 'Modifiez les informations de la catégorie' : 'Créez une nouvelle catégorie de produits'}

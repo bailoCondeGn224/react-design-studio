@@ -113,13 +113,14 @@ const DepenseForm = ({ open, onOpenChange, onSubmit, initialData = null, mode = 
         {/* Header avec gradient */}
         <div className="px-4 sm:px-6 py-4 sm:py-5 border-b bg-gradient-to-r from-destructive/10 via-destructive/5 to-transparent flex-shrink-0">
           <div className="flex items-start justify-between gap-4">
-            <div className="flex items-center gap-3 flex-1 min-w-0">
-              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br from-destructive to-destructive/80 flex items-center justify-center shadow-lg flex-shrink-0">
+            <div className="flex items-center gap-3 flex-1 min-w-0 pr-12">
+              <div className="hidden md:flex w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br from-destructive to-destructive/80 flex items-center justify-center shadow-lg flex-shrink-0">
                 <Wallet className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
               </div>
               <div className="flex-1 min-w-0">
-                <h2 className="text-lg sm:text-xl font-bold text-foreground">
-                  {mode === 'edit' ? 'Modifier la Dépense' : 'Nouvelle Dépense'}
+                <h2 className="text-base sm:text-lg font-bold text-foreground">
+                  <span className="md:hidden">{mode === 'edit' ? 'Modifier' : 'Dépense'}</span>
+                  <span className="hidden md:inline">{mode === 'edit' ? 'Modifier la Dépense' : 'Nouvelle Dépense'}</span>
                 </h2>
                 <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">
                   {mode === 'edit' ? 'Modifiez les informations de la dépense' : 'Enregistrez une nouvelle dépense de l\'entreprise'}

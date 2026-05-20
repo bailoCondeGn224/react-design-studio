@@ -156,13 +156,14 @@ const CommandeForm = ({ open, onOpenChange, onSubmit, initialData = null, mode =
       <DialogContent className="max-w-[95vw] sm:max-w-4xl max-h-[90vh] flex flex-col p-0 bg-gradient-to-br from-background via-background to-primary/5">
         {/* Header avec gradient */}
         <DialogHeader className="px-4 sm:px-6 py-4 sm:py-5 border-b bg-gradient-to-r from-primary/10 via-primary/5 to-transparent flex-shrink-0">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br from-primary to-primary/70 flex items-center justify-center shadow-lg">
+          <div className="flex items-center gap-3 pr-12">
+            <div className="hidden md:flex w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br from-primary to-primary/70 flex items-center justify-center shadow-lg">
               <ShoppingBag className="w-5 h-5 sm:w-6 sm:h-6 text-primary-foreground" />
             </div>
             <div>
-              <DialogTitle className="text-lg sm:text-xl font-bold bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text">
-                {mode === 'edit' ? 'Modifier la Commande' : 'Nouvelle Commande'}
+              <DialogTitle className="text-base sm:text-lg font-bold bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text">
+                <span className="md:hidden">{mode === 'edit' ? 'Modifier' : 'Commande'}</span>
+                <span className="hidden md:inline">{mode === 'edit' ? 'Modifier la Commande' : 'Nouvelle Commande'}</span>
               </DialogTitle>
               <DialogDescription className="text-xs sm:text-sm text-muted-foreground mt-0.5">
                 {mode === 'edit' ? 'Modifiez les informations de la commande' : 'Enregistrez une nouvelle commande client'}

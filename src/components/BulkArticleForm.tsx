@@ -197,13 +197,14 @@ const BulkArticleForm = ({ open, onOpenChange, onSubmit }: BulkArticleFormProps)
       <DialogContent className="max-w-[98vw] w-full max-h-[95vh] overflow-hidden flex flex-col p-0 bg-gradient-to-br from-background via-background to-primary/5">
         {/* Header avec gradient */}
         <DialogHeader className="px-6 py-5 border-b bg-gradient-to-r from-primary/10 via-primary/5 to-transparent flex-shrink-0">
-          <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary to-primary/70 flex items-center justify-center shadow-lg">
+          <div className="flex items-center gap-3 pr-12">
+            <div className="hidden md:flex w-12 h-12 rounded-xl bg-gradient-to-br from-primary to-primary/70 flex items-center justify-center shadow-lg">
               <Sparkles className="w-6 h-6 text-primary-foreground" />
             </div>
             <div>
-              <DialogTitle className="text-xl font-bold bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text">
-                Ajouter des articles en masse
+              <DialogTitle className="text-base sm:text-lg font-bold bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text">
+                <span className="md:hidden">Articles en masse</span>
+                <span className="hidden md:inline">Ajouter des articles en masse</span>
               </DialogTitle>
               <p className="text-sm text-muted-foreground mt-1">
                 Créez plusieurs articles rapidement et efficacement
@@ -274,7 +275,7 @@ const BulkArticleForm = ({ open, onOpenChange, onSubmit }: BulkArticleFormProps)
                 >
                   {/* Header de la carte */}
                   <div className="flex items-center justify-between p-4 border-b border-border/50">
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-3 pr-12">
                       <div className={`w-10 h-10 rounded-xl flex items-center justify-center font-bold text-sm shadow-md transition-all duration-300 ${
                         valide
                           ? 'bg-gradient-to-br from-success to-emerald-600 text-white'
