@@ -99,6 +99,7 @@ const FournisseurCombobox = ({
   // Bouton trigger commun
   const TriggerButton = (
     <Button
+      type="button"
       variant="outline"
       role="combobox"
       aria-expanded={open}
@@ -133,15 +134,9 @@ const FournisseurCombobox = ({
         <Sheet open={open} onOpenChange={setOpen}>
           <SheetContent side="bottom" className="h-[85vh] flex flex-col p-0">
             <SheetHeader className="px-4 py-4 border-b border-border flex-shrink-0">
-              <div className="flex items-center justify-between">
-                <SheetTitle className="text-lg font-semibold">Sélectionner un fournisseur</SheetTitle>
-                <button
-                  onClick={() => setOpen(false)}
-                  className="p-2 rounded-full hover:bg-secondary active:scale-95 transition-all"
-                >
-                  <X className="w-5 h-5" />
-                </button>
-              </div>
+              <SheetTitle className="text-lg font-semibold text-center">Sélectionner un fournisseur</SheetTitle>
+              {/* Indicateur de swipe */}
+              <div className="mx-auto w-12 h-1 bg-muted-foreground/20 rounded-full -mt-2" />
             </SheetHeader>
 
             <div className="px-4 py-3 border-b border-border flex-shrink-0">
