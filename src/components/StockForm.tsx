@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import FormField from "@/components/FormField";
+import MobileCombobox from "@/components/MobileCombobox";
 import { toast } from "sonner";
 import { useCategoriesActive } from "@/hooks/useCategories";
 import { formatPrixInput, handlePrixChange } from "@/utils/format-prix";
@@ -246,34 +247,76 @@ const StockForm = ({ open, onOpenChange, onSubmit, initialData = null, mode = 'c
           </div>
 
           <div className="grid grid-cols-1 gap-3">
-            <FormField
-              label="Catégorie *"
-              as="select"
-              value={form.categorieId}
-              onChange={e => update("categorieId", (e.target as HTMLSelectElement).value)}
-              disabled={loadingCategories}
-            >
-              <option value="">Sélectionnez une catégorie</option>
-              {categories
-                .filter(cat => cat.actif)
-                .map(cat => (
-                  <option key={cat.id} value={cat.id}>
-                    {cat.nom}
-                  </option>
-                ))}
-            </FormField>
-            <FormField
-              label="Zone de stockage *"
-              as="select"
-              value={form.zone}
-              onChange={e => update("zone", (e.target as HTMLSelectElement).value)}
-            >
-              <option value="A">Zone A</option>
-              <option value="B">Zone B</option>
-              <option value="C">Zone C</option>
-              <option value="D">Zone D</option>
-              <option value="E">Zone E</option>
-            </FormField>
+            {/* Mobile: MobileCombobox avec Sheet */}
+            <div className="md:hidden">
+              <MobileCombobox
+                label="Catégorie"
+                value={form.categorieId}
+                onChange={(value) => update("categorieId", value)}
+                options={categories
+                  .filter(cat => cat.actif)
+                  .map(cat => ({ value: cat.id, label: cat.nom }))}
+                placeholder="Rechercher une catégorie..."
+                disabled={loadingCategories}
+                required
+                emptyMessage="Aucune catégorie trouvée"
+              />
+            </div>
+
+            {/* Desktop: Select standard */}
+            <div className="hidden md:block">
+              <FormField
+                label="Catégorie *"
+                as="select"
+                value={form.categorieId}
+                onChange={e => update("categorieId", (e.target as HTMLSelectElement).value)}
+                disabled={loadingCategories}
+              >
+                <option value="">Sélectionnez une catégorie</option>
+                {categories
+                  .filter(cat => cat.actif)
+                  .map(cat => (
+                    <option key={cat.id} value={cat.id}>
+                      {cat.nom}
+                    </option>
+                  ))}
+              </FormField>
+            </div>
+
+            {/* Mobile: Zone avec MobileCombobox */}
+            <div className="md:hidden">
+              <MobileCombobox
+                label="Zone de stockage"
+                value={form.zone}
+                onChange={(value) => update("zone", value)}
+                options={[
+                  { value: "A", label: "Zone A" },
+                  { value: "B", label: "Zone B" },
+                  { value: "C", label: "Zone C" },
+                  { value: "D", label: "Zone D" },
+                  { value: "E", label: "Zone E" },
+                ]}
+                placeholder="Rechercher une zone..."
+                required
+                emptyMessage="Aucune zone trouvée"
+              />
+            </div>
+
+            {/* Desktop: Zone select standard */}
+            <div className="hidden md:block">
+              <FormField
+                label="Zone de stockage *"
+                as="select"
+                value={form.zone}
+                onChange={e => update("zone", (e.target as HTMLSelectElement).value)}
+              >
+                <option value="A">Zone A</option>
+                <option value="B">Zone B</option>
+                <option value="C">Zone C</option>
+                <option value="D">Zone D</option>
+                <option value="E">Zone E</option>
+              </FormField>
+            </div>
           </div>
 
           {/* Stock et seuils */}
