@@ -10,6 +10,8 @@ import { useState, useEffect } from "react";
 import { getPhotoUrl } from "@/lib/api-client";
 import { toast } from "sonner";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Sheet, SheetContent } from "@/components/ui/sheet";
+import { useIsMobile } from "@/hooks/useMediaQuery";
 import { Button } from "@/components/ui/button";
 import { useMouvementsByArticle } from "@/hooks/useMouvements";
 import { useStatsRotation } from "@/hooks/useRotation";
@@ -50,6 +52,7 @@ const Stock = () => {
   const [limit] = useState(10);
   const [historyPage, setHistoryPage] = useState(1);
   const [historyLimit] = useState(10);
+  const isMobile = useIsMobile();
 
   // Hooks React Query avec filtres backend et recherche débouncée
   const { data: stockResponse, isLoading, isFetching } = useStock({
@@ -284,21 +287,24 @@ const Stock = () => {
       </AlertDialog>
 
       {/* Dialog Historique Mouvements */}
-      <Dialog open={historyArticleId !== null} onOpenChange={() => setHistoryArticleId(null)}>
-        <DialogContent className="max-w-[95vw] sm:max-w-2xl max-h-[80vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle className="font-heading flex items-center gap-1.5 sm:gap-2 text-base sm:text-lg">
-              <History className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
-              Historique des Mouvements
-            </DialogTitle>
-            {articleEnCours && (
-              <p className="text-xs sm:text-sm text-muted-foreground">
-                {articleEnCours.nom} — Stock actuel: <strong>{articleEnCours.stock}</strong>
-              </p>
-            )}
-          </DialogHeader>
+      {isMobile ? (
+        <Sheet open={historyArticleId !== null} onOpenChange={() => setHistoryArticleId(null)}>
+          <SheetContent side="bottom" className="h-[85vh] p-0 flex flex-col">
+            {/* Header mobile */}
+            <div className="px-4 py-4 border-b flex-shrink-0">
+              <div className="flex items-center gap-2 mb-1">
+                <History className="w-5 h-5 text-primary" />
+                <h2 className="font-heading text-base font-bold">Historique des Mouvements</h2>
+              </div>
+              {articleEnCours && (
+                <p className="text-xs text-muted-foreground">
+                  {articleEnCours.nom} — Stock actuel: <strong>{articleEnCours.stock}</strong>
+                </p>
+              )}
+            </div>
 
-          {mouvements.length === 0 ? (
+            <div className="flex-1 overflow-y-auto px-4 py-4">
+              {mouvements.length === 0 ? (
             <div className="text-center py-8 sm:py-12">
               <Package className="w-10 h-10 sm:w-12 sm:h-12 text-muted-foreground mx-auto mb-2 sm:mb-3 opacity-50" />
               <p className="text-xs sm:text-sm text-muted-foreground">Aucun mouvement enregistré pour cet article</p>
@@ -362,67 +368,213 @@ const Stock = () => {
             </div>
           )}
 
-          {/* Pagination si nécessaire */}
-          {mouvementsMeta && mouvementsMeta.totalPages > 1 && (
-            <div className="mt-4 pt-4 border-t">
-              <Pagination
-                meta={mouvementsMeta}
-                onPageChange={setHistoryPage}
-              />
+              {/* Pagination si nécessaire */}
+              {mouvementsMeta && mouvementsMeta.totalPages > 1 && (
+                <div className="mt-4 pt-4 border-t">
+                  <Pagination
+                    meta={mouvementsMeta}
+                    onPageChange={setHistoryPage}
+                  />
+                </div>
+              )}
             </div>
-          )}
-        </DialogContent>
-      </Dialog>
+          </SheetContent>
+        </Sheet>
+      ) : (
+        <Dialog open={historyArticleId !== null} onOpenChange={() => setHistoryArticleId(null)}>
+          <DialogContent className="max-w-[95vw] sm:max-w-2xl max-h-[80vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle className="font-heading flex items-center gap-1.5 sm:gap-2 text-base sm:text-lg">
+                <History className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
+                Historique des Mouvements
+              </DialogTitle>
+              {articleEnCours && (
+                <p className="text-xs sm:text-sm text-muted-foreground">
+                  {articleEnCours.nom} — Stock actuel: <strong>{articleEnCours.stock}</strong>
+                </p>
+              )}
+            </DialogHeader>
 
-      {/* Dialog Visualisation Photo */}
-      <Dialog open={selectedImage !== null} onOpenChange={() => setSelectedImage(null)}>
-        <DialogContent className="max-w-[95vw] sm:max-w-4xl max-h-[95vh] p-0 overflow-hidden bg-background/95 backdrop-blur-sm border-2">
-          <div className="relative">
-            {/* Header avec nom de l'article */}
-            {selectedImage && (
-              <div className="absolute top-0 left-0 right-0 z-10 bg-gradient-to-b from-background/90 to-transparent p-4 sm:p-6">
-                <h3 className="text-lg sm:text-xl font-semibold text-foreground truncate">
-                  {selectedImage.nom}
-                </h3>
+            {mouvements.length === 0 ? (
+              <div className="text-center py-8 sm:py-12">
+                <Package className="w-10 h-10 sm:w-12 sm:h-12 text-muted-foreground mx-auto mb-2 sm:mb-3 opacity-50" />
+                <p className="text-xs sm:text-sm text-muted-foreground">Aucun mouvement enregistré pour cet article</p>
+              </div>
+            ) : (
+              <div className="space-y-2 sm:space-y-3">
+                {mouvements.map((mouvement: any) => (
+                  <div key={mouvement.id} className="flex items-start gap-2 sm:gap-3 p-2 sm:p-3 bg-secondary/30 rounded-lg hover:bg-secondary/50 transition-colors">
+                    <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center flex-shrink-0 ${
+                      mouvement.type === 'entree' ? 'bg-success/20' : 'bg-destructive/20'
+                    }`}>
+                      {mouvement.type === 'entree' ? (
+                        <ArrowUpCircle className="w-4 h-4 sm:w-5 sm:h-5 text-success" />
+                      ) : (
+                        <ArrowDownCircle className="w-4 h-4 sm:w-5 sm:h-5 text-destructive" />
+                      )}
+                    </div>
+
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-start justify-between gap-2 mb-1">
+                        <div className="flex-1 min-w-0">
+                          <p className="text-xs sm:text-sm font-semibold text-foreground">
+                            {mouvement.type === 'entree' ? 'Entrée' : 'Sortie'}
+                            {' '}— {mouvement.motif === 'vente' ? 'Vente' : mouvement.motif === 'approvisionnement' ? 'Approvisionnement' : mouvement.motif}
+                          </p>
+                          <p className="text-[10px] sm:text-xs text-muted-foreground">
+                            {new Date(mouvement.date).toLocaleDateString('fr-FR', {
+                              day: '2-digit',
+                              month: '2-digit',
+                              year: 'numeric',
+                              hour: '2-digit',
+                              minute: '2-digit'
+                            })}
+                          </p>
+                        </div>
+                        <span className={`text-base sm:text-lg font-bold whitespace-nowrap ${mouvement.type === 'entree' ? 'text-success' : 'text-destructive'}`}>
+                          {mouvement.type === 'entree' ? '+' : '-'}{mouvement.quantite}
+                        </span>
+                      </div>
+
+                      <div className="flex items-center gap-1.5 sm:gap-2 text-[10px] sm:text-xs text-muted-foreground flex-wrap">
+                        <span className="font-mono">{mouvement.stockAvant}</span>
+                        <span>→</span>
+                        <span className="font-mono font-semibold text-foreground">{mouvement.stockApres}</span>
+                        {mouvement.reference && (
+                          <>
+                            <span>•</span>
+                            <span className="font-mono">{mouvement.reference}</span>
+                          </>
+                        )}
+                      </div>
+
+                      {mouvement.valeurTotal && (
+                        <p className="text-[10px] sm:text-xs text-muted-foreground mt-1">
+                          Valeur: {formatPrix(mouvement.valeurTotal)}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                ))}
               </div>
             )}
 
-            {/* Image */}
-            {selectedImage && (
-              <div className="flex items-center justify-center min-h-[50vh] max-h-[85vh] p-4 sm:p-8 pt-16 sm:pt-20">
-                <img
-                  src={selectedImage.url}
-                  alt={selectedImage.nom}
-                  className="max-w-full max-h-full object-contain rounded-lg shadow-2xl"
+            {/* Pagination si nécessaire */}
+            {mouvementsMeta && mouvementsMeta.totalPages > 1 && (
+              <div className="mt-4 pt-4 border-t">
+                <Pagination
+                  meta={mouvementsMeta}
+                  onPageChange={setHistoryPage}
                 />
               </div>
             )}
+          </DialogContent>
+        </Dialog>
+      )}
 
-            {/* Bouton de fermeture personnalisé */}
-            <button
-              onClick={() => setSelectedImage(null)}
-              className="absolute top-4 right-4 w-10 h-10 rounded-full bg-background/80 hover:bg-background border-2 border-border flex items-center justify-center transition-all hover:scale-110 shadow-lg z-20"
-              aria-label="Fermer"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="20"
-                height="20"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                className="text-foreground"
+      {/* Dialog Visualisation Photo */}
+      {isMobile ? (
+        <Sheet open={selectedImage !== null} onOpenChange={() => setSelectedImage(null)}>
+          <SheetContent side="bottom" className="h-[90vh] p-0 overflow-hidden bg-background/95 backdrop-blur-sm">
+            <div className="relative h-full">
+              {/* Header avec nom de l'article */}
+              {selectedImage && (
+                <div className="absolute top-0 left-0 right-0 z-10 bg-gradient-to-b from-background/90 to-transparent p-4">
+                  <h3 className="text-lg font-semibold text-foreground truncate">
+                    {selectedImage.nom}
+                  </h3>
+                </div>
+              )}
+
+              {/* Image */}
+              {selectedImage && (
+                <div className="flex items-center justify-center h-full p-4 pt-16">
+                  <img
+                    src={selectedImage.url}
+                    alt={selectedImage.nom}
+                    className="max-w-full max-h-full object-contain rounded-lg shadow-2xl"
+                  />
+                </div>
+              )}
+
+              {/* Bouton de fermeture personnalisé */}
+              <button
+                onClick={() => setSelectedImage(null)}
+                className="absolute top-4 right-4 w-10 h-10 rounded-full bg-background/80 hover:bg-background border-2 border-border flex items-center justify-center transition-all hover:scale-110 shadow-lg z-20"
+                aria-label="Fermer"
               >
-                <line x1="18" y1="6" x2="6" y2="18" />
-                <line x1="6" y1="6" x2="18" y2="18" />
-              </svg>
-            </button>
-          </div>
-        </DialogContent>
-      </Dialog>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="text-foreground"
+                >
+                  <line x1="18" y1="6" x2="6" y2="18" />
+                  <line x1="6" y1="6" x2="18" y2="18" />
+                </svg>
+              </button>
+            </div>
+          </SheetContent>
+        </Sheet>
+      ) : (
+        <Dialog open={selectedImage !== null} onOpenChange={() => setSelectedImage(null)}>
+          <DialogContent className="max-w-[95vw] sm:max-w-4xl max-h-[95vh] p-0 overflow-hidden bg-background/95 backdrop-blur-sm border-2">
+            <DialogHeader className="sr-only">
+              <DialogTitle>{selectedImage?.nom || 'Photo de l\'article'}</DialogTitle>
+            </DialogHeader>
+            <div className="relative">
+              {/* Header avec nom de l'article */}
+              {selectedImage && (
+                <div className="absolute top-0 left-0 right-0 z-10 bg-gradient-to-b from-background/90 to-transparent p-4 sm:p-6">
+                  <h3 className="text-lg sm:text-xl font-semibold text-foreground truncate">
+                    {selectedImage.nom}
+                  </h3>
+                </div>
+              )}
+
+              {/* Image */}
+              {selectedImage && (
+                <div className="flex items-center justify-center min-h-[50vh] max-h-[85vh] p-4 sm:p-8 pt-16 sm:pt-20">
+                  <img
+                    src={selectedImage.url}
+                    alt={selectedImage.nom}
+                    className="max-w-full max-h-full object-contain rounded-lg shadow-2xl"
+                  />
+                </div>
+              )}
+
+              {/* Bouton de fermeture personnalisé */}
+              <button
+                onClick={() => setSelectedImage(null)}
+                className="absolute top-4 right-4 w-10 h-10 rounded-full bg-background/80 hover:bg-background border-2 border-border flex items-center justify-center transition-all hover:scale-110 shadow-lg z-20"
+                aria-label="Fermer"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="text-foreground"
+                >
+                  <line x1="18" y1="6" x2="6" y2="18" />
+                  <line x1="6" y1="6" x2="18" y2="18" />
+                </svg>
+              </button>
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
 
       {/* Bannière d'alerte si stock critique */}
       {totalAlertes > 0 && (
@@ -795,7 +947,7 @@ const Stock = () => {
                         <div className="w-16 sm:w-20 h-1.5 sm:h-2 rounded-full bg-secondary overflow-hidden">
                           <div className={`h-full rounded-full transition-all ${
                             item.stock <= item.seuilAlerte * 0.3 ? "bg-destructive" : item.stock <= item.seuilAlerte ? "bg-warning" : "bg-primary"
-                          }`} style={{ width: `${Math.min((item.stock / item.max) * 100, 100)}%` }} />
+                          }`} style={{ width: `${Math.min((item.stock / (item.seuilAlerte * 3)) * 100, 100)}%` }} />
                         </div>
                       </div>
                     </td>

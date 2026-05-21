@@ -11,6 +11,8 @@ import { useVersements, useCreateVersement, useUpdateVersement, useDeleteVerseme
 import { useFournisseurs, useStatsFournisseurs } from "@/hooks/useFournisseurs";
 import { Versement } from "@/types";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Sheet, SheetContent } from "@/components/ui/sheet";
+import { useIsMobile } from "@/hooks/useMediaQuery";
 import { useDebounce } from "@/hooks/useDebounce";
 import { versementsApi } from "@/api/versements";
 
@@ -25,6 +27,7 @@ const Versements = () => {
   const [historyDialogOpen, setHistoryDialogOpen] = useState(false);
   const [selectedFournisseur, setSelectedFournisseur] = useState<any>(null);
   const [fournisseurVersements, setFournisseurVersements] = useState<any[]>([]);
+  const isMobile = useIsMobile();
 
   // Charger les fournisseurs avec recherche et pagination
   const { data: fournisseursResponse, isLoading: loadingFournisseurs } = useFournisseurs({
@@ -183,117 +186,235 @@ const Versements = () => {
       />
 
       {/* Dialog Détails */}
-      <Dialog open={detailsOpen} onOpenChange={setDetailsOpen}>
-        <DialogContent className="max-w-[95vw] sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle className="font-heading">Détails du Versement</DialogTitle>
-          </DialogHeader>
-          {selectedVersement && (() => {
-            const fournisseur = fournisseurs.find((f: any) => f.id === selectedVersement.fournisseurId);
-            return (
-              <div className="space-y-4">
-                <div className="bg-secondary/50 border border-border rounded-lg p-4">
-                  <p className="text-xs text-muted-foreground mb-1">Montant versé</p>
-                  <p className="text-2xl font-heading font-bold text-foreground">
-                    {formatPrix(selectedVersement.montant)}
-                  </p>
-                </div>
+      {isMobile ? (
+        <Sheet open={detailsOpen} onOpenChange={setDetailsOpen}>
+          <SheetContent side="bottom" className="h-[85vh] p-0 flex flex-col">
+            {/* Header mobile */}
+            <div className="px-4 py-4 border-b flex-shrink-0">
+              <h2 className="font-heading text-base font-bold">Détails du Versement</h2>
+            </div>
 
-                <div className="space-y-3">
-                  <div>
-                    <p className="text-xs text-muted-foreground mb-1">Fournisseur</p>
-                    <p className="text-sm font-semibold text-foreground">{selectedVersement.fournisseurNom}</p>
-                  </div>
-
-                  {fournisseur && (
-                    <div className="bg-secondary/50 border border-border rounded-lg p-3">
-                      <div className="flex items-center justify-between mb-2">
-                        <p className="text-xs text-muted-foreground">Dette actuelle</p>
-                        {fournisseur.dette > 0 && (
-                          <span className="text-xs px-2 py-0.5 rounded bg-destructive/10 text-destructive font-medium">
-                            En dette
-                          </span>
-                        )}
-                        {fournisseur.dette === 0 && (
-                          <span className="text-xs px-2 py-0.5 rounded bg-success/10 text-success font-medium">
-                            À jour
-                          </span>
-                        )}
-                      </div>
-                      <p className={`text-lg font-heading font-bold ${fournisseur.dette > 0 ? 'text-destructive' : 'text-success'}`}>
-                        {formatPrix(fournisseur.dette)}
+            <div className="flex-1 overflow-y-auto px-4 py-4">
+              {selectedVersement && (() => {
+                const fournisseur = fournisseurs.find((f: any) => f.id === selectedVersement.fournisseurId);
+                return (
+                  <div className="space-y-4">
+                    <div className="bg-secondary/50 border border-border rounded-lg p-4">
+                      <p className="text-xs text-muted-foreground mb-1">Montant versé</p>
+                      <p className="text-2xl font-heading font-bold text-foreground">
+                        {formatPrix(selectedVersement.montant)}
                       </p>
-                      <div className="flex items-center gap-3 text-xs text-muted-foreground mt-2 pt-2 border-t border-border">
-                        <span>Total achats: {formatPrix(fournisseur.totalAchats || 0)}</span>
-                        <span>•</span>
-                        <span>Total payé: {formatPrix(fournisseur.totalPaye || 0)}</span>
+                    </div>
+
+                    <div className="space-y-3">
+                      <div>
+                        <p className="text-xs text-muted-foreground mb-1">Fournisseur</p>
+                        <p className="text-sm font-semibold text-foreground">{selectedVersement.fournisseurNom}</p>
+                      </div>
+
+                      {fournisseur && (
+                        <div className="bg-secondary/50 border border-border rounded-lg p-3">
+                          <div className="flex items-center justify-between mb-2">
+                            <p className="text-xs text-muted-foreground">Dette actuelle</p>
+                            {fournisseur.dette > 0 && (
+                              <span className="text-xs px-2 py-0.5 rounded bg-destructive/10 text-destructive font-medium">
+                                En dette
+                              </span>
+                            )}
+                            {fournisseur.dette === 0 && (
+                              <span className="text-xs px-2 py-0.5 rounded bg-success/10 text-success font-medium">
+                                À jour
+                              </span>
+                            )}
+                          </div>
+                          <p className={`text-lg font-heading font-bold ${fournisseur.dette > 0 ? 'text-destructive' : 'text-success'}`}>
+                            {formatPrix(fournisseur.dette)}
+                          </p>
+                          <div className="flex items-center gap-3 text-xs text-muted-foreground mt-2 pt-2 border-t border-border">
+                            <span>Total achats: {formatPrix(fournisseur.totalAchats || 0)}</span>
+                            <span>•</span>
+                            <span>Total payé: {formatPrix(fournisseur.totalPaye || 0)}</span>
+                          </div>
+                        </div>
+                      )}
+
+                      <div>
+                        <p className="text-xs text-muted-foreground mb-1">Mode de paiement</p>
+                        <p className="text-sm text-foreground">
+                          {getModeIcon(selectedVersement.modePaiement)} {getModeLabel(selectedVersement.modePaiement)}
+                        </p>
+                      </div>
+
+                      {selectedVersement.reference && (
+                        <div>
+                          <p className="text-xs text-muted-foreground mb-1">Référence</p>
+                          <p className="text-sm text-foreground font-mono">{selectedVersement.reference}</p>
+                        </div>
+                      )}
+
+                      <div>
+                        <p className="text-xs text-muted-foreground mb-1">Date du versement</p>
+                        <p className="text-sm text-foreground">{formatDate(selectedVersement.date)}</p>
+                      </div>
+
+                      {selectedVersement.note && (
+                        <div>
+                          <p className="text-xs text-muted-foreground mb-1">Note</p>
+                          <p className="text-sm text-foreground">{selectedVersement.note}</p>
+                        </div>
+                      )}
+
+                      <div>
+                        <p className="text-xs text-muted-foreground mb-1">Statut</p>
+                        <span className={`inline-block px-2 py-1 rounded text-xs font-medium ${
+                          selectedVersement.statut === 'valide' ? 'bg-success/10 text-success' :
+                          selectedVersement.statut === 'en_attente' ? 'bg-warning/10 text-warning' :
+                          'bg-destructive/10 text-destructive'
+                        }`}>
+                          {selectedVersement.statut === 'valide' ? 'Validé' :
+                           selectedVersement.statut === 'en_attente' ? 'En attente' : 'Annulé'}
+                        </span>
                       </div>
                     </div>
-                  )}
 
-                <div>
-                  <p className="text-xs text-muted-foreground mb-1">Mode de paiement</p>
-                  <p className="text-sm text-foreground">
-                    {getModeIcon(selectedVersement.modePaiement)} {getModeLabel(selectedVersement.modePaiement)}
-                  </p>
-                </div>
-
-                {selectedVersement.reference && (
-                  <div>
-                    <p className="text-xs text-muted-foreground mb-1">Référence</p>
-                    <p className="text-sm text-foreground font-mono">{selectedVersement.reference}</p>
+                    <div className="flex gap-2 pt-2">
+                      <CanAccess permissions={['versements.update']}>
+                        <button
+                          onClick={() => {
+                            setDetailsOpen(false);
+                            handleEdit(selectedVersement);
+                          }}
+                          className="flex-1 py-2.5 rounded-lg gradient-gold text-primary-foreground text-sm font-semibold hover:opacity-90 transition-opacity flex items-center justify-center gap-2"
+                        >
+                          <Edit2 className="w-4 h-4" /> Modifier
+                        </button>
+                      </CanAccess>
+                      <button
+                        onClick={() => setDetailsOpen(false)}
+                        className="py-2.5 px-4 rounded-lg border border-border text-sm font-medium text-muted-foreground hover:bg-secondary transition-colors"
+                      >
+                        Fermer
+                      </button>
+                    </div>
                   </div>
-                )}
-
-                <div>
-                  <p className="text-xs text-muted-foreground mb-1">Date du versement</p>
-                  <p className="text-sm text-foreground">{formatDate(selectedVersement.date)}</p>
-                </div>
-
-                {selectedVersement.note && (
-                  <div>
-                    <p className="text-xs text-muted-foreground mb-1">Note</p>
-                    <p className="text-sm text-foreground">{selectedVersement.note}</p>
-                  </div>
-                )}
-
-                <div>
-                  <p className="text-xs text-muted-foreground mb-1">Statut</p>
-                  <span className={`inline-block px-2 py-1 rounded text-xs font-medium ${
-                    selectedVersement.statut === 'valide' ? 'bg-success/10 text-success' :
-                    selectedVersement.statut === 'en_attente' ? 'bg-warning/10 text-warning' :
-                    'bg-destructive/10 text-destructive'
-                  }`}>
-                    {selectedVersement.statut === 'valide' ? 'Validé' :
-                     selectedVersement.statut === 'en_attente' ? 'En attente' : 'Annulé'}
-                  </span>
-                </div>
-              </div>
-
-              <div className="flex gap-2 pt-2">
-                <CanAccess permissions={['versements.update']}>
-                  <button
-                    onClick={() => {
-                      setDetailsOpen(false);
-                      handleEdit(selectedVersement);
-                    }}
-                    className="flex-1 py-2.5 rounded-lg gradient-gold text-primary-foreground text-sm font-semibold hover:opacity-90 transition-opacity flex items-center justify-center gap-2"
-                  >
-                    <Edit2 className="w-4 h-4" /> Modifier
-                  </button>
-                </CanAccess>
-                <button
-                  onClick={() => setDetailsOpen(false)}
-                  className="py-2.5 px-4 rounded-lg border border-border text-sm font-medium text-muted-foreground hover:bg-secondary transition-colors"
-                >
-                  Fermer
-                </button>
-              </div>
+                );
+              })()}
             </div>
-            );
-          })()}
-        </DialogContent>
-      </Dialog>
+          </SheetContent>
+        </Sheet>
+      ) : (
+        <Dialog open={detailsOpen} onOpenChange={setDetailsOpen}>
+          <DialogContent className="max-w-[95vw] sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle className="font-heading">Détails du Versement</DialogTitle>
+            </DialogHeader>
+            {selectedVersement && (() => {
+              const fournisseur = fournisseurs.find((f: any) => f.id === selectedVersement.fournisseurId);
+              return (
+                <div className="space-y-4">
+                  <div className="bg-secondary/50 border border-border rounded-lg p-4">
+                    <p className="text-xs text-muted-foreground mb-1">Montant versé</p>
+                    <p className="text-2xl font-heading font-bold text-foreground">
+                      {formatPrix(selectedVersement.montant)}
+                    </p>
+                  </div>
+
+                  <div className="space-y-3">
+                    <div>
+                      <p className="text-xs text-muted-foreground mb-1">Fournisseur</p>
+                      <p className="text-sm font-semibold text-foreground">{selectedVersement.fournisseurNom}</p>
+                    </div>
+
+                    {fournisseur && (
+                      <div className="bg-secondary/50 border border-border rounded-lg p-3">
+                        <div className="flex items-center justify-between mb-2">
+                          <p className="text-xs text-muted-foreground">Dette actuelle</p>
+                          {fournisseur.dette > 0 && (
+                            <span className="text-xs px-2 py-0.5 rounded bg-destructive/10 text-destructive font-medium">
+                              En dette
+                            </span>
+                          )}
+                          {fournisseur.dette === 0 && (
+                            <span className="text-xs px-2 py-0.5 rounded bg-success/10 text-success font-medium">
+                              À jour
+                            </span>
+                          )}
+                        </div>
+                        <p className={`text-lg font-heading font-bold ${fournisseur.dette > 0 ? 'text-destructive' : 'text-success'}`}>
+                          {formatPrix(fournisseur.dette)}
+                        </p>
+                        <div className="flex items-center gap-3 text-xs text-muted-foreground mt-2 pt-2 border-t border-border">
+                          <span>Total achats: {formatPrix(fournisseur.totalAchats || 0)}</span>
+                          <span>•</span>
+                          <span>Total payé: {formatPrix(fournisseur.totalPaye || 0)}</span>
+                        </div>
+                      </div>
+                    )}
+
+                    <div>
+                      <p className="text-xs text-muted-foreground mb-1">Mode de paiement</p>
+                      <p className="text-sm text-foreground">
+                        {getModeIcon(selectedVersement.modePaiement)} {getModeLabel(selectedVersement.modePaiement)}
+                      </p>
+                    </div>
+
+                    {selectedVersement.reference && (
+                      <div>
+                        <p className="text-xs text-muted-foreground mb-1">Référence</p>
+                        <p className="text-sm text-foreground font-mono">{selectedVersement.reference}</p>
+                      </div>
+                    )}
+
+                    <div>
+                      <p className="text-xs text-muted-foreground mb-1">Date du versement</p>
+                      <p className="text-sm text-foreground">{formatDate(selectedVersement.date)}</p>
+                    </div>
+
+                    {selectedVersement.note && (
+                      <div>
+                        <p className="text-xs text-muted-foreground mb-1">Note</p>
+                        <p className="text-sm text-foreground">{selectedVersement.note}</p>
+                      </div>
+                    )}
+
+                    <div>
+                      <p className="text-xs text-muted-foreground mb-1">Statut</p>
+                      <span className={`inline-block px-2 py-1 rounded text-xs font-medium ${
+                        selectedVersement.statut === 'valide' ? 'bg-success/10 text-success' :
+                        selectedVersement.statut === 'en_attente' ? 'bg-warning/10 text-warning' :
+                        'bg-destructive/10 text-destructive'
+                      }`}>
+                        {selectedVersement.statut === 'valide' ? 'Validé' :
+                         selectedVersement.statut === 'en_attente' ? 'En attente' : 'Annulé'}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="flex gap-2 pt-2">
+                    <CanAccess permissions={['versements.update']}>
+                      <button
+                        onClick={() => {
+                          setDetailsOpen(false);
+                          handleEdit(selectedVersement);
+                        }}
+                        className="flex-1 py-2.5 rounded-lg gradient-gold text-primary-foreground text-sm font-semibold hover:opacity-90 transition-opacity flex items-center justify-center gap-2"
+                      >
+                        <Edit2 className="w-4 h-4" /> Modifier
+                      </button>
+                    </CanAccess>
+                    <button
+                      onClick={() => setDetailsOpen(false)}
+                      className="py-2.5 px-4 rounded-lg border border-border text-sm font-medium text-muted-foreground hover:bg-secondary transition-colors"
+                    >
+                      Fermer
+                    </button>
+                  </div>
+                </div>
+              );
+            })()}
+          </DialogContent>
+        </Dialog>
+      )}
 
       {/* Stats - cachées sur mobile */}
       <div className="hidden md:grid md:grid-cols-3 gap-5 mb-8">
@@ -464,132 +585,260 @@ const Versements = () => {
       )}
 
       {/* Dialog Historique Fournisseur */}
-      <Dialog open={historyDialogOpen} onOpenChange={setHistoryDialogOpen}>
-        <DialogContent className="max-w-[95vw] sm:max-w-2xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle className="font-heading">Historique des Paiements</DialogTitle>
-          </DialogHeader>
-          {selectedFournisseur && (
-            <div className="space-y-4">
-              {/* Info Fournisseur */}
-              <div className="bg-secondary/50 border border-border rounded-lg p-4">
-                <p className="text-sm font-semibold text-foreground mb-3">{selectedFournisseur.nom} {selectedFournisseur.prenom}</p>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <p className="text-xs text-muted-foreground mb-1">Total Achats</p>
-                    <p className="text-lg font-heading font-bold text-foreground">
-                      {formatPrix(selectedFournisseur.totalAchats || 0)}
-                    </p>
+      {isMobile ? (
+        <Sheet open={historyDialogOpen} onOpenChange={setHistoryDialogOpen}>
+          <SheetContent side="bottom" className="h-[85vh] p-0 flex flex-col">
+            {/* Header mobile */}
+            <div className="px-4 py-4 border-b flex-shrink-0">
+              <h2 className="font-heading text-base font-bold">Historique des Paiements</h2>
+              {selectedFournisseur && (
+                <p className="text-xs text-muted-foreground mt-1">
+                  {selectedFournisseur.nom} {selectedFournisseur.prenom}
+                </p>
+              )}
+            </div>
+
+            <div className="flex-1 overflow-y-auto px-4 py-4">
+              {selectedFournisseur && (
+                <div className="space-y-4">
+                  {/* Info Fournisseur */}
+                  <div className="bg-secondary/50 border border-border rounded-lg p-4">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <p className="text-xs text-muted-foreground mb-1">Total Achats</p>
+                        <p className="text-lg font-heading font-bold text-foreground">
+                          {formatPrix(selectedFournisseur.totalAchats || 0)}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-muted-foreground mb-1">Total Payé</p>
+                        <p className="text-lg font-heading font-bold text-success">
+                          {formatPrix(selectedFournisseur.totalPaye || 0)}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-muted-foreground mb-1">Dette Actuelle</p>
+                        <p className={`text-lg font-heading font-bold ${selectedFournisseur.dette > 0 ? 'text-destructive' : 'text-success'}`}>
+                          {formatPrix(selectedFournisseur.dette)}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-muted-foreground mb-1">Statut</p>
+                        {selectedFournisseur.dette > 0 ? (
+                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-destructive/10 text-destructive border border-destructive/20">
+                            <AlertCircle className="w-3 h-3" />
+                            En Dette
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-success/10 text-success border border-success/20">
+                            <CheckCircle className="w-3 h-3" />
+                            À Jour
+                          </span>
+                        )}
+                      </div>
+                    </div>
                   </div>
+
+                  {/* Liste des paiements */}
                   <div>
-                    <p className="text-xs text-muted-foreground mb-1">Total Payé</p>
-                    <p className="text-lg font-heading font-bold text-success">
-                      {formatPrix(selectedFournisseur.totalPaye || 0)}
+                    <p className="text-sm font-semibold text-foreground mb-3">
+                      Paiements ({fournisseurVersements.length})
                     </p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-muted-foreground mb-1">Dette Actuelle</p>
-                    <p className={`text-lg font-heading font-bold ${selectedFournisseur.dette > 0 ? 'text-destructive' : 'text-success'}`}>
-                      {formatPrix(selectedFournisseur.dette)}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-muted-foreground mb-1">Statut</p>
-                    {selectedFournisseur.dette > 0 ? (
-                      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-destructive/10 text-destructive border border-destructive/20">
-                        <AlertCircle className="w-3 h-3" />
-                        En Dette
-                      </span>
+                    {fournisseurVersements.length > 0 ? (
+                      <div className="space-y-2">
+                        {fournisseurVersements.map((versement: any) => (
+                          <div
+                            key={versement.id}
+                            className="p-3 bg-success/10 border border-success/20 rounded-lg flex items-center justify-between"
+                          >
+                            <div className="flex-1">
+                              <p className="text-sm font-semibold text-success">
+                                {formatPrix(versement.montant)}
+                              </p>
+                              <p className="text-xs text-muted-foreground mt-1">
+                                {formatDate(versement.date)} • {getModeLabel(versement.modePaiement)}
+                              </p>
+                              {versement.reference && (
+                                <p className="text-xs text-muted-foreground font-mono mt-0.5">
+                                  Réf: {versement.reference}
+                                </p>
+                              )}
+                            </div>
+                            <div className="flex items-center gap-1 ml-3">
+                              <button
+                                onClick={() => {
+                                  setHistoryDialogOpen(false);
+                                  handleViewDetails(versement);
+                                }}
+                                className="p-1.5 rounded-lg hover:bg-primary/10 text-primary transition-colors"
+                                title="Voir détails"
+                              >
+                                <Eye className="w-4 h-4" />
+                              </button>
+                              <CanAccess permissions={['versements.update']}>
+                                <button
+                                  onClick={() => {
+                                    setHistoryDialogOpen(false);
+                                    handleEdit(versement);
+                                  }}
+                                  className="p-1.5 rounded-lg hover:bg-primary/10 text-primary transition-colors"
+                                  title="Modifier"
+                                >
+                                  <Edit2 className="w-4 h-4" />
+                                </button>
+                              </CanAccess>
+                              <CanAccess permissions={['versements.delete']}>
+                                <button
+                                  onClick={() => handleDeleteVersement(versement.id)}
+                                  className="p-1.5 rounded-lg hover:bg-destructive/10 text-destructive transition-colors"
+                                  title="Supprimer"
+                                >
+                                  <Trash2 className="w-4 h-4" />
+                                </button>
+                              </CanAccess>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
                     ) : (
-                      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-success/10 text-success border border-success/20">
-                        <CheckCircle className="w-3 h-3" />
-                        À Jour
-                      </span>
+                      <p className="text-sm text-muted-foreground text-center py-8 bg-secondary/30 rounded-lg">
+                        Aucun paiement enregistré pour ce fournisseur
+                      </p>
                     )}
                   </div>
                 </div>
-              </div>
+              )}
+            </div>
+          </SheetContent>
+        </Sheet>
+      ) : (
+        <Dialog open={historyDialogOpen} onOpenChange={setHistoryDialogOpen}>
+          <DialogContent className="max-w-[95vw] sm:max-w-2xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle className="font-heading">Historique des Paiements</DialogTitle>
+            </DialogHeader>
+            {selectedFournisseur && (
+              <div className="space-y-4">
+                {/* Info Fournisseur */}
+                <div className="bg-secondary/50 border border-border rounded-lg p-4">
+                  <p className="text-sm font-semibold text-foreground mb-3">{selectedFournisseur.nom} {selectedFournisseur.prenom}</p>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <p className="text-xs text-muted-foreground mb-1">Total Achats</p>
+                      <p className="text-lg font-heading font-bold text-foreground">
+                        {formatPrix(selectedFournisseur.totalAchats || 0)}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground mb-1">Total Payé</p>
+                      <p className="text-lg font-heading font-bold text-success">
+                        {formatPrix(selectedFournisseur.totalPaye || 0)}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground mb-1">Dette Actuelle</p>
+                      <p className={`text-lg font-heading font-bold ${selectedFournisseur.dette > 0 ? 'text-destructive' : 'text-success'}`}>
+                        {formatPrix(selectedFournisseur.dette)}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground mb-1">Statut</p>
+                      {selectedFournisseur.dette > 0 ? (
+                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-destructive/10 text-destructive border border-destructive/20">
+                          <AlertCircle className="w-3 h-3" />
+                          En Dette
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-success/10 text-success border border-success/20">
+                          <CheckCircle className="w-3 h-3" />
+                          À Jour
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                </div>
 
-              {/* Liste des paiements */}
-              <div>
-                <p className="text-sm font-semibold text-foreground mb-3">
-                  Paiements ({fournisseurVersements.length})
-                </p>
-                {fournisseurVersements.length > 0 ? (
-                  <div className="space-y-2">
-                    {fournisseurVersements.map((versement: any) => (
-                      <div
-                        key={versement.id}
-                        className="p-3 bg-success/10 border border-success/20 rounded-lg flex items-center justify-between"
-                      >
-                        <div className="flex-1">
-                          <p className="text-sm font-semibold text-success">
-                            {formatPrix(versement.montant)}
-                          </p>
-                          <p className="text-xs text-muted-foreground mt-1">
-                            {formatDate(versement.date)} • {getModeLabel(versement.modePaiement)}
-                          </p>
-                          {versement.reference && (
-                            <p className="text-xs text-muted-foreground font-mono mt-0.5">
-                              Réf: {versement.reference}
+                {/* Liste des paiements */}
+                <div>
+                  <p className="text-sm font-semibold text-foreground mb-3">
+                    Paiements ({fournisseurVersements.length})
+                  </p>
+                  {fournisseurVersements.length > 0 ? (
+                    <div className="space-y-2">
+                      {fournisseurVersements.map((versement: any) => (
+                        <div
+                          key={versement.id}
+                          className="p-3 bg-success/10 border border-success/20 rounded-lg flex items-center justify-between"
+                        >
+                          <div className="flex-1">
+                            <p className="text-sm font-semibold text-success">
+                              {formatPrix(versement.montant)}
                             </p>
-                          )}
-                        </div>
-                        <div className="flex items-center gap-1 ml-3">
-                          <button
-                            onClick={() => {
-                              setHistoryDialogOpen(false);
-                              handleViewDetails(versement);
-                            }}
-                            className="p-1.5 rounded-lg hover:bg-primary/10 text-primary transition-colors"
-                            title="Voir détails"
-                          >
-                            <Eye className="w-4 h-4" />
-                          </button>
-                          <CanAccess permissions={['versements.update']}>
+                            <p className="text-xs text-muted-foreground mt-1">
+                              {formatDate(versement.date)} • {getModeLabel(versement.modePaiement)}
+                            </p>
+                            {versement.reference && (
+                              <p className="text-xs text-muted-foreground font-mono mt-0.5">
+                                Réf: {versement.reference}
+                              </p>
+                            )}
+                          </div>
+                          <div className="flex items-center gap-1 ml-3">
                             <button
                               onClick={() => {
                                 setHistoryDialogOpen(false);
-                                handleEdit(versement);
+                                handleViewDetails(versement);
                               }}
                               className="p-1.5 rounded-lg hover:bg-primary/10 text-primary transition-colors"
-                              title="Modifier"
+                              title="Voir détails"
                             >
-                              <Edit2 className="w-4 h-4" />
+                              <Eye className="w-4 h-4" />
                             </button>
-                          </CanAccess>
-                          <CanAccess permissions={['versements.delete']}>
-                            <button
-                              onClick={() => handleDeleteVersement(versement.id)}
-                              className="p-1.5 rounded-lg hover:bg-destructive/10 text-destructive transition-colors"
-                              title="Supprimer"
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </button>
-                          </CanAccess>
+                            <CanAccess permissions={['versements.update']}>
+                              <button
+                                onClick={() => {
+                                  setHistoryDialogOpen(false);
+                                  handleEdit(versement);
+                                }}
+                                className="p-1.5 rounded-lg hover:bg-primary/10 text-primary transition-colors"
+                                title="Modifier"
+                              >
+                                <Edit2 className="w-4 h-4" />
+                              </button>
+                            </CanAccess>
+                            <CanAccess permissions={['versements.delete']}>
+                              <button
+                                onClick={() => handleDeleteVersement(versement.id)}
+                                className="p-1.5 rounded-lg hover:bg-destructive/10 text-destructive transition-colors"
+                                title="Supprimer"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </button>
+                            </CanAccess>
+                          </div>
                         </div>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <p className="text-sm text-muted-foreground text-center py-8 bg-secondary/30 rounded-lg">
-                    Aucun paiement enregistré pour ce fournisseur
-                  </p>
-                )}
-              </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-sm text-muted-foreground text-center py-8 bg-secondary/30 rounded-lg">
+                      Aucun paiement enregistré pour ce fournisseur
+                    </p>
+                  )}
+                </div>
 
-              <div className="flex justify-end pt-2">
-                <button
-                  onClick={() => setHistoryDialogOpen(false)}
-                  className="py-2.5 px-4 rounded-lg border border-border text-sm font-medium text-muted-foreground hover:bg-secondary transition-colors"
-                >
-                  Fermer
-                </button>
+                <div className="flex justify-end pt-2">
+                  <button
+                    onClick={() => setHistoryDialogOpen(false)}
+                    className="py-2.5 px-4 rounded-lg border border-border text-sm font-medium text-muted-foreground hover:bg-secondary transition-colors"
+                  >
+                    Fermer
+                  </button>
+                </div>
               </div>
-            </div>
-          )}
-        </DialogContent>
-      </Dialog>
+            )}
+          </DialogContent>
+        </Dialog>
+      )}
     </AppLayout>
   );
 };

@@ -1,5 +1,7 @@
 import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { Sheet, SheetContent } from "@/components/ui/sheet";
+import { useIsMobile } from "@/hooks/useMediaQuery";
 import FormField from "@/components/FormField";
 import ArticleCombobox from "@/components/ArticleCombobox";
 import ClientCombobox from "@/components/ClientCombobox";
@@ -42,6 +44,7 @@ const VenteForm = ({ open, onOpenChange, onSubmit, initialData = null, mode = 'c
   };
 
   const [form, setForm] = useState(getInitialState());
+  const isMobile = useIsMobile();
 
   useEffect(() => {
     if (mode === 'edit' && initialData) {
@@ -235,29 +238,28 @@ const VenteForm = ({ open, onOpenChange, onSubmit, initialData = null, mode = 'c
   const isCreditMode = ['credit', 'acompte_50'].includes(form.modePaiement);
   const requiresClient = montantRestant > 0 || isCreditMode;
 
-  return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-[95vw] sm:max-w-4xl max-h-[90vh] flex flex-col p-0 bg-gradient-to-br from-background via-background to-primary/5">
-        {/* Header avec gradient */}
-        <DialogHeader className="px-4 sm:px-6 py-4 sm:py-5 border-b bg-gradient-to-r from-primary/10 via-primary/5 to-transparent flex-shrink-0">
-          <div className="flex items-center gap-3 pr-12">
-            <div className="hidden md:flex w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br from-primary to-primary/70 flex items-center justify-center shadow-lg">
-              <ShoppingCart className="w-5 h-5 sm:w-6 sm:h-6 text-primary-foreground" />
-            </div>
-            <div>
-              <DialogTitle className="text-base sm:text-lg font-bold bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text">
-                <span className="md:hidden">{mode === 'edit' ? 'Modifier' : 'Vente'}</span>
-                <span className="hidden md:inline">{mode === 'edit' ? 'Modifier la Vente' : 'Nouvelle Vente'}</span>
-              </DialogTitle>
-              <DialogDescription className="text-xs sm:text-sm text-muted-foreground mt-0.5">
-                {mode === 'edit' ? 'Modifiez les informations de la vente' : 'Enregistrez une transaction de vente'}
-              </DialogDescription>
-            </div>
+  // Contenu du formulaire (partagé entre Dialog et Sheet)
+  const formContent = (
+    <div className="h-full flex flex-col p-0 bg-gradient-to-br from-background via-background to-primary/5">
+      {/* Header avec gradient */}
+      <div className="px-4 sm:px-6 py-4 sm:py-5 border-b bg-gradient-to-r from-primary/10 via-primary/5 to-transparent flex-shrink-0">
+        <div className="flex items-center gap-3">
+          <div className="hidden md:flex w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br from-primary to-primary/70 flex items-center justify-center shadow-lg">
+            <ShoppingCart className="w-5 h-5 sm:w-6 sm:h-6 text-primary-foreground" />
           </div>
-        </DialogHeader>
+          <div>
+            <h2 className="text-base sm:text-lg font-bold bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text">
+              {isMobile ? (mode === 'edit' ? 'Modifier' : 'Vente') : (mode === 'edit' ? 'Modifier la Vente' : 'Nouvelle Vente')}
+            </h2>
+            <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">
+              {mode === 'edit' ? 'Modifiez les informations de la vente' : 'Enregistrez une transaction de vente'}
+            </p>
+          </div>
+        </div>
+      </div>
 
-        {/* Zone scrollable */}
-        <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto px-4 sm:px-6 py-4 sm:py-5 space-y-5">
+      {/* Zone scrollable */}
+      <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto px-4 sm:px-6 py-4 sm:py-5 space-y-5">
           {/* Alerte client obligatoire */}
           {requiresClient && (
             <div className="relative overflow-hidden rounded-xl bg-gradient-to-r from-warning/10 to-warning/5 border-2 border-warning/30 p-4">
@@ -577,23 +579,47 @@ const VenteForm = ({ open, onOpenChange, onSubmit, initialData = null, mode = 'c
           </div>
         </form>
 
-        {/* Footer avec boutons */}
-        <div className="px-4 sm:px-6 py-4 border-t bg-gradient-to-r from-muted/50 to-transparent flex flex-col sm:flex-row gap-3 flex-shrink-0">
-          <button
-            type="button"
-            onClick={() => onOpenChange(false)}
-            className="w-full sm:flex-1 h-12 rounded-xl border-2 border-border text-base font-semibold text-muted-foreground hover:bg-secondary active:scale-[0.98] transition-all"
-          >
-            Annuler
-          </button>
-          <button
-            type="submit"
-            onClick={handleSubmit}
-            className="w-full sm:flex-1 h-12 rounded-xl text-base font-bold bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-primary-foreground shadow-lg shadow-primary/25 active:scale-[0.98] transition-all"
-          >
-            {mode === 'edit' ? '✓ Enregistrer' : '✓ Valider la Vente'}
-          </button>
-        </div>
+      {/* Footer avec boutons */}
+      <div className="px-4 sm:px-6 py-4 border-t bg-gradient-to-r from-muted/50 to-transparent flex flex-col sm:flex-row gap-3 flex-shrink-0">
+        <button
+          type="button"
+          onClick={() => onOpenChange(false)}
+          className="w-full sm:flex-1 h-12 rounded-xl border-2 border-border text-base font-semibold text-muted-foreground hover:bg-secondary active:scale-[0.98] transition-all"
+        >
+          Annuler
+        </button>
+        <button
+          type="submit"
+          onClick={handleSubmit}
+          className="w-full sm:flex-1 h-12 rounded-xl text-base font-bold bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-primary-foreground shadow-lg shadow-primary/25 active:scale-[0.98] transition-all"
+        >
+          {mode === 'edit' ? '✓ Enregistrer' : '✓ Valider la Vente'}
+        </button>
+      </div>
+    </div>
+  );
+
+  // Rendu conditionnel : Sheet pour mobile, Dialog pour desktop
+  if (isMobile) {
+    return (
+      <Sheet open={open} onOpenChange={onOpenChange}>
+        <SheetContent side="bottom" className="h-[95vh] p-0">
+          {formContent}
+        </SheetContent>
+      </Sheet>
+    );
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-[95vw] sm:max-w-4xl max-h-[90vh] p-0">
+        <DialogHeader className="sr-only">
+          <DialogTitle>{mode === 'edit' ? 'Modifier la Vente' : 'Nouvelle Vente'}</DialogTitle>
+          <DialogDescription>
+            {mode === 'edit' ? 'Modifiez les informations de la vente' : 'Enregistrez une nouvelle vente'}
+          </DialogDescription>
+        </DialogHeader>
+        {formContent}
       </DialogContent>
     </Dialog>
   );

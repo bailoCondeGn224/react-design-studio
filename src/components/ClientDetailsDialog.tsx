@@ -1,5 +1,7 @@
 import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Sheet, SheetContent } from "@/components/ui/sheet";
+import { useIsMobile } from "@/hooks/useMediaQuery";
 import { useClientHistorique } from "@/hooks/useClients";
 import Pagination from "@/components/Pagination";
 import { TrendingUp, DollarSign, AlertCircle, CheckCircle, ShoppingCart, Wallet } from "lucide-react";
@@ -15,6 +17,7 @@ const ClientDetailsDialog = ({ open, onOpenChange, clientId, clientNom }: Client
   const [activeTab, setActiveTab] = useState<'tous' | 'achats' | 'paiements'>('tous');
   const [page, setPage] = useState(1);
   const [limit] = useState(10);
+  const isMobile = useIsMobile();
 
   const { data: historique, isLoading } = useClientHistorique(clientId, {
     page,
@@ -44,15 +47,29 @@ const ClientDetailsDialog = ({ open, onOpenChange, clientId, clientNom }: Client
   };
 
   if (isLoading) {
+    const loadingContent = (
+      <div className="flex items-center justify-center h-96">
+        <div className="text-center">
+          <div className="w-12 h-12 border-4 border-primary/30 border-t-primary rounded-full animate-spin mx-auto mb-4" />
+          <p className="text-muted-foreground">Chargement de l'historique...</p>
+        </div>
+      </div>
+    );
+
+    if (isMobile) {
+      return (
+        <Sheet open={open} onOpenChange={onOpenChange}>
+          <SheetContent side="bottom" className="h-[95vh]">
+            {loadingContent}
+          </SheetContent>
+        </Sheet>
+      );
+    }
+
     return (
       <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogContent className="max-w-4xl max-h-[90vh]">
-          <div className="flex items-center justify-center h-96">
-            <div className="text-center">
-              <div className="w-12 h-12 border-4 border-primary/30 border-t-primary rounded-full animate-spin mx-auto mb-4" />
-              <p className="text-muted-foreground">Chargement de l'historique...</p>
-            </div>
-          </div>
+          {loadingContent}
         </DialogContent>
       </Dialog>
     );
@@ -66,26 +83,21 @@ const ClientDetailsDialog = ({ open, onOpenChange, clientId, clientNom }: Client
     return type === 'achat' ? '🛒' : '💰';
   };
 
-  return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-[95vw] sm:max-w-5xl max-h-[90vh] overflow-hidden flex flex-col p-0 bg-gradient-to-br from-background via-background to-primary/5">
-        {/* Header avec gradient */}
-        <DialogHeader className="px-4 sm:px-6 py-4 border-b bg-gradient-to-r from-primary/10 via-primary/5 to-transparent flex-shrink-0">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br from-primary to-primary/70 flex items-center justify-center shadow-lg flex-shrink-0">
-              <Wallet className="w-5 h-5 sm:w-6 sm:h-6 text-primary-foreground" />
-            </div>
-            <div className="min-w-0 flex-1">
-              <DialogTitle className="text-lg sm:text-2xl font-bold truncate">{clientNom}</DialogTitle>
-              <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">
-                {stats.nombreVentes} achats • {stats.nombrePaiements} paiements
-              </p>
-            </div>
-          </div>
-        </DialogHeader>
+  // Contenu du dialogue (partagé entre Dialog et Sheet)
+  const dialogContent = (
+    <div className="h-full overflow-hidden flex flex-col p-0 bg-gradient-to-br from-background via-background to-primary/5">
+      {/* Header avec gradient */}
+      <div className="px-4 sm:px-6 py-4 border-b bg-gradient-to-r from-primary/10 via-primary/5 to-transparent flex-shrink-0">
+        <div>
+          <h2 className="text-lg sm:text-2xl font-bold truncate">{clientNom}</h2>
+          <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">
+            {stats.nombreVentes} achats • {stats.nombrePaiements} paiements
+          </p>
+        </div>
+      </div>
 
-        {/* Statistiques - masquées sur mobile */}
-        <div className="hidden md:grid md:grid-cols-4 gap-3 px-4 sm:px-6 py-4 flex-shrink-0 border-b">
+      {/* Statistiques - masquées sur mobile */}
+      <div className="hidden md:grid md:grid-cols-4 gap-3 px-4 sm:px-6 py-4 flex-shrink-0 border-b">
           <div className="bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
             <div className="flex items-center gap-2 mb-2">
               <ShoppingCart className="w-4 h-4 text-blue-600 dark:text-blue-400" />
@@ -157,8 +169,8 @@ const ClientDetailsDialog = ({ open, onOpenChange, clientId, clientNom }: Client
           </div>
         </div>
 
-        {/* Onglets */}
-        <div className="flex gap-1 sm:gap-2 px-4 sm:px-6 border-b border-border flex-shrink-0">
+      {/* Onglets */}
+      <div className="flex gap-1 sm:gap-2 px-4 sm:px-6 border-b border-border flex-shrink-0">
           <button
             onClick={() => setActiveTab('tous')}
             className={`flex-1 sm:flex-none px-3 sm:px-4 py-3 text-xs sm:text-sm font-semibold border-b-2 transition-all active:scale-[0.98] ${
@@ -191,8 +203,8 @@ const ClientDetailsDialog = ({ open, onOpenChange, clientId, clientNom }: Client
           </button>
         </div>
 
-        {/* Contenu scrollable */}
-        <div className="flex-1 overflow-y-auto space-y-3 px-4 sm:px-6 py-4">
+      {/* Contenu scrollable */}
+      <div className="flex-1 overflow-y-auto space-y-3 px-4 sm:px-6 py-4">
           {activeTab === 'tous' && timeline.map((item) => (
             <div key={item.id} className="flex items-start gap-2 sm:gap-3 p-3 sm:p-4 bg-card border border-border rounded-lg hover:bg-secondary/30 transition-colors">
               <div className="text-2xl sm:text-3xl flex-shrink-0">{getTimelineIcon(item.type)}</div>
@@ -301,12 +313,30 @@ const ClientDetailsDialog = ({ open, onOpenChange, clientId, clientNom }: Client
           )}
         </div>
 
-        {/* Pagination */}
-        {historique?.meta && historique.meta.totalPages > 1 && (
-          <div className="flex-shrink-0 border-t border-border px-4 sm:px-6 pt-4">
-            <Pagination meta={historique.meta} onPageChange={setPage} />
-          </div>
-        )}
+      {/* Pagination */}
+      {historique?.meta && historique.meta.totalPages > 1 && (
+        <div className="flex-shrink-0 border-t border-border px-4 sm:px-6 pt-4">
+          <Pagination meta={historique.meta} onPageChange={setPage} />
+        </div>
+      )}
+    </div>
+  );
+
+  // Rendu conditionnel : Sheet pour mobile, Dialog pour desktop
+  if (isMobile) {
+    return (
+      <Sheet open={open} onOpenChange={onOpenChange}>
+        <SheetContent side="bottom" className="h-[95vh] p-0">
+          {dialogContent}
+        </SheetContent>
+      </Sheet>
+    );
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-[95vw] sm:max-w-5xl max-h-[90vh] p-0">
+        {dialogContent}
       </DialogContent>
     </Dialog>
   );

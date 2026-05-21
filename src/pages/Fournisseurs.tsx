@@ -23,8 +23,10 @@ import {
   AlertDialogTitle
 } from "@/components/ui/alert-dialog";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { useFournisseurs, useFournisseurDetails, useCreateFournisseur, useUpdateFournisseur, useDeleteFournisseur } from "@/hooks/useFournisseurs";
 import { useDebounce } from "@/hooks/useDebounce";
+import { useIsMobile } from "@/hooks/useMediaQuery";
 
 const Fournisseurs = () => {
   const [searchInput, setSearchInput] = useState("");
@@ -37,6 +39,7 @@ const Fournisseurs = () => {
   const [limit] = useState(15);
   const [approPage, setApproPage] = useState(1);
   const [approLimit] = useState(10);
+  const isMobile = useIsMobile();
 
   // Utiliser le filtre backend avec recherche débouncée
   const { data: fournisseursResponse, isLoading } = useFournisseurs({
@@ -158,16 +161,15 @@ const Fournisseurs = () => {
       </AlertDialog>
 
       {/* Modal de détails du fournisseur */}
-      <Dialog open={detailsItem !== null} onOpenChange={() => setDetailsItem(null)}>
-        <DialogContent className="max-w-[95vw] sm:max-w-3xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle className="font-heading text-xl flex items-center gap-2">
-              <Package className="w-5 h-5 text-primary" />
-              Détails du Fournisseur
-            </DialogTitle>
-          </DialogHeader>
+      {isMobile ? (
+        <Sheet open={detailsItem !== null} onOpenChange={() => setDetailsItem(null)}>
+          <SheetContent side="bottom" className="h-[95vh] p-0 overflow-y-auto">
+            <div className="p-4 sm:p-6 border-b sticky top-0 bg-background z-10">
+              <h2 className="font-heading text-lg font-bold">Détails du Fournisseur</h2>
+            </div>
 
-          {loadingDetails ? (
+            <div className="p-4 sm:p-6">
+              {loadingDetails ? (
             <div className="flex items-center justify-center py-12">
               <div className="text-center">
                 <div className="w-12 h-12 border-4 border-primary/30 border-t-primary rounded-full animate-spin mx-auto mb-4" />
@@ -362,9 +364,218 @@ const Fournisseurs = () => {
                 </button>
               </div>
             </div>
-          )}
-        </DialogContent>
-      </Dialog>
+              )}
+            </div>
+          </SheetContent>
+        </Sheet>
+      ) : (
+        <Dialog open={detailsItem !== null} onOpenChange={() => setDetailsItem(null)}>
+          <DialogContent className="max-w-[95vw] sm:max-w-3xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle className="font-heading text-xl">
+                Détails du Fournisseur
+              </DialogTitle>
+            </DialogHeader>
+
+            {loadingDetails ? (
+              <div className="flex items-center justify-center py-12">
+                <div className="text-center">
+                  <div className="w-12 h-12 border-4 border-primary/30 border-t-primary rounded-full animate-spin mx-auto mb-4" />
+                  <p className="text-muted-foreground">Chargement des détails...</p>
+                </div>
+              </div>
+            ) : fournisseurDetails && (
+              <div className="space-y-6">
+                {/* Informations générales */}
+                <div className="bg-secondary/30 rounded-lg p-4">
+                  <h3 className="font-semibold text-foreground mb-3 flex items-center gap-2">
+                    <MapPin className="w-4 h-4 text-primary" />
+                    Informations Générales
+                  </h3>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <p className="text-xs text-muted-foreground mb-1">Nom complet</p>
+                      <p className="text-sm font-semibold text-foreground">{fournisseurDetails.nom}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground mb-1">Statut</p>
+                      <span className={`text-xs px-2 py-1 rounded-full font-medium inline-block ${
+                        fournisseurDetails.statut === "actif" ? "bg-success/10 text-success" :
+                        fournisseurDetails.statut === "en_attente" ? "bg-warning/10 text-warning" :
+                        "bg-secondary text-secondary-foreground"
+                      }`}>
+                        {fournisseurDetails.statut === "actif" ? "Actif" : fournisseurDetails.statut === "en_attente" ? "En attente" : "Inactif"}
+                      </span>
+                    </div>
+                    {fournisseurDetails.adresse && (
+                      <div>
+                        <p className="text-xs text-muted-foreground mb-1">Adresse</p>
+                        <p className="text-sm text-foreground">{fournisseurDetails.adresse}</p>
+                      </div>
+                    )}
+                    <div>
+                      <p className="text-xs text-muted-foreground mb-1">Téléphone</p>
+                      <p className="text-sm text-foreground flex items-center gap-1">
+                        <Phone className="w-3 h-3" />
+                        {fournisseurDetails.telephone}
+                      </p>
+                    </div>
+                    {fournisseurDetails.email && (
+                      <div className="sm:col-span-2">
+                        <p className="text-xs text-muted-foreground mb-1">Email</p>
+                        <p className="text-sm text-foreground flex items-center gap-1">
+                          <Mail className="w-3 h-3" />
+                          {fournisseurDetails.email}
+                        </p>
+                      </div>
+                    )}
+                    {fournisseurDetails.rating && (
+                      <div>
+                        <p className="text-xs text-muted-foreground mb-1">Évaluation</p>
+                        <div className="flex items-center gap-1">
+                          {[...Array(5)].map((_, i) => (
+                            <Star
+                              key={i}
+                              className={`w-4 h-4 ${i < Math.floor(fournisseurDetails.rating) ? "fill-amber-400 text-amber-400" : "text-muted"}`}
+                            />
+                          ))}
+                          <span className="text-sm text-muted-foreground ml-1">({fournisseurDetails.rating})</span>
+                        </div>
+                      </div>
+                    )}
+                    {fournisseurDetails.createdAt && (
+                      <div>
+                        <p className="text-xs text-muted-foreground mb-1">Date d'ajout</p>
+                        <p className="text-sm text-foreground flex items-center gap-1">
+                          <Calendar className="w-3 h-3" />
+                          {new Date(fournisseurDetails.createdAt).toLocaleDateString('fr-FR')}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Produits fournis */}
+                {fournisseurDetails.produits && fournisseurDetails.produits.length > 0 && (
+                  <div className="bg-primary/5 rounded-lg p-4">
+                    <h3 className="font-semibold text-foreground mb-3">Produits Fournis</h3>
+                    <div className="flex flex-wrap gap-2">
+                      {fournisseurDetails.produits.map((p: string, i: number) => (
+                        <span key={i} className="text-xs px-3 py-1.5 rounded-full bg-primary/10 text-primary font-medium">
+                          {p}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Statistiques financières */}
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  <div className="bg-card border border-border rounded-lg p-4">
+                    <div className="flex items-center gap-2 mb-2">
+                      <TrendingUp className="w-4 h-4 text-primary" />
+                      <p className="text-xs text-muted-foreground">Total Achats</p>
+                    </div>
+                    <p className="text-lg font-bold text-foreground">{formatPrix(fournisseurDetails.totalAchats || 0)}</p>
+                  </div>
+                  <div className="bg-card border border-border rounded-lg p-4">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Wallet className="w-4 h-4 text-success" />
+                      <p className="text-xs text-muted-foreground">Total Payé</p>
+                    </div>
+                    <p className="text-lg font-bold text-success">{formatPrix(fournisseurDetails.totalPaye || 0)}</p>
+                  </div>
+                  <div className="bg-card border border-border rounded-lg p-4">
+                    <div className="flex items-center gap-2 mb-2">
+                      <AlertCircle className="w-4 h-4 text-destructive" />
+                      <p className="text-xs text-muted-foreground">Dette</p>
+                    </div>
+                    <p className={`text-lg font-bold ${fournisseurDetails.dette > 0 ? 'text-destructive' : 'text-success'}`}>
+                      {formatPrix(fournisseurDetails.dette || 0)}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Approvisionnements récents */}
+                <div>
+                  <h3 className="font-semibold text-foreground mb-3">Approvisionnements Récents</h3>
+                  <div className="space-y-2">
+                    {fournisseurDetails.approvisionnements && fournisseurDetails.approvisionnements.length > 0 ? (
+                      fournisseurDetails.approvisionnements.map((appro: any) => (
+                        <div key={appro.id} className="flex items-center justify-between p-3 bg-secondary/30 rounded-lg">
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-medium text-foreground truncate">{appro.numero}</p>
+                            <p className="text-xs text-muted-foreground">
+                              {new Date(appro.dateLivraison || appro.createdAt).toLocaleDateString('fr-FR')}
+                            </p>
+                          </div>
+                          <p className="text-sm font-bold text-primary ml-2">{formatPrix(appro.total)}</p>
+                        </div>
+                      ))
+                    ) : (
+                      <p className="text-sm text-muted-foreground text-center py-4">Aucun approvisionnement</p>
+                    )}
+                  </div>
+
+                  {/* Pagination si nécessaire */}
+                  {fournisseurDetails.approMeta && fournisseurDetails.approMeta.totalPages > 1 && (
+                    <div className="mt-4 pt-4 border-t">
+                      <Pagination
+                        meta={fournisseurDetails.approMeta}
+                        onPageChange={setApproPage}
+                      />
+                    </div>
+                  )}
+                </div>
+
+                {/* Versements récents */}
+                <div>
+                  <h3 className="font-semibold text-foreground mb-3">Versements Récents</h3>
+                  <div className="space-y-2">
+                    {fournisseurDetails.versements && fournisseurDetails.versements.length > 0 ? (
+                      fournisseurDetails.versements.map((vers: any) => (
+                        <div key={vers.id} className="flex items-center justify-between p-3 bg-success/5 rounded-lg">
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-medium text-foreground">Versement</p>
+                            <p className="text-xs text-muted-foreground">
+                              {new Date(vers.date || vers.createdAt).toLocaleDateString('fr-FR')} - {vers.modePaiement}
+                            </p>
+                          </div>
+                          <p className="text-sm font-bold text-success ml-2">{formatPrix(vers.montant)}</p>
+                        </div>
+                      ))
+                    ) : (
+                      <p className="text-sm text-muted-foreground text-center py-4">Aucun versement</p>
+                    )}
+                  </div>
+                </div>
+
+                {/* Actions */}
+                <div className="flex gap-2 pt-4 border-t border-border">
+                  <CanAccess permissions={['fournisseurs.update']}>
+                    <button
+                      onClick={() => {
+                        const itemToEdit = detailsItem;
+                        setDetailsItem(null);
+                        handleEdit(itemToEdit);
+                      }}
+                      className="flex-1 py-2.5 rounded-lg border border-border text-sm font-medium text-foreground hover:bg-secondary transition-colors"
+                    >
+                      Modifier
+                    </button>
+                  </CanAccess>
+                  <button
+                    onClick={() => setDetailsItem(null)}
+                    className="flex-1 py-2.5 rounded-lg gradient-gold text-primary-foreground text-sm font-semibold hover:opacity-90 transition-opacity"
+                  >
+                    Fermer
+                  </button>
+                </div>
+              </div>
+            )}
+          </DialogContent>
+        </Dialog>
+      )}
 
       <div className="relative mb-6">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />

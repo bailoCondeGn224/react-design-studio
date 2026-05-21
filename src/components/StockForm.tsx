@@ -1,5 +1,7 @@
 import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { Sheet, SheetContent } from "@/components/ui/sheet";
+import { useIsMobile } from "@/hooks/useMediaQuery";
 import FormField from "@/components/FormField";
 import MobileCombobox from "@/components/MobileCombobox";
 import { toast } from "sonner";
@@ -26,7 +28,6 @@ const StockForm = ({ open, onOpenChange, onSubmit, initialData = null, mode = 'c
         categorieId: initialData.categorieId || '',
         stock: String(initialData.stock),
         seuilAlerte: String(initialData.seuilAlerte),
-        max: String(initialData.max || ''),
         prixVente: initialData.prixVente?.toString().replace(' GNF', '') || '',
         prixAchat: initialData.prixAchat?.toString().replace(' GNF', '') || '',
         reference: initialData.reference || '',
@@ -39,7 +40,6 @@ const StockForm = ({ open, onOpenChange, onSubmit, initialData = null, mode = 'c
       zone: "A",
       stock: "",
       seuilAlerte: "",
-      max: "",
       prixVente: "",
       prixAchat: "",
     };
@@ -48,6 +48,7 @@ const StockForm = ({ open, onOpenChange, onSubmit, initialData = null, mode = 'c
   const [form, setForm] = useState(getInitialState());
   const [photoFile, setPhotoFile] = useState<File | null>(null);
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
+  const isMobile = useIsMobile();
 
   useEffect(() => {
     if (mode === 'edit' && initialData) {
@@ -55,7 +56,6 @@ const StockForm = ({ open, onOpenChange, onSubmit, initialData = null, mode = 'c
         ...initialData,
         stock: String(initialData.stock),
         seuilAlerte: String(initialData.seuilAlerte),
-        max: String(initialData.max),
         prixVente: initialData.prixVente?.replace(' GNF', '') || '',
         prixAchat: initialData.prixAchat?.replace(' GNF', '') || '',
         reference: initialData.reference || '',
@@ -114,7 +114,6 @@ const StockForm = ({ open, onOpenChange, onSubmit, initialData = null, mode = 'c
       zone: form.zone,
       stock: Number(form.stock) || 0,
       seuilAlerte: Number(form.seuilAlerte),
-      max: form.max ? Number(form.max) : undefined,
       prixVente: Number(form.prixVente),
       prixAchat: form.prixAchat ? Number(form.prixAchat) : undefined,
     };
@@ -133,19 +132,17 @@ const StockForm = ({ open, onOpenChange, onSubmit, initialData = null, mode = 'c
     onOpenChange(false);
   };
 
-  return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-[95vw] sm:max-w-md max-h-[90vh] flex flex-col">
-        <DialogHeader className="flex-shrink-0">
-          <DialogTitle className="font-heading text-base sm:text-lg">
-            <span className="md:hidden">Article</span>
-            <span className="hidden md:inline">Modifier l'Article</span>
-          </DialogTitle>
-          <DialogDescription className="text-xs sm:text-sm">
-            Modifiez toutes les informations de l'article
-          </DialogDescription>
-        </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-3 sm:space-y-4 overflow-y-auto flex-1 pr-2">
+  const formContent = (
+    <div className="h-full flex flex-col">
+      <div className="p-4 sm:p-6 border-b flex-shrink-0">
+        <h2 className="font-heading text-base sm:text-lg font-bold">
+          {mode === 'edit' ? 'Modifier l\'Article' : 'Nouvel Article'}
+        </h2>
+        <p className="text-xs sm:text-sm text-muted-foreground mt-1">
+          {mode === 'edit' ? 'Modifiez toutes les informations de l\'article' : 'Ajoutez un nouvel article au stock'}
+        </p>
+      </div>
+      <form onSubmit={handleSubmit} className="space-y-3 sm:space-y-4 overflow-y-auto flex-1 p-4 sm:p-6">
           <FormField label="Nom de l'article *" placeholder="Ex: Abaya Noire Premium" value={form.nom} onChange={e => update("nom", (e.target as HTMLInputElement).value)} maxLength={100} />
           <FormField label="Référence (SKU)" placeholder="Ex: ABY-001" value={form.reference} onChange={e => update("reference", (e.target as HTMLInputElement).value)} maxLength={50} />
 
@@ -383,6 +380,29 @@ const StockForm = ({ open, onOpenChange, onSubmit, initialData = null, mode = 'c
             </button>
           </div>
         </form>
+      </div>
+  );
+
+  if (isMobile) {
+    return (
+      <Sheet open={open} onOpenChange={onOpenChange}>
+        <SheetContent side="bottom" className="h-[95vh] p-0">
+          {formContent}
+        </SheetContent>
+      </Sheet>
+    );
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-[95vw] sm:max-w-md max-h-[90vh] p-0">
+        <DialogHeader className="sr-only">
+          <DialogTitle>{mode === 'edit' ? 'Modifier l\'Article' : 'Nouvel Article'}</DialogTitle>
+          <DialogDescription>
+            {mode === 'edit' ? 'Modifiez toutes les informations de l\'article' : 'Ajoutez un nouvel article au stock'}
+          </DialogDescription>
+        </DialogHeader>
+        {formContent}
       </DialogContent>
     </Dialog>
   );

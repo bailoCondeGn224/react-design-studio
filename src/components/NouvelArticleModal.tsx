@@ -23,7 +23,6 @@ const NouvelArticleModal = ({ open, onOpenChange, onArticleCreated }: NouvelArti
     categorieId: "",
     zone: "A",
     seuilAlerte: "10",
-    max: "100",
     prixVente: "",
     prixAchat: "",
   });
@@ -40,7 +39,6 @@ const NouvelArticleModal = ({ open, onOpenChange, onArticleCreated }: NouvelArti
       categorieId: "",
       zone: "A",
       seuilAlerte: "10",
-      max: "100",
       prixVente: "",
       prixAchat: "",
     });
@@ -90,7 +88,6 @@ const NouvelArticleModal = ({ open, onOpenChange, onArticleCreated }: NouvelArti
       zone: form.zone,
       stock: 0, // Stock initial à 0, sera augmenté par l'approvisionnement
       seuilAlerte: Number(form.seuilAlerte),
-      max: form.max ? Number(form.max) : undefined,
       prixVente: Number(form.prixVente),
       prixAchat: form.prixAchat ? Number(form.prixAchat) : undefined,
     };
@@ -231,14 +228,6 @@ const NouvelArticleModal = ({ open, onOpenChange, onArticleCreated }: NouvelArti
               placeholder="10"
               value={form.seuilAlerte}
               onChange={e => update("seuilAlerte", (e.target as HTMLInputElement).value)}
-              min="0"
-            />
-            <FormField
-              label="Stock maximum"
-              type="number"
-              placeholder="100"
-              value={form.max}
-              onChange={e => update("max", (e.target as HTMLInputElement).value)}
               min="0"
             />
           </div>

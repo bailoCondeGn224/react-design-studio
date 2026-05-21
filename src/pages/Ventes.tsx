@@ -24,7 +24,9 @@ import {
   AlertDialogTitle
 } from "@/components/ui/alert-dialog";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { useVentes, useVente, useVenteVersements, useVentesStats, useCreateVente, useUpdateVente, useDeleteVente } from "@/hooks/useVentes";
+import { useIsMobile } from "@/hooks/useMediaQuery";
 import { ventesApi } from "@/api/ventes";
 import { printInvoice, shareInvoiceWhatsApp } from "@/utils/invoice-generator";
 import { useCurrentUser } from "@/hooks/useAuth";
@@ -64,6 +66,7 @@ const Ventes = () => {
   const versements = versementsResponse?.data || [];
   const versementsMeta = versementsResponse?.meta;
   const { data: statsVentes } = useVentesStats();
+  const isMobile = useIsMobile();
 
   // Reset pagination versements quand on ouvre le dialog
   useEffect(() => {
@@ -248,12 +251,15 @@ const Ventes = () => {
       </AlertDialog>
 
       {/* Dialog Détails */}
-      <Dialog open={detailsId !== null} onOpenChange={() => setDetailsId(null)}>
-        <DialogContent className="max-w-[95vw] sm:max-w-2xl max-h-[90vh] flex flex-col">
-          <DialogHeader>
-            <DialogTitle className="font-heading text-base sm:text-lg">Détails de la Vente</DialogTitle>
-          </DialogHeader>
-          {venteDetails && (
+      {isMobile ? (
+        <Sheet open={detailsId !== null} onOpenChange={() => setDetailsId(null)}>
+          <SheetContent side="bottom" className="h-[95vh] p-0">
+            <div className="h-full flex flex-col">
+              <div className="p-4 sm:p-6 border-b sticky top-0 bg-background z-10">
+                <h2 className="font-heading text-base sm:text-lg font-bold">Détails de la Vente</h2>
+              </div>
+              <div className="flex-1 overflow-y-auto p-4 sm:p-6">
+                {venteDetails && (
             <div className="space-y-3 sm:space-y-4 overflow-y-auto pr-2">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 text-sm">
                 <div>
@@ -365,8 +371,131 @@ const Ventes = () => {
               )}
             </div>
           )}
-        </DialogContent>
-      </Dialog>
+        </div>
+      </div>
+    </SheetContent>
+  </Sheet>
+      ) : (
+        <Dialog open={detailsId !== null} onOpenChange={() => setDetailsId(null)}>
+          <DialogContent className="max-w-[95vw] sm:max-w-2xl max-h-[90vh] flex flex-col">
+            <DialogHeader>
+              <DialogTitle className="font-heading text-base sm:text-lg">Détails de la Vente</DialogTitle>
+            </DialogHeader>
+            {venteDetails && (
+              <div className="space-y-3 sm:space-y-4 overflow-y-auto pr-2">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 text-sm">
+                  <div>
+                    <p className="text-muted-foreground">Numéro</p>
+                    <p className="font-semibold">{venteDetails.numero}</p>
+                  </div>
+                  <div>
+                    <p className="text-muted-foreground">Date</p>
+                    <p className="font-semibold">{formatDate(venteDetails.date)} à {venteDetails.heure}</p>
+                  </div>
+                  <div className="col-span-2">
+                    <p className="text-muted-foreground">Client</p>
+                    <p className="font-semibold">{venteDetails.nom} {venteDetails.prenom}</p>
+                    {venteDetails.tel && (
+                      <p className="text-xs text-muted-foreground">Tél: {venteDetails.tel}</p>
+                    )}
+                  </div>
+                </div>
+
+                <div>
+                  <p className="text-sm text-muted-foreground mb-2">
+                    Articles vendus ({venteDetails.lignes?.length || 0})
+                  </p>
+                  <div className="space-y-2">
+                    {venteDetails.lignes && venteDetails.lignes.length > 0 ? (
+                      venteDetails.lignes.map((ligne: any, index: number) => (
+                        <div key={index} className="flex justify-between items-center p-3 bg-secondary/30 rounded-lg text-sm">
+                          <div>
+                            <p className="font-semibold">{ligne.nom}</p>
+                            <p className="text-xs text-muted-foreground">
+                              {ligne.quantite} × {formatPrix(ligne.prixUnitaire)}
+                            </p>
+                          </div>
+                          <p className="font-bold">{formatPrix(ligne.sousTotal)}</p>
+                        </div>
+                      ))
+                    ) : (
+                      <p className="text-sm text-muted-foreground text-center py-4">Aucun article</p>
+                    )}
+                  </div>
+                </div>
+
+                <div className="bg-primary/5 p-4 rounded-lg space-y-2">
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">Mode de paiement initial</span>
+                    <span className="font-semibold">{paymentLabels[venteDetails.modePaiement] || venteDetails.modePaiement}</span>
+                  </div>
+                  <div className="flex justify-between text-sm pt-2 border-t border-border">
+                    <span className="text-muted-foreground">Total</span>
+                    <span className="font-bold text-lg">{formatPrix(venteDetails.total)}</span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">Montant payé</span>
+                    <span className="font-semibold text-success">{formatPrix(venteDetails.montantPaye)}</span>
+                  </div>
+                  {venteDetails.montantRestant > 0 && (
+                    <div className="flex justify-between text-sm">
+                      <span className="text-muted-foreground">Montant restant</span>
+                      <span className="font-semibold text-destructive">{formatPrix(venteDetails.montantRestant)}</span>
+                    </div>
+                  )}
+                </div>
+
+                {/* Historique des paiements */}
+                {versements && versements.length > 0 && (
+                  <div>
+                    <p className="text-sm font-semibold text-foreground mb-2">
+                      Historique des Paiements ({versementsMeta?.total || versements.length})
+                    </p>
+                    <div className="space-y-2">
+                      {versements.map((versement: any, index: number) => (
+                        <div key={index} className="flex justify-between items-center p-3 bg-success/10 border border-success/20 rounded-lg text-sm">
+                          <div>
+                            <p className="font-semibold text-success">{formatPrix(versement.montant)}</p>
+                            <p className="text-xs text-muted-foreground">
+                              {formatDate(versement.date)} • {paymentLabels[versement.modePaiement] || versement.modePaiement}
+                            </p>
+                            {versement.reference && (
+                              <p className="text-xs text-muted-foreground">Réf: {versement.reference}</p>
+                            )}
+                            {versement.note && (
+                              <p className="text-xs text-muted-foreground italic mt-1">{versement.note}</p>
+                            )}
+                          </div>
+                          <div className="text-right">
+                            <p className="text-xs text-muted-foreground">Par: {versement.userNom || 'N/A'}</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* Pagination si nécessaire */}
+                    {versementsMeta && versementsMeta.totalPages > 1 && (
+                      <div className="mt-2 -mx-1">
+                        <Pagination
+                          meta={versementsMeta}
+                          onPageChange={setVersementPage}
+                        />
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {venteDetails.note && (
+                  <div>
+                    <p className="text-sm text-muted-foreground mb-1">Note</p>
+                    <p className="text-sm p-3 bg-secondary/30 rounded-lg">{venteDetails.note}</p>
+                  </div>
+                )}
+              </div>
+            )}
+          </DialogContent>
+        </Dialog>
+      )}
 
       {/* Statistiques du mois */}
       {statsVentes?.mois && (

@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import { Sheet, SheetContent } from '@/components/ui/sheet';
+import { useIsMobile } from '@/hooks/useMediaQuery';
 import { Button } from '@/components/ui/button';
 import { MapPin, Tag, FileText, CheckCircle, Check } from 'lucide-react';
 
@@ -12,6 +14,8 @@ interface ZoneFormProps {
 }
 
 const ZoneForm = ({ open, onOpenChange, onSubmit, initialData, mode }: ZoneFormProps) => {
+  const isMobile = useIsMobile();
+
   const [formData, setFormData] = useState({
     code: '',
     nom: '',
@@ -55,31 +59,30 @@ const ZoneForm = ({ open, onOpenChange, onSubmit, initialData, mode }: ZoneFormP
     }));
   };
 
-  return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-[95vw] sm:max-w-2xl max-h-[90vh] flex flex-col p-0 bg-gradient-to-br from-background via-background to-primary/5">
-        {/* Header avec gradient */}
-        <div className="px-4 sm:px-6 py-4 sm:py-5 border-b bg-gradient-to-r from-primary/10 via-primary/5 to-transparent flex-shrink-0">
-          <div className="flex items-start justify-between gap-4">
-            <div className="flex items-center gap-3 flex-1 min-w-0 pr-12">
-              <div className="hidden md:flex w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center shadow-lg flex-shrink-0">
-                <MapPin className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <h2 className="text-base sm:text-lg font-bold text-foreground">
-                  <span className="md:hidden">{mode === 'edit' ? 'Modifier' : 'Zone'}</span>
-                  <span className="hidden md:inline">{mode === 'edit' ? 'Modifier la Zone' : 'Nouvelle Zone'}</span>
-                </h2>
-                <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">
-                  {mode === 'edit' ? 'Modifiez les informations de la zone' : 'Créez une nouvelle zone d\'entreposage'}
-                </p>
-              </div>
+  const formContent = (
+    <div className="h-full flex flex-col bg-gradient-to-br from-background via-background to-primary/5">
+      {/* Header avec gradient */}
+      <div className="px-4 sm:px-6 py-4 sm:py-5 border-b bg-gradient-to-r from-primary/10 via-primary/5 to-transparent flex-shrink-0">
+        <div className="flex items-start justify-between gap-4">
+          <div className="flex items-center gap-3 flex-1 min-w-0 pr-12">
+            <div className="hidden md:flex w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center shadow-lg flex-shrink-0">
+              <MapPin className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <h2 className="text-base sm:text-lg font-bold text-foreground">
+                <span className="md:hidden">{mode === 'edit' ? 'Modifier' : 'Zone'}</span>
+                <span className="hidden md:inline">{mode === 'edit' ? 'Modifier la Zone' : 'Nouvelle Zone'}</span>
+              </h2>
+              <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">
+                {mode === 'edit' ? 'Modifiez les informations de la zone' : 'Créez une nouvelle zone d\'entreposage'}
+              </p>
             </div>
           </div>
         </div>
+      </div>
 
-        {/* Zone scrollable */}
-        <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto px-4 sm:px-6 py-4 sm:py-5 space-y-5">
+      {/* Zone scrollable */}
+      <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto px-4 sm:px-6 py-4 sm:py-5 space-y-5">
           {/* Section Informations */}
           <div className="relative overflow-hidden rounded-xl bg-gradient-to-br from-primary/5 via-background to-background border-2 border-border p-4 sm:p-5">
             <div className="absolute top-0 right-0 w-24 h-24 bg-primary/5 rounded-full -mr-12 -mt-12"></div>
@@ -177,38 +180,61 @@ const ZoneForm = ({ open, onOpenChange, onSubmit, initialData, mode }: ZoneFormP
                     Les zones actives sont disponibles lors de la création de catégories
                   </p>
                 </div>
-              </div>
             </div>
           </div>
-        </form>
-
-        {/* Footer avec actions - fixe en bas */}
-        <div className="px-4 sm:px-6 py-4 border-t bg-muted/30 flex-shrink-0">
-          <div className="flex flex-col-reverse sm:flex-row justify-end gap-2 sm:gap-3">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => onOpenChange(false)}
-              className="w-full sm:w-auto"
-            >
-              Annuler
-            </Button>
-            <Button
-              type="submit"
-              onClick={(e: any) => {
-                const dialogContent = e.target.closest('[role="dialog"]');
-                const formElement = dialogContent?.querySelector('form');
-                if (formElement) {
-                  formElement.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
-                }
-              }}
-              className="w-full sm:w-auto"
-            >
-              <Check className="w-4 h-4 mr-2" />
-              {mode === 'create' ? 'Créer la zone' : 'Enregistrer les modifications'}
-            </Button>
-          </div>
         </div>
+      </form>
+
+      {/* Footer avec actions - fixe en bas */}
+      <div className="px-4 sm:px-6 py-4 border-t bg-muted/30 flex-shrink-0">
+        <div className="flex flex-col-reverse sm:flex-row justify-end gap-2 sm:gap-3">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => onOpenChange(false)}
+            className="w-full sm:w-auto"
+          >
+            Annuler
+          </Button>
+          <Button
+            type="submit"
+            onClick={(e: any) => {
+              const dialogContent = e.target.closest('[role="dialog"]');
+              const formElement = dialogContent?.querySelector('form');
+              if (formElement) {
+                formElement.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
+              }
+            }}
+            className="w-full sm:w-auto"
+          >
+            <Check className="w-4 h-4 mr-2" />
+            {mode === 'create' ? 'Créer la zone' : 'Enregistrer les modifications'}
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+
+  if (isMobile) {
+    return (
+      <Sheet open={open} onOpenChange={onOpenChange}>
+        <SheetContent side="bottom" className="h-[95vh] p-0">
+          {formContent}
+        </SheetContent>
+      </Sheet>
+    );
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-[95vw] sm:max-w-2xl max-h-[90vh] flex flex-col p-0">
+        <DialogHeader className="sr-only">
+          <DialogTitle>{mode === 'edit' ? 'Modifier la Zone' : 'Nouvelle Zone'}</DialogTitle>
+          <DialogDescription>
+            {mode === 'edit' ? 'Modifiez les informations de la zone' : 'Créez une nouvelle zone d\'entreposage'}
+          </DialogDescription>
+        </DialogHeader>
+        {formContent}
       </DialogContent>
     </Dialog>
   );

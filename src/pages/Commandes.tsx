@@ -9,10 +9,12 @@ import CanAccess from "@/components/CanAccess";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+import { useIsMobile } from "@/hooks/useMediaQuery";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import FormField from "@/components/FormField";
-import { Plus, MoreVertical, Eye, Edit, Trash2, CheckCircle, XCircle, Package, Printer } from "lucide-react";
+import { Plus, MoreVertical, Eye, Edit, Trash2, CheckCircle, XCircle, Package, Printer, User, Calendar, ShoppingBag, DollarSign, AlertTriangle, Filter, X, ChevronRight } from "lucide-react";
 import { toast } from "sonner";
 import {
   useCommandes,
@@ -46,6 +48,8 @@ const Commandes = () => {
   const [printCommande, setPrintCommande] = useState<Commande | null>(null);
   const [lignesPage, setLignesPage] = useState(1);
   const [lignesLimit] = useState(10);
+  const [filtresOpen, setFiltresOpen] = useState(false);
+  const isMobile = useIsMobile();
 
   // Hooks
   const { data: commandesResponse, isLoading } = useCommandes({ page, limit: 15, ...filters });
@@ -126,6 +130,24 @@ const Commandes = () => {
     }
   };
 
+  const countActiveFilters = () => {
+    let count = 0;
+    if (filters.statut) count++;
+    if (filters.clientId) count++;
+    if (filters.dateDebut) count++;
+    if (filters.dateFin) count++;
+    return count;
+  };
+
+  const resetFilters = () => {
+    setFilters({
+      statut: "",
+      clientId: "",
+      dateDebut: "",
+      dateFin: "",
+    });
+  };
+
   const formatPrix = (montant: number) => {
     return new Intl.NumberFormat('fr-GN', {
       style: 'currency',
@@ -194,8 +216,173 @@ const Commandes = () => {
         </div>
       )}
 
-      {/* Filtres */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+      {/* Filtres version mobile */}
+      <div className="md:hidden mb-4">
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => setFiltresOpen(true)}
+            className="flex-1 flex items-center justify-between h-11 px-4 rounded-lg border-2 border-border bg-card hover:bg-secondary/50 active:scale-[0.98] transition-all"
+          >
+            <div className="flex items-center gap-2">
+              <Filter className="w-4 h-4 text-muted-foreground" />
+              <span className="text-sm font-medium text-foreground">Filtres</span>
+              {countActiveFilters() > 0 && (
+                <span className="flex items-center justify-center w-5 h-5 rounded-full bg-primary text-primary-foreground text-xs font-bold">
+                  {countActiveFilters()}
+                </span>
+              )}
+            </div>
+            <ChevronRight className="w-4 h-4 text-muted-foreground" />
+          </button>
+
+          {countActiveFilters() > 0 && (
+            <button
+              onClick={resetFilters}
+              className="h-11 px-4 rounded-lg border border-border bg-card hover:bg-destructive/10 active:scale-[0.98] transition-all"
+            >
+              <X className="w-4 h-4 text-muted-foreground" />
+            </button>
+          )}
+        </div>
+
+        {/* Chips des filtres actifs */}
+        {countActiveFilters() > 0 && (
+          <div className="flex flex-wrap gap-2 mt-3">
+            {filters.statut && (
+              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-primary/10 border border-primary/20">
+                <span className="text-xs font-medium text-primary">
+                  {filters.statut === 'en_attente' ? 'En attente' : filters.statut === 'livree' ? 'Livrée' : 'Annulée'}
+                </span>
+                <button
+                  onClick={() => setFilters({ ...filters, statut: "" })}
+                  className="hover:bg-primary/20 rounded-full p-0.5"
+                >
+                  <X className="w-3 h-3 text-primary" />
+                </button>
+              </div>
+            )}
+            {filters.clientId && (
+              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800">
+                <span className="text-xs font-medium text-blue-600 dark:text-blue-400">
+                  {clients.find((c: any) => c.id === filters.clientId)?.nom || 'Client'}
+                </span>
+                <button
+                  onClick={() => setFilters({ ...filters, clientId: "" })}
+                  className="hover:bg-blue-200 dark:hover:bg-blue-900 rounded-full p-0.5"
+                >
+                  <X className="w-3 h-3 text-blue-600 dark:text-blue-400" />
+                </button>
+              </div>
+            )}
+            {filters.dateDebut && (
+              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-purple-50 dark:bg-purple-950/30 border border-purple-200 dark:border-purple-800">
+                <Calendar className="w-3 h-3 text-purple-600 dark:text-purple-400" />
+                <span className="text-xs font-medium text-purple-600 dark:text-purple-400">
+                  Depuis {formatDate(filters.dateDebut)}
+                </span>
+                <button
+                  onClick={() => setFilters({ ...filters, dateDebut: "" })}
+                  className="hover:bg-purple-200 dark:hover:bg-purple-900 rounded-full p-0.5"
+                >
+                  <X className="w-3 h-3 text-purple-600 dark:text-purple-400" />
+                </button>
+              </div>
+            )}
+            {filters.dateFin && (
+              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-purple-50 dark:bg-purple-950/30 border border-purple-200 dark:border-purple-800">
+                <Calendar className="w-3 h-3 text-purple-600 dark:text-purple-400" />
+                <span className="text-xs font-medium text-purple-600 dark:text-purple-400">
+                  Jusqu'au {formatDate(filters.dateFin)}
+                </span>
+                <button
+                  onClick={() => setFilters({ ...filters, dateFin: "" })}
+                  className="hover:bg-purple-200 dark:hover:bg-purple-900 rounded-full p-0.5"
+                >
+                  <X className="w-3 h-3 text-purple-600 dark:text-purple-400" />
+                </button>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* Sheet Filtres Mobile */}
+      <Sheet open={filtresOpen} onOpenChange={setFiltresOpen}>
+        <SheetContent side="bottom" className="h-[85vh] p-0">
+          <div className="h-full flex flex-col">
+            {/* Header */}
+            <div className="px-4 py-4 border-b bg-gradient-to-r from-primary/10 via-primary/5 to-transparent flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Filter className="w-5 h-5 text-primary" />
+                <h2 className="font-heading text-lg font-bold">Filtres</h2>
+              </div>
+              {countActiveFilters() > 0 && (
+                <button
+                  onClick={resetFilters}
+                  className="text-sm font-medium text-primary hover:underline"
+                >
+                  Réinitialiser
+                </button>
+              )}
+            </div>
+
+            {/* Contenu */}
+            <div className="flex-1 overflow-y-auto p-4 space-y-4">
+              <FormField
+                label="Statut"
+                as="select"
+                value={filters.statut}
+                onChange={(e) => setFilters({ ...filters, statut: (e.target as HTMLSelectElement).value })}
+              >
+                <option value="">Tous les statuts</option>
+                <option value="en_attente">En attente</option>
+                <option value="livree">Livrée</option>
+                <option value="annulee">Annulée</option>
+              </FormField>
+
+              <FormField
+                label="Client"
+                as="select"
+                value={filters.clientId}
+                onChange={(e) => setFilters({ ...filters, clientId: (e.target as HTMLSelectElement).value })}
+              >
+                <option value="">Tous les clients</option>
+                {clients.map((c: any) => (
+                  <option key={c.id} value={c.id}>{c.nom}</option>
+                ))}
+              </FormField>
+
+              <FormField
+                label="Date début"
+                type="date"
+                value={filters.dateDebut}
+                onChange={(e) => setFilters({ ...filters, dateDebut: (e.target as HTMLInputElement).value })}
+              />
+
+              <FormField
+                label="Date fin"
+                type="date"
+                value={filters.dateFin}
+                onChange={(e) => setFilters({ ...filters, dateFin: (e.target as HTMLInputElement).value })}
+              />
+            </div>
+
+            {/* Footer */}
+            <div className="p-4 border-t bg-card">
+              <button
+                onClick={() => setFiltresOpen(false)}
+                className="w-full h-12 rounded-lg gradient-gold text-primary-foreground font-semibold active:scale-[0.98] transition-all"
+              >
+                Appliquer les filtres
+                {countActiveFilters() > 0 && ` (${countActiveFilters()})`}
+              </button>
+            </div>
+          </div>
+        </SheetContent>
+      </Sheet>
+
+      {/* Filtres version desktop */}
+      <div className="hidden md:grid md:grid-cols-4 gap-4 mb-6">
         <FormField
           label="Statut"
           as="select"
@@ -391,105 +578,300 @@ const Commandes = () => {
       />
 
       {/* Dialog Détails */}
-      <Dialog open={!!detailsCommande} onOpenChange={() => setDetailsCommande(null)}>
-        <DialogContent className="max-w-2xl">
-          <DialogHeader>
-            <DialogTitle>Détails de la commande {detailsCommande?.numero}</DialogTitle>
-          </DialogHeader>
-          {detailsCommande && (
-            <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <div className="text-sm text-muted-foreground">Client</div>
-                  <div className="font-medium">
-                    {clients.find((c: any) => c.id === detailsCommande.clientId)?.nom}
+      {isMobile ? (
+        <Sheet open={!!detailsCommande} onOpenChange={() => setDetailsCommande(null)}>
+          <SheetContent side="bottom" className="h-[95vh] p-0">
+            <div className="h-full flex flex-col bg-gradient-to-br from-background via-background to-primary/5">
+              {/* Header amélioré */}
+              <div className="p-4 sm:p-6 border-b bg-gradient-to-r from-primary/10 via-primary/5 to-transparent flex-shrink-0">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-lg bg-primary/20 flex items-center justify-center">
+                    <Package className="w-5 h-5 text-primary" />
                   </div>
-                </div>
-                <div>
-                  <div className="text-sm text-muted-foreground">Statut</div>
-                  <div>{getStatutBadge(detailsCommande.statut)}</div>
-                </div>
-                <div>
-                  <div className="text-sm text-muted-foreground">Date de livraison souhaitée</div>
-                  <div>{detailsCommande.dateLivraison ? formatDate(detailsCommande.dateLivraison) : '-'}</div>
-                </div>
-                {detailsCommande.dateLivree && (
                   <div>
-                    <div className="text-sm text-muted-foreground">Date de livraison réelle</div>
-                    <div>{formatDate(detailsCommande.dateLivree)}</div>
+                    <h2 className="font-heading text-lg font-bold">Commande {detailsCommande?.numero}</h2>
+                    {detailsCommande && (
+                      <p className="text-xs text-muted-foreground mt-0.5">
+                        Créée le {formatDate(detailsCommande.createdAt!)}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex-1 overflow-y-auto p-4 sm:p-6">
+                {detailsCommande && (
+                  <div className="space-y-4">
+                    {/* Informations principales en cartes */}
+                    <div className="grid grid-cols-1 gap-3">
+                      {/* Client */}
+                      <div className="bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+                        <div className="flex items-center gap-2 mb-2">
+                          <User className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                          <p className="text-xs font-medium text-blue-600 dark:text-blue-400">Client</p>
+                        </div>
+                        <p className="font-heading font-bold text-blue-700 dark:text-blue-300">
+                          {clients.find((c: any) => c.id === detailsCommande.clientId)?.nom || 'Client inconnu'}
+                        </p>
+                      </div>
+
+                      {/* Statut et dates */}
+                      <div className="grid grid-cols-2 gap-3">
+                        <div className={`border rounded-lg p-3 ${
+                          detailsCommande.statut === 'livree'
+                            ? 'bg-green-50 dark:bg-green-950/30 border-green-200 dark:border-green-800'
+                            : detailsCommande.statut === 'annulee'
+                            ? 'bg-red-50 dark:bg-red-950/30 border-red-200 dark:border-red-800'
+                            : 'bg-yellow-50 dark:bg-yellow-950/30 border-yellow-200 dark:border-yellow-800'
+                        }`}>
+                          <p className="text-xs font-medium mb-1.5 text-muted-foreground">Statut</p>
+                          {getStatutBadge(detailsCommande.statut)}
+                        </div>
+                        <div className="bg-purple-50 dark:bg-purple-950/30 border border-purple-200 dark:border-purple-800 rounded-lg p-3">
+                          <div className="flex items-center gap-1.5 mb-1.5">
+                            <Calendar className="w-3 h-3 text-purple-600 dark:text-purple-400" />
+                            <p className="text-xs font-medium text-purple-600 dark:text-purple-400">Livraison</p>
+                          </div>
+                          <p className="text-sm font-semibold text-purple-700 dark:text-purple-300">
+                            {detailsCommande.dateLivraison ? formatDate(detailsCommande.dateLivraison) : 'Non définie'}
+                          </p>
+                        </div>
+                      </div>
+
+                      {detailsCommande.dateLivree && (
+                        <div className="bg-teal-50 dark:bg-teal-950/30 border border-teal-200 dark:border-teal-800 rounded-lg p-3">
+                          <div className="flex items-center gap-2 mb-1.5">
+                            <CheckCircle className="w-3.5 h-3.5 text-teal-600 dark:text-teal-400" />
+                            <p className="text-xs font-medium text-teal-600 dark:text-teal-400">Livré le</p>
+                          </div>
+                          <p className="text-sm font-semibold text-teal-700 dark:text-teal-300">
+                            {formatDate(detailsCommande.dateLivree)}
+                          </p>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Articles */}
+                    <div>
+                      <div className="flex items-center gap-2 mb-3">
+                        <ShoppingBag className="w-4 h-4 text-primary" />
+                        <h3 className="text-sm font-semibold text-foreground">Articles commandés</h3>
+                      </div>
+                      <div className="space-y-2">
+                        {lignes.map((ligne: any, idx: number) => (
+                          <div key={idx} className="flex items-center justify-between p-3 bg-card border border-border rounded-lg hover:bg-secondary/30 transition-colors">
+                            <div className="flex-1 min-w-0 mr-3">
+                              <p className="font-semibold text-foreground truncate">{ligne.nom}</p>
+                              <p className="text-xs text-muted-foreground mt-0.5">
+                                {ligne.quantite} × {formatPrix(ligne.prixUnitaire)}
+                              </p>
+                            </div>
+                            <div className="text-right">
+                              <p className="font-bold text-primary">{formatPrix(ligne.sousTotal)}</p>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+
+                      {/* Pagination */}
+                      {lignesMeta && lignesMeta.totalPages > 1 && (
+                        <div className="mt-3">
+                          <Pagination meta={lignesMeta} onPageChange={setLignesPage} />
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Récapitulatif financier */}
+                    <div className="bg-gradient-to-br from-primary/10 to-primary/5 p-4 rounded-xl border-2 border-primary/20">
+                      <div className="flex items-center gap-2 mb-3">
+                        <DollarSign className="w-4 h-4 text-primary" />
+                        <h3 className="text-sm font-semibold text-foreground">Récapitulatif</h3>
+                      </div>
+                      <div className="space-y-2">
+                        <div className="flex justify-between text-sm">
+                          <span className="text-muted-foreground">Total commande</span>
+                          <span className="font-bold text-lg">{formatPrix(detailsCommande.total)}</span>
+                        </div>
+                        <div className="flex justify-between text-sm">
+                          <span className="text-muted-foreground">Acompte versé</span>
+                          <span className="font-semibold text-green-600 dark:text-green-400">{formatPrix(detailsCommande.acompte)}</span>
+                        </div>
+                        <div className="flex justify-between text-sm pt-2 border-t border-primary/20">
+                          <span className="font-medium text-foreground">Montant restant</span>
+                          <span className="font-bold text-lg text-primary">{formatPrix(detailsCommande.montantRestant)}</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Note */}
+                    {detailsCommande.note && (
+                      <div className="bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-lg p-4">
+                        <div className="flex items-center gap-2 mb-2">
+                          <AlertTriangle className="w-4 h-4 text-amber-600 dark:text-amber-400" />
+                          <p className="text-xs font-medium text-amber-600 dark:text-amber-400">Note</p>
+                        </div>
+                        <p className="text-sm text-amber-900 dark:text-amber-100">{detailsCommande.note}</p>
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
-
-              <div>
-                <div className="text-sm font-medium mb-2">Articles</div>
-                <table className="w-full text-sm">
-                  <thead className="bg-muted">
-                    <tr>
-                      <th className="px-3 py-2 text-left">Article</th>
-                      <th className="px-3 py-2 text-center">Quantité</th>
-                      <th className="px-3 py-2 text-right">Prix unitaire</th>
-                      <th className="px-3 py-2 text-right">Sous-total</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y">
-                    {lignes.map((ligne: any, idx: number) => (
-                      <tr key={idx}>
-                        <td className="px-3 py-2">{ligne.nom}</td>
-                        <td className="px-3 py-2 text-center">{ligne.quantite}</td>
-                        <td className="px-3 py-2 text-right">{formatPrix(ligne.prixUnitaire)}</td>
-                        <td className="px-3 py-2 text-right font-medium">{formatPrix(ligne.sousTotal)}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-
-                {/* Pagination si nécessaire */}
-                {lignesMeta && lignesMeta.totalPages > 1 && (
-                  <div className="mt-4 pt-4 border-t">
-                    <Pagination
-                      meta={lignesMeta}
-                      onPageChange={setLignesPage}
-                    />
-                  </div>
-                )}
-              </div>
-
-              <div className="bg-muted p-4 rounded-lg space-y-2">
-                <div className="flex justify-between">
-                  <span>Total</span>
-                  <span className="font-bold">{formatPrix(detailsCommande.total)}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Acompte versé</span>
-                  <span>{formatPrix(detailsCommande.acompte)}</span>
-                </div>
-                <div className="flex justify-between border-t pt-2">
-                  <span className="font-medium">Montant restant</span>
-                  <span className="font-bold">{formatPrix(detailsCommande.montantRestant)}</span>
-                </div>
-              </div>
-
-              {detailsCommande.note && (
-                <div>
-                  <div className="text-sm text-muted-foreground">Note</div>
-                  <div className="mt-1">{detailsCommande.note}</div>
-                </div>
-              )}
             </div>
-          )}
-        </DialogContent>
-      </Dialog>
+          </SheetContent>
+        </Sheet>
+      ) : (
+        <Dialog open={!!detailsCommande} onOpenChange={() => setDetailsCommande(null)}>
+          <DialogContent className="max-w-3xl max-h-[90vh] p-0">
+            <DialogHeader className="p-6 border-b bg-gradient-to-r from-primary/10 via-primary/5 to-transparent space-y-0">
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 rounded-lg bg-primary/20 flex items-center justify-center">
+                  <Package className="w-6 h-6 text-primary" />
+                </div>
+                <div>
+                  <DialogTitle className="font-heading text-xl font-bold">
+                    Commande {detailsCommande?.numero}
+                  </DialogTitle>
+                  {detailsCommande && (
+                    <DialogDescription className="text-sm text-muted-foreground mt-0.5">
+                      Créée le {formatDate(detailsCommande.createdAt!)}
+                    </DialogDescription>
+                  )}
+                </div>
+              </div>
+            </DialogHeader>
+
+            {detailsCommande && (
+              <div className="p-6 space-y-4 overflow-y-auto max-h-[calc(90vh-180px)]">
+                {/* Informations principales en cartes */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {/* Client */}
+                  <div className="bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 rounded-lg p-4 col-span-2">
+                    <div className="flex items-center gap-2 mb-2">
+                      <User className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                      <p className="text-xs font-medium text-blue-600 dark:text-blue-400">Client</p>
+                    </div>
+                    <p className="font-heading text-lg font-bold text-blue-700 dark:text-blue-300">
+                      {clients.find((c: any) => c.id === detailsCommande.clientId)?.nom || 'Client inconnu'}
+                    </p>
+                  </div>
+
+                  {/* Statut */}
+                  <div className={`border rounded-lg p-4 ${
+                    detailsCommande.statut === 'livree'
+                      ? 'bg-green-50 dark:bg-green-950/30 border-green-200 dark:border-green-800'
+                      : detailsCommande.statut === 'annulee'
+                      ? 'bg-red-50 dark:bg-red-950/30 border-red-200 dark:border-red-800'
+                      : 'bg-yellow-50 dark:bg-yellow-950/30 border-yellow-200 dark:border-yellow-800'
+                  }`}>
+                    <p className="text-xs font-medium mb-2 text-muted-foreground">Statut</p>
+                    {getStatutBadge(detailsCommande.statut)}
+                  </div>
+
+                  {/* Date livraison souhaitée */}
+                  <div className="bg-purple-50 dark:bg-purple-950/30 border border-purple-200 dark:border-purple-800 rounded-lg p-4">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Calendar className="w-4 h-4 text-purple-600 dark:text-purple-400" />
+                      <p className="text-xs font-medium text-purple-600 dark:text-purple-400">Livraison souhaitée</p>
+                    </div>
+                    <p className="text-base font-semibold text-purple-700 dark:text-purple-300">
+                      {detailsCommande.dateLivraison ? formatDate(detailsCommande.dateLivraison) : 'Non définie'}
+                    </p>
+                  </div>
+
+                  {/* Date livraison réelle si existe */}
+                  {detailsCommande.dateLivree && (
+                    <div className="bg-teal-50 dark:bg-teal-950/30 border border-teal-200 dark:border-teal-800 rounded-lg p-4 col-span-2">
+                      <div className="flex items-center gap-2 mb-2">
+                        <CheckCircle className="w-4 h-4 text-teal-600 dark:text-teal-400" />
+                        <p className="text-xs font-medium text-teal-600 dark:text-teal-400">Livré le</p>
+                      </div>
+                      <p className="text-base font-semibold text-teal-700 dark:text-teal-300">
+                        {formatDate(detailsCommande.dateLivree)}
+                      </p>
+                    </div>
+                  )}
+                </div>
+
+                {/* Articles */}
+                <div>
+                  <div className="flex items-center gap-2 mb-3">
+                    <ShoppingBag className="w-5 h-5 text-primary" />
+                    <h3 className="text-base font-semibold text-foreground">Articles commandés</h3>
+                  </div>
+                  <div className="space-y-2">
+                    {lignes.map((ligne: any, idx: number) => (
+                      <div key={idx} className="flex items-center justify-between p-4 bg-card border border-border rounded-lg hover:bg-secondary/30 transition-colors">
+                        <div className="flex-1 min-w-0 mr-4">
+                          <p className="font-semibold text-foreground">{ligne.nom}</p>
+                          <p className="text-sm text-muted-foreground mt-1">
+                            {ligne.quantite} × {formatPrix(ligne.prixUnitaire)}
+                          </p>
+                        </div>
+                        <div className="text-right">
+                          <p className="font-bold text-lg text-primary">{formatPrix(ligne.sousTotal)}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Pagination si nécessaire */}
+                  {lignesMeta && lignesMeta.totalPages > 1 && (
+                    <div className="mt-4">
+                      <Pagination meta={lignesMeta} onPageChange={setLignesPage} />
+                    </div>
+                  )}
+                </div>
+
+                {/* Récapitulatif financier */}
+                <div className="bg-gradient-to-br from-primary/10 to-primary/5 p-5 rounded-xl border-2 border-primary/20">
+                  <div className="flex items-center gap-2 mb-4">
+                    <DollarSign className="w-5 h-5 text-primary" />
+                    <h3 className="text-base font-semibold text-foreground">Récapitulatif financier</h3>
+                  </div>
+                  <div className="space-y-3">
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-muted-foreground">Total commande</span>
+                      <span className="font-bold text-xl">{formatPrix(detailsCommande.total)}</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-muted-foreground">Acompte versé</span>
+                      <span className="font-semibold text-green-600 dark:text-green-400">{formatPrix(detailsCommande.acompte)}</span>
+                    </div>
+                    <div className="flex justify-between items-center pt-3 border-t border-primary/20">
+                      <span className="font-medium text-foreground">Montant restant</span>
+                      <span className="font-bold text-2xl text-primary">{formatPrix(detailsCommande.montantRestant)}</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Note */}
+                {detailsCommande.note && (
+                  <div className="bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-lg p-4">
+                    <div className="flex items-center gap-2 mb-2">
+                      <AlertTriangle className="w-4 h-4 text-amber-600 dark:text-amber-400" />
+                      <p className="text-sm font-medium text-amber-600 dark:text-amber-400">Note</p>
+                    </div>
+                    <p className="text-sm text-amber-900 dark:text-amber-100">{detailsCommande.note}</p>
+                  </div>
+                )}
+              </div>
+            )}
+          </DialogContent>
+        </Dialog>
+      )}
 
       {/* Dialog Livraison */}
-      <Dialog open={!!livrerCommande} onOpenChange={() => setLivrerCommande(null)}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Livrer la commande {livrerCommande?.numero}</DialogTitle>
-            <DialogDescription>
-              Enregistrez le paiement final et marquez la commande comme livrée
-            </DialogDescription>
-          </DialogHeader>
+      {isMobile ? (
+        <Sheet open={!!livrerCommande} onOpenChange={() => setLivrerCommande(null)}>
+          <SheetContent side="bottom" className="h-[95vh] p-0">
+            <div className="h-full flex flex-col">
+              <div className="p-4 sm:p-6 border-b sticky top-0 bg-background z-10">
+                <h2 className="font-semibold text-lg">Livrer la commande {livrerCommande?.numero}</h2>
+                <p className="text-sm text-muted-foreground mt-1">
+                  Enregistrez le paiement final et marquez la commande comme livrée
+                </p>
+              </div>
+              <div className="flex-1 overflow-y-auto p-4 sm:p-6">
           {livrerCommande && (
             <div className="space-y-4">
               <div className="bg-muted p-4 rounded-lg space-y-2 text-sm">
@@ -559,8 +941,91 @@ const Commandes = () => {
               </div>
             </div>
           )}
-        </DialogContent>
-      </Dialog>
+              </div>
+            </div>
+          </SheetContent>
+        </Sheet>
+      ) : (
+        <Dialog open={!!livrerCommande} onOpenChange={() => setLivrerCommande(null)}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Livrer la commande {livrerCommande?.numero}</DialogTitle>
+              <DialogDescription>
+                Enregistrez le paiement final et marquez la commande comme livrée
+              </DialogDescription>
+            </DialogHeader>
+            {livrerCommande && (
+              <div className="space-y-4">
+                <div className="bg-muted p-4 rounded-lg space-y-2 text-sm">
+                  <div className="flex justify-between">
+                    <span>Total commande</span>
+                    <span className="font-bold">{formatPrix(livrerCommande.total)}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Acompte déjà versé</span>
+                    <span>{formatPrix(livrerCommande.acompte)}</span>
+                  </div>
+                  <div className="flex justify-between border-t pt-2">
+                    <span className="font-medium">Restant à payer</span>
+                    <span className="font-bold text-lg">{formatPrix(livrerCommande.montantRestant)}</span>
+                  </div>
+                </div>
+
+                <FormField
+                  label="Montant payé à la livraison *"
+                  type="number"
+                  value={livrerData.montantPaye}
+                  onChange={(e) => setLivrerData({ ...livrerData, montantPaye: Number((e.target as HTMLInputElement).value) })}
+                  min={0}
+                />
+
+                <FormField
+                  label="Mode de paiement *"
+                  as="select"
+                  value={livrerData.modePaiement}
+                  onChange={(e) => setLivrerData({ ...livrerData, modePaiement: (e.target as HTMLSelectElement).value })}
+                >
+                  <option value="especes">Espèces</option>
+                  <option value="mobile_money">Mobile Money</option>
+                  <option value="virement">Virement</option>
+                  <option value="credit">Crédit</option>
+                </FormField>
+
+                <FormField
+                  label="Note (optionnel)"
+                  as="textarea"
+                  value={livrerData.note}
+                  onChange={(e) => setLivrerData({ ...livrerData, note: (e.target as HTMLTextAreaElement).value })}
+                  rows={3}
+                />
+
+                <div className="bg-primary/5 p-4 rounded-lg space-y-2 text-sm">
+                  <div className="flex justify-between">
+                    <span>Total payé</span>
+                    <span className="font-bold">{formatPrix(calculateTotalPaye())}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Montant restant (dette)</span>
+                    <span className={calculateRestant() > 0 ? "font-bold text-destructive" : "font-bold text-green-600"}>
+                      {formatPrix(calculateRestant())}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="flex gap-2 justify-end">
+                  <Button variant="outline" onClick={() => setLivrerCommande(null)}>
+                    Annuler
+                  </Button>
+                  <Button onClick={handleLivrer}>
+                    <CheckCircle className="mr-2 h-4 w-4" />
+                    Confirmer la livraison
+                  </Button>
+                </div>
+              </div>
+            )}
+          </DialogContent>
+        </Dialog>
+      )}
 
       {/* Dialog Annulation */}
       <AlertDialog open={!!annulerId} onOpenChange={() => setAnnulerId(null)}>

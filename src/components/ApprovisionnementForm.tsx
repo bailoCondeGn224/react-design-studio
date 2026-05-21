@@ -1,5 +1,7 @@
 import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { Sheet, SheetContent } from "@/components/ui/sheet";
+import { useIsMobile } from "@/hooks/useMediaQuery";
 import { Button } from "@/components/ui/button";
 import FormField from "@/components/FormField";
 import ArticleCombobox from "@/components/ArticleCombobox";
@@ -44,6 +46,7 @@ const ApprovisionnementForm = ({ open, onOpenChange, onSubmit, initialData = nul
   const [selectedFournisseur, setSelectedFournisseur] = useState<any>(null);
   const [nouvelArticleModalOpen, setNouvelArticleModalOpen] = useState(false);
   const [currentLigneIndex, setCurrentLigneIndex] = useState<number | null>(null);
+  const isMobile = useIsMobile();
 
   useEffect(() => {
     if (mode === 'edit' && initialData) {
@@ -218,30 +221,28 @@ const ApprovisionnementForm = ({ open, onOpenChange, onSubmit, initialData = nul
   const montantRestant = calculerMontantRestant();
   const impactStock = calculerImpactStock();
 
-  return (
+  // Contenu partagé entre Sheet et Dialog
+  const formContent = (
     <>
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-[95vw] sm:max-w-4xl max-h-[90vh] flex flex-col p-0 bg-gradient-to-br from-background via-background to-primary/5">
-        {/* Header avec gradient */}
-        <DialogHeader className="px-4 sm:px-6 py-4 sm:py-5 border-b bg-gradient-to-r from-primary/10 via-primary/5 to-transparent flex-shrink-0">
-          <div className="flex items-center gap-3 pr-12">
-            <div className="hidden md:flex w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br from-primary to-primary/70 flex items-center justify-center shadow-lg">
-              <Truck className="w-5 h-5 sm:w-6 sm:h-6 text-primary-foreground" />
-            </div>
-            <div>
-              <DialogTitle className="text-base sm:text-lg font-bold bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text">
-                <span className="md:hidden">{mode === 'edit' ? 'Modifier' : 'Approvisionnement'}</span>
-                <span className="hidden md:inline">{mode === 'edit' ? 'Modifier l\'Approvisionnement' : 'Nouvel Approvisionnement'}</span>
-              </DialogTitle>
-              <DialogDescription className="text-xs sm:text-sm text-muted-foreground mt-0.5">
-                {mode === 'edit' ? 'Modifiez les informations de l\'approvisionnement' : 'Enregistrez une livraison fournisseur'}
-              </DialogDescription>
-            </div>
+      {/* Header pour Sheet (mobile) */}
+      <div className="md:hidden px-4 sm:px-6 py-4 sm:py-5 border-b bg-gradient-to-r from-primary/10 via-primary/5 to-transparent flex-shrink-0">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-primary/70 flex items-center justify-center shadow-lg">
+            <Truck className="w-5 h-5 text-primary-foreground" />
           </div>
-        </DialogHeader>
+          <div>
+            <h2 className="text-base font-bold">
+              {mode === 'edit' ? 'Modifier' : 'Approvisionnement'}
+            </h2>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              {mode === 'edit' ? 'Modifiez les informations' : 'Enregistrez une livraison'}
+            </p>
+          </div>
+        </div>
+      </div>
 
-        {/* Zone scrollable */}
-        <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto px-4 sm:px-6 py-4 sm:py-5 space-y-5">
+      {/* Zone scrollable */}
+      <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto px-4 sm:px-6 py-4 sm:py-5 space-y-5">
           {/* Section Fournisseur */}
           <div className="relative overflow-hidden rounded-xl bg-gradient-to-br from-primary/5 via-background to-background border-2 border-border p-4 sm:p-5">
             <div className="absolute top-0 right-0 w-24 h-24 bg-primary/5 rounded-full -mr-12 -mt-12"></div>
@@ -598,15 +599,59 @@ const ApprovisionnementForm = ({ open, onOpenChange, onSubmit, initialData = nul
             </Button>
           </div>
         </div>
-      </DialogContent>
-    </Dialog>
+    </>
+  );
 
-    {/* Modal pour créer un nouvel article */}
-    <NouvelArticleModal
-      open={nouvelArticleModalOpen}
-      onOpenChange={setNouvelArticleModalOpen}
-      onArticleCreated={handleArticleCreated}
-    />
+  // Rendu conditionnel : Sheet pour mobile, Dialog pour desktop
+  if (isMobile) {
+    return (
+      <>
+        <Sheet open={open} onOpenChange={onOpenChange}>
+          <SheetContent side="bottom" className="h-[95vh] p-0 flex flex-col bg-gradient-to-br from-background via-background to-primary/5">
+            {formContent}
+          </SheetContent>
+        </Sheet>
+
+        {/* Modal pour créer un nouvel article */}
+        <NouvelArticleModal
+          open={nouvelArticleModalOpen}
+          onOpenChange={setNouvelArticleModalOpen}
+          onArticleCreated={handleArticleCreated}
+        />
+      </>
+    );
+  }
+
+  return (
+    <>
+      <Dialog open={open} onOpenChange={onOpenChange}>
+        <DialogContent className="max-w-[95vw] sm:max-w-4xl max-h-[90vh] flex flex-col p-0 bg-gradient-to-br from-background via-background to-primary/5">
+          {/* Header avec gradient pour Desktop */}
+          <DialogHeader className="px-4 sm:px-6 py-4 sm:py-5 border-b bg-gradient-to-r from-primary/10 via-primary/5 to-transparent flex-shrink-0">
+            <div className="flex items-center gap-3 pr-12">
+              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br from-primary to-primary/70 flex items-center justify-center shadow-lg">
+                <Truck className="w-5 h-5 sm:w-6 sm:h-6 text-primary-foreground" />
+              </div>
+              <div>
+                <DialogTitle className="text-base sm:text-lg font-bold bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text">
+                  {mode === 'edit' ? 'Modifier l\'Approvisionnement' : 'Nouvel Approvisionnement'}
+                </DialogTitle>
+                <DialogDescription className="text-xs sm:text-sm text-muted-foreground mt-0.5">
+                  {mode === 'edit' ? 'Modifiez les informations de l\'approvisionnement' : 'Enregistrez une livraison fournisseur'}
+                </DialogDescription>
+              </div>
+            </div>
+          </DialogHeader>
+          {formContent}
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal pour créer un nouvel article */}
+      <NouvelArticleModal
+        open={nouvelArticleModalOpen}
+        onOpenChange={setNouvelArticleModalOpen}
+        onArticleCreated={handleArticleCreated}
+      />
     </>
   );
 };

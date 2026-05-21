@@ -25,7 +25,9 @@ import {
   AlertDialogTitle
 } from "@/components/ui/alert-dialog";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { useApprovisionnements, useApprovisionnement, useApproLignes, useCreateApprovisionnement, useUpdateApprovisionnement, useDeleteApprovisionnement } from "@/hooks/useApprovisionnements";
+import { useIsMobile } from "@/hooks/useMediaQuery";
 import { useStockAlerts } from "@/hooks/useStock";
 import { approvisionnementsApi } from "@/api/approvisionnements";
 import { printInvoice } from "@/utils/invoice-generator";
@@ -57,6 +59,7 @@ const Approvisionnements = () => {
   const lignes = lignesResponse?.data || [];
   const lignesMeta = lignesResponse?.meta;
   const { data: articlesAlerts = [] } = useStockAlerts();
+  const isMobile = useIsMobile();
 
   // Reset pagination lignes quand on ouvre le dialog
   useEffect(() => {
@@ -229,12 +232,15 @@ const Approvisionnements = () => {
       </AlertDialog>
 
       {/* Dialog Détails */}
-      <Dialog open={detailsId !== null} onOpenChange={() => setDetailsId(null)}>
-        <DialogContent className="max-w-[95vw] sm:max-w-2xl">
-          <DialogHeader>
-            <DialogTitle className="font-heading text-base sm:text-lg">Détails Approvisionnement</DialogTitle>
-          </DialogHeader>
-          {approvisionnementDetails && (
+      {isMobile ? (
+        <Sheet open={detailsId !== null} onOpenChange={() => setDetailsId(null)}>
+          <SheetContent side="bottom" className="h-[95vh] p-0">
+            <div className="h-full flex flex-col">
+              <div className="p-4 sm:p-6 border-b flex-shrink-0">
+                <h2 className="font-heading text-base sm:text-lg font-bold">Détails Approvisionnement</h2>
+              </div>
+              <div className="flex-1 overflow-y-auto p-4 sm:p-6">
+                {approvisionnementDetails && (
             <div className="space-y-3 sm:space-y-4">
               <div className="grid grid-cols-2 gap-2 sm:gap-4 text-xs sm:text-sm">
                 <div>
@@ -305,8 +311,90 @@ const Approvisionnements = () => {
               )}
             </div>
           )}
-        </DialogContent>
-      </Dialog>
+        </div>
+      </div>
+    </SheetContent>
+  </Sheet>
+) : (
+  <Dialog open={detailsId !== null} onOpenChange={() => setDetailsId(null)}>
+    <DialogContent className="max-w-[95vw] sm:max-w-2xl max-h-[90vh] flex flex-col">
+      <DialogHeader>
+        <DialogTitle className="font-heading text-base sm:text-lg">Détails Approvisionnement</DialogTitle>
+      </DialogHeader>
+      {approvisionnementDetails && (
+        <div className="space-y-3 sm:space-y-4 overflow-y-auto pr-2">
+          <div className="grid grid-cols-2 gap-2 sm:gap-4 text-xs sm:text-sm">
+            <div>
+              <p className="text-muted-foreground text-[10px] sm:text-xs">Numéro</p>
+              <p className="font-semibold truncate">{approvisionnementDetails.numero}</p>
+            </div>
+            <div>
+              <p className="text-muted-foreground text-[10px] sm:text-xs">Fournisseur</p>
+              <p className="font-semibold truncate">{approvisionnementDetails.fournisseurNom}</p>
+            </div>
+            <div>
+              <p className="text-muted-foreground text-[10px] sm:text-xs">Date livraison</p>
+              <p className="font-semibold">{formatDate(approvisionnementDetails.dateLivraison)}</p>
+            </div>
+            <div>
+              <p className="text-muted-foreground text-[10px] sm:text-xs">Numéro facture</p>
+              <p className="font-semibold truncate">{approvisionnementDetails.numeroFacture || '-'}</p>
+            </div>
+          </div>
+
+          <div>
+            <p className="text-xs sm:text-sm text-muted-foreground mb-1.5 sm:mb-2">Articles</p>
+            <div className="space-y-1.5 sm:space-y-2">
+              {lignes.map((ligne: any, index: number) => (
+                <div key={index} className="flex justify-between items-center p-2 sm:p-3 bg-secondary/30 rounded-lg text-xs sm:text-sm">
+                  <div className="flex-1 min-w-0 mr-2">
+                    <p className="font-semibold truncate">{ligne.nom}</p>
+                    <p className="text-[10px] sm:text-xs text-muted-foreground">
+                      {ligne.quantite} × {formatPrix(ligne.prixUnitaire)}
+                    </p>
+                  </div>
+                  <p className="font-bold text-xs sm:text-sm whitespace-nowrap">{formatPrix(ligne.sousTotal)}</p>
+                </div>
+              ))}
+            </div>
+
+            {/* Pagination si nécessaire */}
+            {lignesMeta && lignesMeta.totalPages > 1 && (
+              <div className="mt-4 pt-4 border-t">
+                <Pagination
+                  meta={lignesMeta}
+                  onPageChange={setLignesPage}
+                />
+              </div>
+            )}
+          </div>
+
+          <div className="bg-primary/5 p-3 sm:p-4 rounded-lg space-y-1.5 sm:space-y-2">
+            <div className="flex justify-between text-xs sm:text-sm">
+              <span className="text-muted-foreground">Total</span>
+              <span className="font-bold text-base sm:text-lg">{formatPrix(approvisionnementDetails.total)}</span>
+            </div>
+            <div className="flex justify-between text-xs sm:text-sm">
+              <span className="text-muted-foreground">Montant payé</span>
+              <span className="font-semibold text-success">{formatPrix(approvisionnementDetails.montantPaye)}</span>
+            </div>
+            <div className="flex justify-between text-xs sm:text-sm">
+              <span className="text-muted-foreground">Montant restant</span>
+              <span className="font-semibold text-destructive">{formatPrix(approvisionnementDetails.montantRestant)}</span>
+            </div>
+          </div>
+
+          {approvisionnementDetails.note && (
+            <div>
+              <p className="text-xs sm:text-sm text-muted-foreground mb-1">Note</p>
+              <p className="text-xs sm:text-sm p-2 sm:p-3 bg-secondary/30 rounded-lg">{approvisionnementDetails.note}</p>
+            </div>
+          )}
+        </div>
+      )}
+    </DialogContent>
+  </Dialog>
+)}
 
       {/* Articles à Réapprovisionner */}
       {articlesAReapprovisionner.length > 0 && (
