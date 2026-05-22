@@ -721,8 +721,8 @@ const Commandes = () => {
         </Sheet>
       ) : (
         <Dialog open={!!detailsCommande} onOpenChange={() => setDetailsCommande(null)}>
-          <DialogContent className="max-w-3xl max-h-[90vh] p-0">
-            <DialogHeader className="p-6 border-b bg-gradient-to-r from-primary/10 via-primary/5 to-transparent space-y-0">
+          <DialogContent className="max-w-3xl h-[90vh] flex flex-col p-0">
+            <DialogHeader className="p-6 border-b bg-gradient-to-r from-primary/10 via-primary/5 to-transparent space-y-0 flex-shrink-0">
               <div className="flex items-center gap-3">
                 <div className="w-12 h-12 rounded-lg bg-primary/20 flex items-center justify-center">
                   <Package className="w-6 h-6 text-primary" />
@@ -741,7 +741,7 @@ const Commandes = () => {
             </DialogHeader>
 
             {detailsCommande && (
-              <div className="p-6 space-y-4 overflow-y-auto max-h-[calc(90vh-180px)]">
+              <div className="p-6 space-y-4 overflow-y-auto flex-1 min-h-0">
                 {/* Informations principales en cartes */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   {/* Client */}

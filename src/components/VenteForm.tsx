@@ -259,7 +259,7 @@ const VenteForm = ({ open, onOpenChange, onSubmit, initialData = null, mode = 'c
       </div>
 
       {/* Zone scrollable */}
-      <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto px-4 sm:px-6 py-4 sm:py-5 space-y-5">
+      <form onSubmit={handleSubmit} className="flex-1 min-h-0 overflow-y-auto px-4 sm:px-6 py-4 sm:py-5 space-y-5">
           {/* Alerte client obligatoire */}
           {requiresClient && (
             <div className="relative overflow-hidden rounded-xl bg-gradient-to-r from-warning/10 to-warning/5 border-2 border-warning/30 p-4">
@@ -612,7 +612,7 @@ const VenteForm = ({ open, onOpenChange, onSubmit, initialData = null, mode = 'c
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-[95vw] sm:max-w-4xl max-h-[90vh] p-0">
+      <DialogContent className="max-w-[95vw] sm:max-w-4xl h-[90vh] flex flex-col p-0">
         <DialogHeader className="sr-only">
           <DialogTitle>{mode === 'edit' ? 'Modifier la Vente' : 'Nouvelle Vente'}</DialogTitle>
           <DialogDescription>

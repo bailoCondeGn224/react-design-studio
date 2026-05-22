@@ -204,7 +204,7 @@ const ClientDetailsDialog = ({ open, onOpenChange, clientId, clientNom }: Client
         </div>
 
       {/* Contenu scrollable */}
-      <div className="flex-1 overflow-y-auto space-y-3 px-4 sm:px-6 py-4">
+      <div className="flex-1 min-h-0 overflow-y-auto space-y-3 px-4 sm:px-6 py-4">
           {activeTab === 'tous' && timeline.map((item) => (
             <div key={item.id} className="flex items-start gap-2 sm:gap-3 p-3 sm:p-4 bg-card border border-border rounded-lg hover:bg-secondary/30 transition-colors">
               <div className="text-2xl sm:text-3xl flex-shrink-0">{getTimelineIcon(item.type)}</div>
@@ -335,7 +335,7 @@ const ClientDetailsDialog = ({ open, onOpenChange, clientId, clientNom }: Client
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-[95vw] sm:max-w-5xl max-h-[90vh] p-0">
+      <DialogContent className="max-w-[95vw] sm:max-w-5xl h-[90vh] flex flex-col p-0">
         {dialogContent}
       </DialogContent>
     </Dialog>

@@ -20,10 +20,22 @@ interface CommandeFormProps {
 const CommandeForm = ({ open, onOpenChange, onSubmit, initialData = null, mode = 'create' }: CommandeFormProps) => {
   const getInitialState = () => {
     if (mode === 'edit' && initialData) {
+      // Recalculer les sousTotal pour chaque ligne en s'assurant que tout est en nombre
+      const lignesWithSousTotal = (initialData.lignes || []).map((ligne: any) => {
+        const quantite = Number(ligne.quantite) || 0;
+        const prixUnitaire = Number(ligne.prixUnitaire) || 0;
+        return {
+          ...ligne,
+          quantite,
+          prixUnitaire,
+          sousTotal: quantite * prixUnitaire
+        };
+      });
+
       return {
         clientId: initialData.clientId || "",
-        lignes: initialData.lignes || [],
-        acompte: initialData.acompte || 0,
+        lignes: lignesWithSousTotal,
+        acompte: Number(initialData.acompte) || 0,
         dateLivraison: initialData.dateLivraison || "",
         note: initialData.note || "",
       };
@@ -43,13 +55,36 @@ const CommandeForm = ({ open, onOpenChange, onSubmit, initialData = null, mode =
 
   useEffect(() => {
     if (mode === 'edit' && initialData) {
+      // Recalculer les sousTotal pour chaque ligne en s'assurant que tout est en nombre
+      const lignesWithSousTotal = (initialData.lignes || []).map((ligne: any) => {
+        const quantite = Number(ligne.quantite) || 0;
+        const prixUnitaire = Number(ligne.prixUnitaire) || 0;
+        return {
+          ...ligne,
+          quantite,
+          prixUnitaire,
+          sousTotal: quantite * prixUnitaire
+        };
+      });
+
       setForm({
         clientId: initialData.clientId || "",
-        lignes: initialData.lignes || [],
-        acompte: initialData.acompte || 0,
+        lignes: lignesWithSousTotal,
+        acompte: Number(initialData.acompte) || 0,
         dateLivraison: initialData.dateLivraison || "",
         note: initialData.note || "",
       });
+
+      // Initialiser selectedClient en mode édition si nécessaire
+      if (initialData.clientId && initialData.clientNom) {
+        setSelectedClient({
+          id: initialData.clientId,
+          nom: initialData.clientNom
+        });
+      }
+    } else {
+      // Réinitialiser en mode création
+      setSelectedClient(null);
     }
   }, [mode, initialData, open]);
 
@@ -159,7 +194,7 @@ const CommandeForm = ({ open, onOpenChange, onSubmit, initialData = null, mode =
     <>
 
         {/* Zone scrollable */}
-        <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto px-4 sm:px-6 py-4 sm:py-5 space-y-5">
+        <form onSubmit={handleSubmit} className="flex-1 min-h-0 overflow-y-auto px-4 sm:px-6 py-4 sm:py-5 space-y-5">
           {/* Section Client */}
           <div className="relative overflow-hidden rounded-xl bg-gradient-to-br from-blue-500/5 via-background to-background border-2 border-border p-4 sm:p-5">
             <div className="absolute top-0 right-0 w-24 h-24 bg-blue-500/5 rounded-full -mr-12 -mt-12"></div>
@@ -472,7 +507,7 @@ const CommandeForm = ({ open, onOpenChange, onSubmit, initialData = null, mode =
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-[95vw] sm:max-w-4xl max-h-[90vh] flex flex-col p-0 bg-gradient-to-br from-background via-background to-primary/5">
+      <DialogContent className="max-w-[95vw] sm:max-w-4xl h-[90vh] flex flex-col p-0 bg-gradient-to-br from-background via-background to-primary/5">
         {/* Header Dialog avec DialogTitle pour l'accessibilité */}
         <DialogHeader className="px-4 sm:px-6 py-4 sm:py-5 border-b bg-gradient-to-r from-primary/10 via-primary/5 to-transparent flex-shrink-0">
           <div className="flex items-center gap-3 pr-12">

@@ -183,6 +183,7 @@ const Versements = () => {
         onSubmit={handleSubmitVersement}
         versement={selectedVersement || undefined}
         fournisseurId={selectedFournisseur?.id}
+        fournisseur={selectedFournisseur}
       />
 
       {/* Dialog Détails */}
@@ -713,12 +714,13 @@ const Versements = () => {
         </Sheet>
       ) : (
         <Dialog open={historyDialogOpen} onOpenChange={setHistoryDialogOpen}>
-          <DialogContent className="max-w-[95vw] sm:max-w-2xl max-h-[90vh] overflow-y-auto">
-            <DialogHeader>
+          <DialogContent className="max-w-[95vw] sm:max-w-2xl h-[90vh] flex flex-col p-0">
+            <DialogHeader className="p-6 pb-4 flex-shrink-0">
               <DialogTitle className="font-heading">Historique des Paiements</DialogTitle>
             </DialogHeader>
-            {selectedFournisseur && (
-              <div className="space-y-4">
+            <div className="flex-1 overflow-y-auto min-h-0 px-6 pb-6">
+              {selectedFournisseur && (
+                <div className="space-y-4">
                 {/* Info Fournisseur */}
                 <div className="bg-secondary/50 border border-border rounded-lg p-4">
                   <p className="text-sm font-semibold text-foreground mb-3">{selectedFournisseur.nom} {selectedFournisseur.prenom}</p>
@@ -836,6 +838,7 @@ const Versements = () => {
                 </div>
               </div>
             )}
+            </div>
           </DialogContent>
         </Dialog>
       )}

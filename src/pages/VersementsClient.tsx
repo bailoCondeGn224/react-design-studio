@@ -11,10 +11,13 @@ import { useVersementsClient, useCreateVersementClient, useUpdateVersementClient
 import { useClients, useStatsClients } from "@/hooks/useClients";
 import { VersementClient } from "@/types";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Sheet, SheetContent } from "@/components/ui/sheet";
+import { useIsMobile } from "@/hooks/useMediaQuery";
 import { toast } from "sonner";
 import { useDebounce } from "@/hooks/useDebounce";
 
 const VersementsClient = () => {
+  const isMobile = useIsMobile();
   const [searchInput, setSearchInput] = useState("");
   const debouncedSearch = useDebounce(searchInput, 800);
   const [formOpen, setFormOpen] = useState(false);
@@ -26,6 +29,7 @@ const VersementsClient = () => {
   const [versementToDelete, setVersementToDelete] = useState<VersementClient | null>(null);
   const [selectedClientForHistory, setSelectedClientForHistory] = useState<any>(null);
   const [historyDialogOpen, setHistoryDialogOpen] = useState(false);
+  const [selectedClient, setSelectedClient] = useState<any>(null);
 
   // Charger les clients avec recherche
   const { data: clientsResponse, isLoading: loadingClients } = useClients({
@@ -71,6 +75,7 @@ const VersementsClient = () => {
   const handleCloseForm = () => {
     setFormOpen(false);
     setSelectedVersement(null);
+    setSelectedClient(null);
   };
 
   const handleDelete = (versement: VersementClient) => {
@@ -174,6 +179,8 @@ const VersementsClient = () => {
         onOpenChange={handleCloseForm}
         onSubmit={handleSubmitVersement}
         versementClient={selectedVersement || undefined}
+        clientId={selectedClient?.id}
+        client={selectedClient}
       />
 
       {/* Dialog Confirmation Suppression */}
@@ -213,282 +220,576 @@ const VersementsClient = () => {
       </Dialog>
 
       {/* Dialog Historique Client */}
-      <Dialog open={historyDialogOpen} onOpenChange={setHistoryDialogOpen}>
-        <DialogContent className="max-w-[95vw] sm:max-w-2xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle className="font-heading">Historique des Paiements</DialogTitle>
-          </DialogHeader>
-          {selectedClientForHistory && (() => {
-            const clientVersements = versements.filter((v: any) => v.clientId === selectedClientForHistory.id);
-            const hasDebt = selectedClientForHistory.totalCredits > 0;
+      {isMobile ? (
+        <Sheet open={historyDialogOpen} onOpenChange={setHistoryDialogOpen}>
+          <SheetContent side="bottom" className="h-[95vh] p-0">
+            <div className="h-full flex flex-col">
+              <div className="px-4 sm:px-6 py-4 border-b flex-shrink-0">
+                <h2 className="text-lg font-bold">Historique des Paiements</h2>
+              </div>
+              <div className="flex-1 min-h-0 overflow-y-auto px-4 sm:px-6 py-4">
+                {selectedClientForHistory && (() => {
+                  const clientVersements = versements.filter((v: any) => v.clientId === selectedClientForHistory.id);
+                  const hasDebt = selectedClientForHistory.totalCredits > 0;
 
-            return (
-              <div className="space-y-4">
-                {/* Informations Client */}
-                <div className="bg-secondary/30 border border-border rounded-lg p-4">
-                  <div className="flex items-start justify-between mb-3">
-                    <div>
-                      <h3 className="text-lg font-semibold text-foreground">{selectedClientForHistory.nom}</h3>
-                      {selectedClientForHistory.telephone && (
-                        <p className="text-sm text-muted-foreground">{selectedClientForHistory.telephone}</p>
-                      )}
-                      {selectedClientForHistory.email && (
-                        <p className="text-sm text-muted-foreground">{selectedClientForHistory.email}</p>
-                      )}
-                    </div>
-                    {hasDebt ? (
-                      <span className="inline-flex items-center text-xs px-2.5 py-1 rounded-full font-semibold bg-destructive/10 text-destructive">
-                        <AlertCircle className="w-3 h-3 mr-1" />
-                        En Dette
-                      </span>
-                    ) : (
-                      <span className="inline-flex items-center text-xs px-2.5 py-1 rounded-full font-semibold bg-success/10 text-success">
-                        <CheckCircle className="w-3 h-3 mr-1" />
-                        À Jour
-                      </span>
-                    )}
-                  </div>
-
-                  <div className="grid grid-cols-3 gap-3">
-                    <div className="bg-card rounded p-3">
-                      <p className="text-xs text-muted-foreground mb-1">Total Achats</p>
-                      <p className="text-sm font-bold text-foreground">{formatPrix(selectedClientForHistory.totalAchats || 0)}</p>
-                    </div>
-                    <div className="bg-card rounded p-3">
-                      <p className="text-xs text-muted-foreground mb-1">Total Payé</p>
-                      <p className="text-sm font-bold text-success">
-                        {formatPrix((selectedClientForHistory.totalAchats || 0) - selectedClientForHistory.totalCredits)}
-                      </p>
-                    </div>
-                    <div className="bg-card rounded p-3">
-                      <p className="text-xs text-muted-foreground mb-1">Dette Actuelle</p>
-                      <p className={`text-sm font-bold ${hasDebt ? 'text-destructive' : 'text-success'}`}>
-                        {formatPrix(selectedClientForHistory.totalCredits)}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Liste des paiements */}
-                <div>
-                  <h4 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
-                    <ArrowDownLeft className="w-4 h-4 text-success" />
-                    Paiements Enregistrés ({clientVersements.length})
-                  </h4>
-
-                  {clientVersements.length > 0 ? (
-                    <div className="space-y-2">
-                      {clientVersements.map((versement: any) => (
-                        <div key={versement.id} className="flex items-center justify-between p-3 bg-success/5 border border-success/20 rounded-lg">
-                          <div className="flex items-center gap-3 flex-1">
-                            <div className="w-10 h-10 flex items-center justify-center text-2xl bg-success/10 rounded-lg">
-                              {getModeIcon(versement.modePaiement)}
-                            </div>
-                            <div className="flex-1">
-                              <p className="text-sm font-semibold text-success">{formatPrix(versement.montant)}</p>
-                              <p className="text-xs text-muted-foreground">
-                                {formatDate(versement.date)} • {getModeLabel(versement.modePaiement)}
-                              </p>
-                              {versement.venteNumero && (
-                                <p className="text-xs text-muted-foreground">Vente: {versement.venteNumero}</p>
-                              )}
-                              {versement.reference && (
-                                <p className="text-xs text-muted-foreground">Réf: {versement.reference}</p>
-                              )}
-                            </div>
+                  return (
+                    <div className="space-y-4">
+                      {/* Informations Client */}
+                      <div className="bg-secondary/30 border border-border rounded-lg p-4">
+                        <div className="flex items-start justify-between mb-3">
+                          <div>
+                            <h3 className="text-lg font-semibold text-foreground">{selectedClientForHistory.nom}</h3>
+                            {selectedClientForHistory.telephone && (
+                              <p className="text-sm text-muted-foreground">{selectedClientForHistory.telephone}</p>
+                            )}
+                            {selectedClientForHistory.email && (
+                              <p className="text-sm text-muted-foreground">{selectedClientForHistory.email}</p>
+                            )}
                           </div>
-                          <div className="flex gap-1">
-                            <button
-                              onClick={() => {
-                                setHistoryDialogOpen(false);
-                                handleViewDetails(versement);
-                              }}
-                              className="p-1.5 rounded-lg hover:bg-primary/10 text-primary transition-colors"
-                              title="Voir détails"
-                            >
-                              <Eye className="w-4 h-4" />
-                            </button>
-                            <CanAccess permissions={['versements-client.update']}>
-                              <button
-                                onClick={() => {
-                                  setHistoryDialogOpen(false);
-                                  handleEdit(versement);
-                                }}
-                                className="p-1.5 rounded-lg hover:bg-primary/10 text-primary transition-colors"
-                                title="Modifier"
-                              >
-                                <Edit2 className="w-4 h-4" />
-                              </button>
-                            </CanAccess>
-                            <CanAccess permissions={['versements-client.delete']}>
-                              <button
-                                onClick={() => {
-                                  setHistoryDialogOpen(false);
-                                  handleDelete(versement);
-                                }}
-                                className="p-1.5 rounded-lg hover:bg-destructive/10 text-destructive transition-colors"
-                                title="Supprimer"
-                              >
-                                <Trash2 className="w-4 h-4" />
-                              </button>
-                            </CanAccess>
+                          {hasDebt ? (
+                            <span className="inline-flex items-center text-xs px-2.5 py-1 rounded-full font-semibold bg-destructive/10 text-destructive">
+                              <AlertCircle className="w-3 h-3 mr-1" />
+                              En Dette
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center text-xs px-2.5 py-1 rounded-full font-semibold bg-success/10 text-success">
+                              <CheckCircle className="w-3 h-3 mr-1" />
+                              À Jour
+                            </span>
+                          )}
+                        </div>
+
+                        <div className="grid grid-cols-3 gap-3">
+                          <div className="bg-card rounded p-3">
+                            <p className="text-xs text-muted-foreground mb-1">Total Achats</p>
+                            <p className="text-sm font-bold text-foreground">{formatPrix(selectedClientForHistory.totalAchats || 0)}</p>
+                          </div>
+                          <div className="bg-card rounded p-3">
+                            <p className="text-xs text-muted-foreground mb-1">Total Payé</p>
+                            <p className="text-sm font-bold text-success">
+                              {formatPrix((selectedClientForHistory.totalAchats || 0) - selectedClientForHistory.totalCredits)}
+                            </p>
+                          </div>
+                          <div className="bg-card rounded p-3">
+                            <p className="text-xs text-muted-foreground mb-1">Dette Actuelle</p>
+                            <p className={`text-sm font-bold ${hasDebt ? 'text-destructive' : 'text-success'}`}>
+                              {formatPrix(selectedClientForHistory.totalCredits)}
+                            </p>
                           </div>
                         </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="text-center py-8 bg-secondary/20 rounded-lg">
-                      <p className="text-sm text-muted-foreground">Aucun paiement enregistré</p>
-                    </div>
-                  )}
-                </div>
+                      </div>
 
-                {/* Actions */}
-                {hasDebt && (
-                  <div className="pt-2 border-t border-border">
-                    <CanAccess permissions={['versements-client.create']}>
-                      <button
-                        onClick={() => {
-                          setHistoryDialogOpen(false);
-                          setFormOpen(true);
-                        }}
-                        className="w-full py-2.5 rounded-lg gradient-gold text-primary-foreground text-sm font-semibold hover:opacity-90 transition-opacity flex items-center justify-center gap-2"
-                      >
-                        <Wallet className="w-4 h-4" />
-                        Enregistrer un Paiement
-                      </button>
-                    </CanAccess>
-                  </div>
-                )}
+                      {/* Liste des paiements */}
+                      <div>
+                        <h4 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
+                          <ArrowDownLeft className="w-4 h-4 text-success" />
+                          Paiements Enregistrés ({clientVersements.length})
+                        </h4>
+
+                        {clientVersements.length > 0 ? (
+                          <div className="space-y-2">
+                            {clientVersements.map((versement: any) => (
+                              <div key={versement.id} className="flex items-center justify-between p-3 bg-success/5 border border-success/20 rounded-lg">
+                                <div className="flex items-center gap-3 flex-1">
+                                  <div className="w-10 h-10 flex items-center justify-center text-2xl bg-success/10 rounded-lg">
+                                    {getModeIcon(versement.modePaiement)}
+                                  </div>
+                                  <div className="flex-1">
+                                    <p className="text-sm font-semibold text-success">{formatPrix(versement.montant)}</p>
+                                    <p className="text-xs text-muted-foreground">
+                                      {formatDate(versement.date)} • {getModeLabel(versement.modePaiement)}
+                                    </p>
+                                    {versement.venteNumero && (
+                                      <p className="text-xs text-muted-foreground">Vente: {versement.venteNumero}</p>
+                                    )}
+                                    {versement.reference && (
+                                      <p className="text-xs text-muted-foreground">Réf: {versement.reference}</p>
+                                    )}
+                                  </div>
+                                </div>
+                                <div className="flex gap-1">
+                                  <button
+                                    onClick={() => {
+                                      setHistoryDialogOpen(false);
+                                      handleViewDetails(versement);
+                                    }}
+                                    className="p-1.5 rounded-lg hover:bg-primary/10 text-primary transition-colors"
+                                    title="Voir détails"
+                                  >
+                                    <Eye className="w-4 h-4" />
+                                  </button>
+                                  <CanAccess permissions={['versements-client.update']}>
+                                    <button
+                                      onClick={() => {
+                                        setHistoryDialogOpen(false);
+                                        handleEdit(versement);
+                                      }}
+                                      className="p-1.5 rounded-lg hover:bg-primary/10 text-primary transition-colors"
+                                      title="Modifier"
+                                    >
+                                      <Edit2 className="w-4 h-4" />
+                                    </button>
+                                  </CanAccess>
+                                  <CanAccess permissions={['versements-client.delete']}>
+                                    <button
+                                      onClick={() => {
+                                        setHistoryDialogOpen(false);
+                                        handleDelete(versement);
+                                      }}
+                                      className="p-1.5 rounded-lg hover:bg-destructive/10 text-destructive transition-colors"
+                                      title="Supprimer"
+                                    >
+                                      <Trash2 className="w-4 h-4" />
+                                    </button>
+                                  </CanAccess>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        ) : (
+                          <div className="text-center py-8 bg-secondary/20 rounded-lg">
+                            <p className="text-sm text-muted-foreground">Aucun paiement enregistré</p>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Actions */}
+                      {hasDebt && (
+                        <div className="pt-2 border-t border-border">
+                          <CanAccess permissions={['versements-client.create']}>
+                            <button
+                              onClick={() => {
+                                setSelectedClient(selectedClientForHistory);
+                                setHistoryDialogOpen(false);
+                                setFormOpen(true);
+                              }}
+                              className="w-full py-2.5 rounded-lg gradient-gold text-primary-foreground text-sm font-semibold hover:opacity-90 transition-opacity flex items-center justify-center gap-2"
+                            >
+                              <Wallet className="w-4 h-4" />
+                              Enregistrer un Paiement
+                            </button>
+                          </CanAccess>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })()}
               </div>
-            );
-          })()}
-        </DialogContent>
-      </Dialog>
+            </div>
+          </SheetContent>
+        </Sheet>
+      ) : (
+        <Dialog open={historyDialogOpen} onOpenChange={setHistoryDialogOpen}>
+          <DialogContent className="max-w-[95vw] sm:max-w-2xl h-[90vh] flex flex-col p-0">
+            <DialogHeader className="px-4 sm:px-6 py-4 border-b flex-shrink-0">
+              <DialogTitle className="text-lg font-bold">Historique des Paiements</DialogTitle>
+            </DialogHeader>
+            <div className="flex-1 min-h-0 overflow-y-auto px-4 sm:px-6 py-4">
+              {selectedClientForHistory && (() => {
+                const clientVersements = versements.filter((v: any) => v.clientId === selectedClientForHistory.id);
+                const hasDebt = selectedClientForHistory.totalCredits > 0;
+
+                return (
+                  <div className="space-y-4">
+                    {/* Informations Client */}
+                    <div className="bg-secondary/30 border border-border rounded-lg p-4">
+                      <div className="flex items-start justify-between mb-3">
+                        <div>
+                          <h3 className="text-lg font-semibold text-foreground">{selectedClientForHistory.nom}</h3>
+                          {selectedClientForHistory.telephone && (
+                            <p className="text-sm text-muted-foreground">{selectedClientForHistory.telephone}</p>
+                          )}
+                          {selectedClientForHistory.email && (
+                            <p className="text-sm text-muted-foreground">{selectedClientForHistory.email}</p>
+                          )}
+                        </div>
+                        {hasDebt ? (
+                          <span className="inline-flex items-center text-xs px-2.5 py-1 rounded-full font-semibold bg-destructive/10 text-destructive">
+                            <AlertCircle className="w-3 h-3 mr-1" />
+                            En Dette
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center text-xs px-2.5 py-1 rounded-full font-semibold bg-success/10 text-success">
+                            <CheckCircle className="w-3 h-3 mr-1" />
+                            À Jour
+                          </span>
+                        )}
+                      </div>
+
+                      <div className="grid grid-cols-3 gap-3">
+                        <div className="bg-card rounded p-3">
+                          <p className="text-xs text-muted-foreground mb-1">Total Achats</p>
+                          <p className="text-sm font-bold text-foreground">{formatPrix(selectedClientForHistory.totalAchats || 0)}</p>
+                        </div>
+                        <div className="bg-card rounded p-3">
+                          <p className="text-xs text-muted-foreground mb-1">Total Payé</p>
+                          <p className="text-sm font-bold text-success">
+                            {formatPrix((selectedClientForHistory.totalAchats || 0) - selectedClientForHistory.totalCredits)}
+                          </p>
+                        </div>
+                        <div className="bg-card rounded p-3">
+                          <p className="text-xs text-muted-foreground mb-1">Dette Actuelle</p>
+                          <p className={`text-sm font-bold ${hasDebt ? 'text-destructive' : 'text-success'}`}>
+                            {formatPrix(selectedClientForHistory.totalCredits)}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Liste des paiements */}
+                    <div>
+                      <h4 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
+                        <ArrowDownLeft className="w-4 h-4 text-success" />
+                        Paiements Enregistrés ({clientVersements.length})
+                      </h4>
+
+                      {clientVersements.length > 0 ? (
+                        <div className="space-y-2">
+                          {clientVersements.map((versement: any) => (
+                            <div key={versement.id} className="flex items-center justify-between p-3 bg-success/5 border border-success/20 rounded-lg">
+                              <div className="flex items-center gap-3 flex-1">
+                                <div className="w-10 h-10 flex items-center justify-center text-2xl bg-success/10 rounded-lg">
+                                  {getModeIcon(versement.modePaiement)}
+                                </div>
+                                <div className="flex-1">
+                                  <p className="text-sm font-semibold text-success">{formatPrix(versement.montant)}</p>
+                                  <p className="text-xs text-muted-foreground">
+                                    {formatDate(versement.date)} • {getModeLabel(versement.modePaiement)}
+                                  </p>
+                                  {versement.venteNumero && (
+                                    <p className="text-xs text-muted-foreground">Vente: {versement.venteNumero}</p>
+                                  )}
+                                  {versement.reference && (
+                                    <p className="text-xs text-muted-foreground">Réf: {versement.reference}</p>
+                                  )}
+                                </div>
+                              </div>
+                              <div className="flex gap-1">
+                                <button
+                                  onClick={() => {
+                                    setHistoryDialogOpen(false);
+                                    handleViewDetails(versement);
+                                  }}
+                                  className="p-1.5 rounded-lg hover:bg-primary/10 text-primary transition-colors"
+                                  title="Voir détails"
+                                >
+                                  <Eye className="w-4 h-4" />
+                                </button>
+                                <CanAccess permissions={['versements-client.update']}>
+                                  <button
+                                    onClick={() => {
+                                      setHistoryDialogOpen(false);
+                                      handleEdit(versement);
+                                    }}
+                                    className="p-1.5 rounded-lg hover:bg-primary/10 text-primary transition-colors"
+                                    title="Modifier"
+                                  >
+                                    <Edit2 className="w-4 h-4" />
+                                  </button>
+                                </CanAccess>
+                                <CanAccess permissions={['versements-client.delete']}>
+                                  <button
+                                    onClick={() => {
+                                      setHistoryDialogOpen(false);
+                                      handleDelete(versement);
+                                    }}
+                                    className="p-1.5 rounded-lg hover:bg-destructive/10 text-destructive transition-colors"
+                                    title="Supprimer"
+                                  >
+                                    <Trash2 className="w-4 h-4" />
+                                  </button>
+                                </CanAccess>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="text-center py-8 bg-secondary/20 rounded-lg">
+                          <p className="text-sm text-muted-foreground">Aucun paiement enregistré</p>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Actions */}
+                    {hasDebt && (
+                      <div className="pt-2 border-t border-border">
+                        <CanAccess permissions={['versements-client.create']}>
+                          <button
+                            onClick={() => {
+                              setSelectedClient(selectedClientForHistory);
+                              setHistoryDialogOpen(false);
+                              setFormOpen(true);
+                            }}
+                            className="w-full py-2.5 rounded-lg gradient-gold text-primary-foreground text-sm font-semibold hover:opacity-90 transition-opacity flex items-center justify-center gap-2"
+                          >
+                            <Wallet className="w-4 h-4" />
+                            Enregistrer un Paiement
+                          </button>
+                        </CanAccess>
+                      </div>
+                    )}
+                  </div>
+                );
+              })()}
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
 
       {/* Dialog Détails */}
-      <Dialog open={detailsOpen} onOpenChange={setDetailsOpen}>
-        <DialogContent className="max-w-[95vw] sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle className="font-heading">Détails du Paiement</DialogTitle>
-          </DialogHeader>
-          {selectedVersement && (() => {
-            const client = clients.find((c: any) => c.id === selectedVersement.clientId);
-            return (
-              <div className="space-y-4">
-                <div className="bg-secondary/50 border border-border rounded-lg p-4">
-                  <p className="text-xs text-muted-foreground mb-1">Montant versé</p>
-                  <p className="text-2xl font-heading font-bold text-success">
-                    {formatPrix(selectedVersement.montant)}
-                  </p>
-                </div>
-
-                <div className="space-y-3">
-                  <div>
-                    <p className="text-xs text-muted-foreground mb-1">Client</p>
-                    <p className="text-sm font-semibold text-foreground">{selectedVersement.clientNom}</p>
-                  </div>
-
-                  {selectedVersement.venteNumero && (
-                    <div>
-                      <p className="text-xs text-muted-foreground mb-1">Vente associée</p>
-                      <p className="text-sm text-foreground font-mono">{selectedVersement.venteNumero}</p>
-                    </div>
-                  )}
-
-                  {client && (
-                    <div className="bg-secondary/50 border border-border rounded-lg p-3">
-                      <div className="flex items-center justify-between mb-2">
-                        <p className="text-xs text-muted-foreground">Dette actuelle</p>
-                        {client.totalCredits > 0 && (
-                          <span className="text-xs px-2 py-0.5 rounded bg-destructive/10 text-destructive font-medium">
-                            En dette
-                          </span>
-                        )}
-                        {client.totalCredits === 0 && (
-                          <span className="text-xs px-2 py-0.5 rounded bg-success/10 text-success font-medium">
-                            À jour
-                          </span>
-                        )}
-                      </div>
-                      <p className={`text-lg font-heading font-bold ${client.totalCredits > 0 ? 'text-destructive' : 'text-success'}`}>
-                        {formatPrix(client.totalCredits)}
-                      </p>
-                      <div className="flex items-center gap-3 text-xs text-muted-foreground mt-2 pt-2 border-t border-border">
-                        <span>Total achats: {formatPrix(client.totalAchats || 0)}</span>
-                      </div>
-                    </div>
-                  )}
-
-                  <div>
-                    <p className="text-xs text-muted-foreground mb-1">Mode de paiement</p>
-                    <p className="text-sm text-foreground">
-                      {getModeIcon(selectedVersement.modePaiement)} {getModeLabel(selectedVersement.modePaiement)}
-                    </p>
-                  </div>
-
-                  {selectedVersement.reference && (
-                    <div>
-                      <p className="text-xs text-muted-foreground mb-1">Référence</p>
-                      <p className="text-sm text-foreground font-mono">{selectedVersement.reference}</p>
-                    </div>
-                  )}
-
-                  <div>
-                    <p className="text-xs text-muted-foreground mb-1">Date du paiement</p>
-                    <p className="text-sm text-foreground">{formatDate(selectedVersement.date)}</p>
-                  </div>
-
-                  {selectedVersement.note && (
-                    <div>
-                      <p className="text-xs text-muted-foreground mb-1">Note</p>
-                      <p className="text-sm text-foreground">{selectedVersement.note}</p>
-                    </div>
-                  )}
-
-                  {selectedVersement.userNom && (
-                    <div>
-                      <p className="text-xs text-muted-foreground mb-1">Enregistré par</p>
-                      <p className="text-sm text-foreground">{selectedVersement.userNom}</p>
-                    </div>
-                  )}
-                </div>
-
-                <div className="flex gap-2 pt-2">
-                  <CanAccess permissions={['versements-client.update']}>
-                    <button
-                      onClick={() => {
-                        setDetailsOpen(false);
-                        handleEdit(selectedVersement);
-                      }}
-                      className="flex-1 py-2.5 rounded-lg gradient-gold text-primary-foreground text-sm font-semibold hover:opacity-90 transition-opacity flex items-center justify-center gap-2"
-                    >
-                      <Edit2 className="w-4 h-4" /> Modifier
-                    </button>
-                  </CanAccess>
-                  <CanAccess permissions={['versements-client.delete']}>
-                    <button
-                      onClick={() => {
-                        setDetailsOpen(false);
-                        handleDelete(selectedVersement);
-                      }}
-                      className="py-2.5 px-4 rounded-lg border border-destructive/30 text-sm font-medium text-destructive hover:bg-destructive/10 transition-colors flex items-center gap-2"
-                    >
-                      <Trash2 className="w-4 h-4" /> Annuler
-                    </button>
-                  </CanAccess>
-                  <button
-                    onClick={() => setDetailsOpen(false)}
-                    className="py-2.5 px-4 rounded-lg border border-border text-sm font-medium text-muted-foreground hover:bg-secondary transition-colors"
-                  >
-                    Fermer
-                  </button>
-                </div>
+      {isMobile ? (
+        <Sheet open={detailsOpen} onOpenChange={setDetailsOpen}>
+          <SheetContent side="bottom" className="h-[95vh] p-0">
+            <div className="h-full flex flex-col">
+              <div className="px-4 sm:px-6 py-4 border-b flex-shrink-0">
+                <h2 className="text-lg font-bold">Détails du Paiement</h2>
               </div>
-            );
-          })()}
-        </DialogContent>
-      </Dialog>
+              <div className="flex-1 min-h-0 overflow-y-auto px-4 sm:px-6 py-4">
+                {selectedVersement && (() => {
+                  const client = clients.find((c: any) => c.id === selectedVersement.clientId);
+                  return (
+                    <div className="space-y-4">
+                      <div className="bg-secondary/50 border border-border rounded-lg p-4">
+                        <p className="text-xs text-muted-foreground mb-1">Montant versé</p>
+                        <p className="text-2xl font-heading font-bold text-success">
+                          {formatPrix(selectedVersement.montant)}
+                        </p>
+                      </div>
+
+                      <div className="space-y-3">
+                        <div>
+                          <p className="text-xs text-muted-foreground mb-1">Client</p>
+                          <p className="text-sm font-semibold text-foreground">{selectedVersement.clientNom}</p>
+                        </div>
+
+                        {selectedVersement.venteNumero && (
+                          <div>
+                            <p className="text-xs text-muted-foreground mb-1">Vente associée</p>
+                            <p className="text-sm text-foreground font-mono">{selectedVersement.venteNumero}</p>
+                          </div>
+                        )}
+
+                        {client && (
+                          <div className="bg-secondary/50 border border-border rounded-lg p-3">
+                            <div className="flex items-center justify-between mb-2">
+                              <p className="text-xs text-muted-foreground">Dette actuelle</p>
+                              {client.totalCredits > 0 && (
+                                <span className="text-xs px-2 py-0.5 rounded bg-destructive/10 text-destructive font-medium">
+                                  En dette
+                                </span>
+                              )}
+                              {client.totalCredits === 0 && (
+                                <span className="text-xs px-2 py-0.5 rounded bg-success/10 text-success font-medium">
+                                  À jour
+                                </span>
+                              )}
+                            </div>
+                            <p className={`text-lg font-heading font-bold ${client.totalCredits > 0 ? 'text-destructive' : 'text-success'}`}>
+                              {formatPrix(client.totalCredits)}
+                            </p>
+                            <div className="flex items-center gap-3 text-xs text-muted-foreground mt-2 pt-2 border-t border-border">
+                              <span>Total achats: {formatPrix(client.totalAchats || 0)}</span>
+                            </div>
+                          </div>
+                        )}
+
+                        <div>
+                          <p className="text-xs text-muted-foreground mb-1">Mode de paiement</p>
+                          <p className="text-sm text-foreground">
+                            {getModeIcon(selectedVersement.modePaiement)} {getModeLabel(selectedVersement.modePaiement)}
+                          </p>
+                        </div>
+
+                        {selectedVersement.reference && (
+                          <div>
+                            <p className="text-xs text-muted-foreground mb-1">Référence</p>
+                            <p className="text-sm text-foreground font-mono">{selectedVersement.reference}</p>
+                          </div>
+                        )}
+
+                        <div>
+                          <p className="text-xs text-muted-foreground mb-1">Date du paiement</p>
+                          <p className="text-sm text-foreground">{formatDate(selectedVersement.date)}</p>
+                        </div>
+
+                        {selectedVersement.note && (
+                          <div>
+                            <p className="text-xs text-muted-foreground mb-1">Note</p>
+                            <p className="text-sm text-foreground">{selectedVersement.note}</p>
+                          </div>
+                        )}
+
+                        {selectedVersement.userNom && (
+                          <div>
+                            <p className="text-xs text-muted-foreground mb-1">Enregistré par</p>
+                            <p className="text-sm text-foreground">{selectedVersement.userNom}</p>
+                          </div>
+                        )}
+                      </div>
+
+                      <div className="flex gap-2 pt-2">
+                        <CanAccess permissions={['versements-client.update']}>
+                          <button
+                            onClick={() => {
+                              setDetailsOpen(false);
+                              handleEdit(selectedVersement);
+                            }}
+                            className="flex-1 py-2.5 rounded-lg gradient-gold text-primary-foreground text-sm font-semibold hover:opacity-90 transition-opacity flex items-center justify-center gap-2"
+                          >
+                            <Edit2 className="w-4 h-4" /> Modifier
+                          </button>
+                        </CanAccess>
+                        <CanAccess permissions={['versements-client.delete']}>
+                          <button
+                            onClick={() => {
+                              setDetailsOpen(false);
+                              handleDelete(selectedVersement);
+                            }}
+                            className="py-2.5 px-4 rounded-lg border border-destructive/30 text-sm font-medium text-destructive hover:bg-destructive/10 transition-colors flex items-center gap-2"
+                          >
+                            <Trash2 className="w-4 h-4" /> Annuler
+                          </button>
+                        </CanAccess>
+                        <button
+                          onClick={() => setDetailsOpen(false)}
+                          className="py-2.5 px-4 rounded-lg border border-border text-sm font-medium text-muted-foreground hover:bg-secondary transition-colors"
+                        >
+                          Fermer
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })()}
+              </div>
+            </div>
+          </SheetContent>
+        </Sheet>
+      ) : (
+        <Dialog open={detailsOpen} onOpenChange={setDetailsOpen}>
+          <DialogContent className="max-w-[95vw] sm:max-w-md h-[90vh] flex flex-col p-0">
+            <DialogHeader className="px-4 sm:px-6 py-4 border-b flex-shrink-0">
+              <DialogTitle className="text-lg font-bold">Détails du Paiement</DialogTitle>
+            </DialogHeader>
+            <div className="flex-1 min-h-0 overflow-y-auto px-4 sm:px-6 py-4">
+              {selectedVersement && (() => {
+                const client = clients.find((c: any) => c.id === selectedVersement.clientId);
+                return (
+                  <div className="space-y-4">
+                    <div className="bg-secondary/50 border border-border rounded-lg p-4">
+                      <p className="text-xs text-muted-foreground mb-1">Montant versé</p>
+                      <p className="text-2xl font-heading font-bold text-success">
+                        {formatPrix(selectedVersement.montant)}
+                      </p>
+                    </div>
+
+                    <div className="space-y-3">
+                      <div>
+                        <p className="text-xs text-muted-foreground mb-1">Client</p>
+                        <p className="text-sm font-semibold text-foreground">{selectedVersement.clientNom}</p>
+                      </div>
+
+                      {selectedVersement.venteNumero && (
+                        <div>
+                          <p className="text-xs text-muted-foreground mb-1">Vente associée</p>
+                          <p className="text-sm text-foreground font-mono">{selectedVersement.venteNumero}</p>
+                        </div>
+                      )}
+
+                      {client && (
+                        <div className="bg-secondary/50 border border-border rounded-lg p-3">
+                          <div className="flex items-center justify-between mb-2">
+                            <p className="text-xs text-muted-foreground">Dette actuelle</p>
+                            {client.totalCredits > 0 && (
+                              <span className="text-xs px-2 py-0.5 rounded bg-destructive/10 text-destructive font-medium">
+                                En dette
+                              </span>
+                            )}
+                            {client.totalCredits === 0 && (
+                              <span className="text-xs px-2 py-0.5 rounded bg-success/10 text-success font-medium">
+                                À jour
+                              </span>
+                            )}
+                          </div>
+                          <p className={`text-lg font-heading font-bold ${client.totalCredits > 0 ? 'text-destructive' : 'text-success'}`}>
+                            {formatPrix(client.totalCredits)}
+                          </p>
+                          <div className="flex items-center gap-3 text-xs text-muted-foreground mt-2 pt-2 border-t border-border">
+                            <span>Total achats: {formatPrix(client.totalAchats || 0)}</span>
+                          </div>
+                        </div>
+                      )}
+
+                      <div>
+                        <p className="text-xs text-muted-foreground mb-1">Mode de paiement</p>
+                        <p className="text-sm text-foreground">
+                          {getModeIcon(selectedVersement.modePaiement)} {getModeLabel(selectedVersement.modePaiement)}
+                        </p>
+                      </div>
+
+                      {selectedVersement.reference && (
+                        <div>
+                          <p className="text-xs text-muted-foreground mb-1">Référence</p>
+                          <p className="text-sm text-foreground font-mono">{selectedVersement.reference}</p>
+                        </div>
+                      )}
+
+                      <div>
+                        <p className="text-xs text-muted-foreground mb-1">Date du paiement</p>
+                        <p className="text-sm text-foreground">{formatDate(selectedVersement.date)}</p>
+                      </div>
+
+                      {selectedVersement.note && (
+                        <div>
+                          <p className="text-xs text-muted-foreground mb-1">Note</p>
+                          <p className="text-sm text-foreground">{selectedVersement.note}</p>
+                        </div>
+                      )}
+
+                      {selectedVersement.userNom && (
+                        <div>
+                          <p className="text-xs text-muted-foreground mb-1">Enregistré par</p>
+                          <p className="text-sm text-foreground">{selectedVersement.userNom}</p>
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="flex gap-2 pt-2">
+                      <CanAccess permissions={['versements-client.update']}>
+                        <button
+                          onClick={() => {
+                            setDetailsOpen(false);
+                            handleEdit(selectedVersement);
+                          }}
+                          className="flex-1 py-2.5 rounded-lg gradient-gold text-primary-foreground text-sm font-semibold hover:opacity-90 transition-opacity flex items-center justify-center gap-2"
+                        >
+                          <Edit2 className="w-4 h-4" /> Modifier
+                        </button>
+                      </CanAccess>
+                      <CanAccess permissions={['versements-client.delete']}>
+                        <button
+                          onClick={() => {
+                            setDetailsOpen(false);
+                            handleDelete(selectedVersement);
+                          }}
+                          className="py-2.5 px-4 rounded-lg border border-destructive/30 text-sm font-medium text-destructive hover:bg-destructive/10 transition-colors flex items-center gap-2"
+                        >
+                          <Trash2 className="w-4 h-4" /> Annuler
+                        </button>
+                      </CanAccess>
+                      <button
+                        onClick={() => setDetailsOpen(false)}
+                        className="py-2.5 px-4 rounded-lg border border-border text-sm font-medium text-muted-foreground hover:bg-secondary transition-colors"
+                      >
+                        Fermer
+                      </button>
+                    </div>
+                  </div>
+                );
+              })()}
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
 
       {/* Stats - cachées sur mobile */}
       <div className="hidden sm:grid sm:grid-cols-3 gap-4 sm:gap-5 mb-6 sm:mb-8">
@@ -532,7 +833,10 @@ const VersementsClient = () => {
               <VersementClientMobileCard
                 key={client.id}
                 client={client}
-                onOpenPaymentForm={() => setFormOpen(true)}
+                onOpenPaymentForm={() => {
+                  setSelectedClient(client);
+                  setFormOpen(true);
+                }}
                 onViewHistory={(client) => {
                   setSelectedClientForHistory(client);
                   setHistoryDialogOpen(true);
@@ -609,7 +913,7 @@ const VersementsClient = () => {
                               <CanAccess permissions={['versements-client.create']}>
                                 <button
                                   onClick={() => {
-                                    // Pré-remplir le formulaire avec le client sélectionné
+                                    setSelectedClient(client);
                                     setFormOpen(true);
                                   }}
                                   className="p-1.5 rounded-lg hover:bg-success/10 text-success transition-colors"

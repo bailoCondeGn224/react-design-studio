@@ -142,7 +142,7 @@ const StockForm = ({ open, onOpenChange, onSubmit, initialData = null, mode = 'c
           {mode === 'edit' ? 'Modifiez toutes les informations de l\'article' : 'Ajoutez un nouvel article au stock'}
         </p>
       </div>
-      <form onSubmit={handleSubmit} className="space-y-3 sm:space-y-4 overflow-y-auto flex-1 p-4 sm:p-6">
+      <form onSubmit={handleSubmit} className="space-y-3 sm:space-y-4 overflow-y-auto flex-1 min-h-0 p-4 sm:p-6">
           <FormField label="Nom de l'article *" placeholder="Ex: Abaya Noire Premium" value={form.nom} onChange={e => update("nom", (e.target as HTMLInputElement).value)} maxLength={100} />
           <FormField label="Référence (SKU)" placeholder="Ex: ABY-001" value={form.reference} onChange={e => update("reference", (e.target as HTMLInputElement).value)} maxLength={50} />
 
@@ -395,7 +395,7 @@ const StockForm = ({ open, onOpenChange, onSubmit, initialData = null, mode = 'c
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-[95vw] sm:max-w-md max-h-[90vh] p-0">
+      <DialogContent className="max-w-[95vw] sm:max-w-md h-[90vh] flex flex-col p-0">
         <DialogHeader className="sr-only">
           <DialogTitle>{mode === 'edit' ? 'Modifier l\'Article' : 'Nouvel Article'}</DialogTitle>
           <DialogDescription>

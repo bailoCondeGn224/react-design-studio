@@ -382,8 +382,8 @@ const Stock = () => {
         </Sheet>
       ) : (
         <Dialog open={historyArticleId !== null} onOpenChange={() => setHistoryArticleId(null)}>
-          <DialogContent className="max-w-[95vw] sm:max-w-2xl max-h-[80vh] overflow-y-auto">
-            <DialogHeader>
+          <DialogContent className="max-w-[95vw] sm:max-w-2xl h-[80vh] flex flex-col p-0">
+            <DialogHeader className="p-6 pb-4 flex-shrink-0">
               <DialogTitle className="font-heading flex items-center gap-1.5 sm:gap-2 text-base sm:text-lg">
                 <History className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
                 Historique des Mouvements
@@ -395,13 +395,14 @@ const Stock = () => {
               )}
             </DialogHeader>
 
-            {mouvements.length === 0 ? (
-              <div className="text-center py-8 sm:py-12">
-                <Package className="w-10 h-10 sm:w-12 sm:h-12 text-muted-foreground mx-auto mb-2 sm:mb-3 opacity-50" />
-                <p className="text-xs sm:text-sm text-muted-foreground">Aucun mouvement enregistré pour cet article</p>
-              </div>
-            ) : (
-              <div className="space-y-2 sm:space-y-3">
+            <div className="flex-1 overflow-y-auto min-h-0 px-6 pb-6">
+              {mouvements.length === 0 ? (
+                <div className="text-center py-8 sm:py-12">
+                  <Package className="w-10 h-10 sm:w-12 sm:h-12 text-muted-foreground mx-auto mb-2 sm:mb-3 opacity-50" />
+                  <p className="text-xs sm:text-sm text-muted-foreground">Aucun mouvement enregistré pour cet article</p>
+                </div>
+              ) : (
+                <div className="space-y-2 sm:space-y-3">
                 {mouvements.map((mouvement: any) => (
                   <div key={mouvement.id} className="flex items-start gap-2 sm:gap-3 p-2 sm:p-3 bg-secondary/30 rounded-lg hover:bg-secondary/50 transition-colors">
                     <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center flex-shrink-0 ${
@@ -459,15 +460,16 @@ const Stock = () => {
               </div>
             )}
 
-            {/* Pagination si nécessaire */}
-            {mouvementsMeta && mouvementsMeta.totalPages > 1 && (
-              <div className="mt-4 pt-4 border-t">
-                <Pagination
-                  meta={mouvementsMeta}
-                  onPageChange={setHistoryPage}
-                />
-              </div>
-            )}
+              {/* Pagination si nécessaire */}
+              {mouvementsMeta && mouvementsMeta.totalPages > 1 && (
+                <div className="mt-4 pt-4 border-t">
+                  <Pagination
+                    meta={mouvementsMeta}
+                    onPageChange={setHistoryPage}
+                  />
+                </div>
+              )}
+            </div>
           </DialogContent>
         </Dialog>
       )}
@@ -524,7 +526,7 @@ const Stock = () => {
         </Sheet>
       ) : (
         <Dialog open={selectedImage !== null} onOpenChange={() => setSelectedImage(null)}>
-          <DialogContent className="max-w-[95vw] sm:max-w-4xl max-h-[95vh] p-0 overflow-hidden bg-background/95 backdrop-blur-sm border-2">
+          <DialogContent className="max-w-[95vw] sm:max-w-4xl h-[95vh] p-0 overflow-hidden bg-background/95 backdrop-blur-sm border-2">
             <DialogHeader className="sr-only">
               <DialogTitle>{selectedImage?.nom || 'Photo de l\'article'}</DialogTitle>
             </DialogHeader>

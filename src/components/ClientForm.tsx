@@ -83,7 +83,7 @@ const ClientForm = ({ open, onOpenChange, onSubmit, initialData = null, mode = '
       </div>
 
       {/* Zone scrollable */}
-      <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto px-4 sm:px-6 py-4 sm:py-5 space-y-5">
+      <form onSubmit={handleSubmit} className="flex-1 min-h-0 overflow-y-auto px-4 sm:px-6 py-4 sm:py-5 space-y-5">
         {/* Section Informations principales */}
         <div className="relative overflow-hidden rounded-xl bg-gradient-to-br from-primary/5 via-background to-background border-2 border-border p-4 sm:p-5">
           <div className="absolute top-0 right-0 w-24 h-24 bg-primary/5 rounded-full -mr-12 -mt-12"></div>
@@ -180,7 +180,7 @@ const ClientForm = ({ open, onOpenChange, onSubmit, initialData = null, mode = '
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-[95vw] sm:max-w-md max-h-[90vh] p-0">
+      <DialogContent className="max-w-[95vw] sm:max-w-md h-[90vh] flex flex-col p-0">
         {formContent}
       </DialogContent>
     </Dialog>

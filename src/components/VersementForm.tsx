@@ -5,10 +5,11 @@ import { useIsMobile } from "@/hooks/useMediaQuery";
 import { Button } from "@/components/ui/button";
 import FormField from "@/components/FormField";
 import FournisseurVersementSelector from "@/components/FournisseurVersementSelector";
+import ApprovisionnementFournisseurSelector from "@/components/ApprovisionnementFournisseurSelector";
 import { toast } from "sonner";
 import { Versement } from "@/types";
 import { formatPrixInput, handlePrixChange } from "@/utils/format-prix";
-import { Wallet, Truck, DollarSign, CreditCard, FileText, Check, AlertCircle, Calendar } from "lucide-react";
+import { Wallet, Truck, DollarSign, CreditCard, FileText, Check, AlertCircle, Calendar, Package } from "lucide-react";
 
 interface VersementFormProps {
   open: boolean;
@@ -16,15 +17,17 @@ interface VersementFormProps {
   onSubmit: (data: any) => void;
   versement?: Versement;
   fournisseurId?: string;
+  fournisseur?: any; // Objet fournisseur complet avec dette
 }
 
-const VersementForm = ({ open, onOpenChange, onSubmit, versement, fournisseurId }: VersementFormProps) => {
+const VersementForm = ({ open, onOpenChange, onSubmit, versement, fournisseurId, fournisseur }: VersementFormProps) => {
   const isMobile = useIsMobile();
 
   const getInitialState = () => {
     if (versement) {
       return {
         fournisseurId: versement.fournisseurId,
+        approvisionnementId: versement.approvisionnementId || "",
         montant: String(versement.montant),
         modePaiement: versement.modePaiement,
         reference: versement.reference || "",
@@ -33,7 +36,8 @@ const VersementForm = ({ open, onOpenChange, onSubmit, versement, fournisseurId 
       };
     }
     return {
-      fournisseurId: fournisseurId || "",
+      fournisseurId: fournisseurId || fournisseur?.id || "",
+      approvisionnementId: "",
       montant: "",
       modePaiement: "especes",
       reference: "",
@@ -44,15 +48,20 @@ const VersementForm = ({ open, onOpenChange, onSubmit, versement, fournisseurId 
 
   const [form, setForm] = useState(getInitialState());
   const [selectedFournisseur, setSelectedFournisseur] = useState<any>(null);
+  const [selectedApprovisionnement, setSelectedApprovisionnement] = useState<any>(null);
 
   useEffect(() => {
     if (open) {
       setForm(getInitialState());
-      if (!versement && !fournisseurId) {
+      setSelectedApprovisionnement(null);
+      // Initialiser selectedFournisseur avec le fournisseur passé en prop
+      if (fournisseur) {
+        setSelectedFournisseur(fournisseur);
+      } else if (!versement && !fournisseurId) {
         setSelectedFournisseur(null);
       }
     }
-  }, [open]);
+  }, [open, fournisseur]);
 
   const update = (field: string, value: any) => {
     setForm(prev => ({ ...prev, [field]: value }));
@@ -72,7 +81,15 @@ const VersementForm = ({ open, onOpenChange, onSubmit, versement, fournisseurId 
       return;
     }
 
-    // Validation: le montant ne doit pas dépasser la dette
+    // Validation: le montant ne doit pas dépasser le montant restant de l'approvisionnement si sélectionné
+    if (selectedApprovisionnement && montant > selectedApprovisionnement.montantRestant) {
+      toast.error(
+        `Le montant (${formatPrix(montant)}) dépasse le reste à payer de l'approvisionnement (${formatPrix(selectedApprovisionnement.montantRestant)})`
+      );
+      return;
+    }
+
+    // Validation: le montant ne doit pas dépasser la dette globale du fournisseur
     if (selectedFournisseur && montant > selectedFournisseur.dette) {
       toast.error(
         `Le montant (${formatPrix(montant)}) dépasse la dette du fournisseur (${formatPrix(selectedFournisseur.dette)})`
@@ -82,6 +99,7 @@ const VersementForm = ({ open, onOpenChange, onSubmit, versement, fournisseurId 
 
     onSubmit({
       fournisseurId: form.fournisseurId,
+      approvisionnementId: form.approvisionnementId || undefined,
       montant,
       modePaiement: form.modePaiement,
       reference: form.reference || undefined,
@@ -136,7 +154,7 @@ const VersementForm = ({ open, onOpenChange, onSubmit, versement, fournisseurId 
       </div>
 
       {/* Zone scrollable */}
-      <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto px-4 sm:px-6 py-4 sm:py-5 space-y-5">
+      <form onSubmit={handleSubmit} className="flex-1 min-h-0 overflow-y-auto px-4 sm:px-6 py-4 sm:py-5 space-y-5">
         {/* Section Fournisseur */}
         <div className="relative overflow-hidden rounded-xl bg-gradient-to-br from-primary/5 via-background to-background border-2 border-border p-4 sm:p-5">
           <div className="absolute top-0 right-0 w-24 h-24 bg-primary/5 rounded-full -mr-12 -mt-12"></div>
@@ -157,12 +175,61 @@ const VersementForm = ({ open, onOpenChange, onSubmit, versement, fournisseurId 
                   setSelectedFournisseur(null);
                   update("fournisseurId", "");
                 }
+                // Réinitialiser l'approvisionnement quand le fournisseur change
+                setSelectedApprovisionnement(null);
+                update("approvisionnementId", "");
               }}
               selectedFournisseur={selectedFournisseur}
               placeholder="Rechercher un fournisseur..."
             />
           </div>
         </div>
+
+        {/* Section Approvisionnement (optionnel) */}
+        {form.fournisseurId && (
+          <div className="relative overflow-hidden rounded-xl bg-gradient-to-br from-secondary/5 via-background to-background border-2 border-border p-4 sm:p-5">
+            <div className="absolute top-0 right-0 w-24 h-24 bg-secondary/5 rounded-full -mr-12 -mt-12"></div>
+            <div className="relative space-y-3">
+              <div className="flex items-center gap-2 mb-2">
+                <div className="w-8 h-8 rounded-lg bg-secondary/10 flex items-center justify-center">
+                  <Package className="w-4 h-4 text-secondary-foreground" />
+                </div>
+                <h3 className="text-sm font-bold text-foreground">Approvisionnement concerné (optionnel)</h3>
+              </div>
+              <ApprovisionnementFournisseurSelector
+                fournisseurId={form.fournisseurId}
+                value={form.approvisionnementId}
+                onChange={(appro) => {
+                  if (appro) {
+                    setSelectedApprovisionnement(appro);
+                    update("approvisionnementId", appro.id);
+                  } else {
+                    setSelectedApprovisionnement(null);
+                    update("approvisionnementId", "");
+                  }
+                }}
+                selectedApprovisionnement={selectedApprovisionnement}
+                placeholder="Sélectionner un approvisionnement (optionnel)..."
+              />
+              {selectedApprovisionnement && (
+                <div className="p-3 bg-secondary/10 rounded-lg border border-secondary/20 text-sm">
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-muted-foreground">Total approvisionnement:</span>
+                    <span className="font-semibold text-foreground">{formatPrix(selectedApprovisionnement.total)}</span>
+                  </div>
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-muted-foreground">Déjà payé:</span>
+                    <span className="font-semibold text-success">{formatPrix(selectedApprovisionnement.montantPaye)}</span>
+                  </div>
+                  <div className="flex items-center justify-between pt-2 border-t border-secondary/20">
+                    <span className="font-semibold text-foreground">Reste à payer:</span>
+                    <span className="font-bold text-destructive">{formatPrix(selectedApprovisionnement.montantRestant)}</span>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
 
         {/* Section Montant */}
         <div className="relative overflow-hidden rounded-xl bg-gradient-to-br from-success/5 via-background to-background border-2 border-border p-4 sm:p-5">
@@ -183,12 +250,21 @@ const VersementForm = ({ open, onOpenChange, onSubmit, versement, fournisseurId 
                 onChange={e => update("montant", handlePrixChange(e.target.value))}
                 onFocus={e => e.target.select()}
                 className={`w-full px-4 h-11 rounded-lg border bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 ${
-                  selectedFournisseur && form.montant && parseFloat(form.montant) > selectedFournisseur.dette
+                  (selectedApprovisionnement && form.montant && parseFloat(form.montant) > selectedApprovisionnement.montantRestant) ||
+                  (selectedFournisseur && form.montant && parseFloat(form.montant) > selectedFournisseur.dette)
                     ? "border-destructive focus:ring-destructive/20"
                     : "border-border focus:ring-success/20"
                 }`}
               />
-              {selectedFournisseur && form.montant && parseFloat(form.montant) > selectedFournisseur.dette && (
+              {selectedApprovisionnement && form.montant && parseFloat(form.montant) > selectedApprovisionnement.montantRestant && (
+                <div className="flex items-start gap-2 mt-2 p-2 bg-destructive/10 rounded-lg border border-destructive/20">
+                  <AlertCircle className="w-4 h-4 text-destructive flex-shrink-0 mt-0.5" />
+                  <p className="text-xs text-destructive">
+                    Le montant dépasse le reste à payer de l'approvisionnement ({formatPrix(selectedApprovisionnement.montantRestant)})
+                  </p>
+                </div>
+              )}
+              {!selectedApprovisionnement && selectedFournisseur && form.montant && parseFloat(form.montant) > selectedFournisseur.dette && (
                 <div className="flex items-start gap-2 mt-2 p-2 bg-destructive/10 rounded-lg border border-destructive/20">
                   <AlertCircle className="w-4 h-4 text-destructive flex-shrink-0 mt-0.5" />
                   <p className="text-xs text-destructive">
@@ -327,7 +403,7 @@ const VersementForm = ({ open, onOpenChange, onSubmit, versement, fournisseurId 
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-[95vw] sm:max-w-2xl max-h-[90vh] flex flex-col p-0">
+      <DialogContent className="max-w-[95vw] sm:max-w-2xl h-[90vh] flex flex-col p-0">
         <DialogHeader className="sr-only">
           <DialogTitle>{versement ? 'Modifier le Versement' : 'Enregistrer un Versement'}</DialogTitle>
           <DialogDescription>

@@ -7,6 +7,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { Sheet, SheetContent } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -14,6 +15,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { ChevronUp, ChevronDown } from 'lucide-react';
 import { useAddComptage } from '@/hooks/useInventaires';
 import { Article } from '@/types';
+import { useIsMobile } from '@/hooks/useMediaQuery';
 
 interface ComptageDialogProps {
   open: boolean;
@@ -28,6 +30,7 @@ export default function ComptageDialog({
   article,
   inventaireId,
 }: ComptageDialogProps) {
+  const isMobile = useIsMobile();
   const [quantiteComptee, setQuantiteComptee] = useState(article.stock);
   const [note, setNote] = useState('');
   const addComptageMutation = useAddComptage();
@@ -72,97 +75,113 @@ export default function ComptageDialog({
     }
   };
 
-  return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md">
-        <form onSubmit={handleSubmit}>
-          <DialogHeader>
-            <DialogTitle>Compter: {article.nom}</DialogTitle>
-            <DialogDescription>
-              Combien d'unités avez-vous comptées physiquement?
-            </DialogDescription>
-          </DialogHeader>
+  const content = (
+    <form onSubmit={handleSubmit} className="h-full flex flex-col">
+      <DialogHeader className="flex-shrink-0 px-6 pt-6">
+        <DialogTitle>Compter: {article.nom}</DialogTitle>
+        <DialogDescription>
+          Combien d'unités avez-vous comptées physiquement?
+        </DialogDescription>
+      </DialogHeader>
 
-          <div className="space-y-4 py-4">
-            {/* Stock système */}
-            <div className="bg-gray-50 p-3 rounded-lg">
-              <p className="text-sm text-muted-foreground">Stock dans le système</p>
-              <p className="text-2xl font-bold">{article.stock}</p>
-            </div>
+      <div className="flex-1 min-h-0 overflow-y-auto px-6 py-4">
+        <div className="space-y-4">
+          {/* Stock système */}
+          <div className="bg-gray-50 p-3 rounded-lg">
+            <p className="text-sm text-muted-foreground">Stock dans le système</p>
+            <p className="text-2xl font-bold">{article.stock}</p>
+          </div>
 
-            {/* Quantité comptée */}
-            <div className="space-y-2">
-              <Label htmlFor="quantite">Quantité comptée</Label>
-              <div className="flex items-center gap-2">
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="icon"
-                  onClick={() =>
-                    setQuantiteComptee(Math.max(0, quantiteComptee - 1))
-                  }
-                >
-                  <ChevronDown className="w-4 h-4" />
-                </Button>
-                <Input
-                  id="quantite"
-                  type="number"
-                  min="0"
-                  value={quantiteComptee}
-                  onChange={(e) =>
-                    setQuantiteComptee(Math.max(0, parseInt(e.target.value) || 0))
-                  }
-                  className="text-center text-2xl font-bold"
-                />
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="icon"
-                  onClick={() => setQuantiteComptee(quantiteComptee + 1)}
-                >
-                  <ChevronUp className="w-4 h-4" />
-                </Button>
-              </div>
-            </div>
-
-            {/* Différence */}
-            <div className={`p-4 rounded-lg text-center ${getEcartColor()}`}>
-              <p className="text-sm font-medium mb-1">Différence</p>
-              <p className="text-2xl font-bold">
-                {ecart > 0 ? '+' : ''}
-                {ecart}
-              </p>
-              <p className="text-sm mt-1">{getEcartMessage()}</p>
-            </div>
-
-            {/* Note */}
-            <div className="space-y-2">
-              <Label htmlFor="note">Note (optionnel)</Label>
-              <Textarea
-                id="note"
-                placeholder="Ex: 2 articles abîmés"
-                value={note}
-                onChange={(e) => setNote(e.target.value)}
-                rows={2}
+          {/* Quantité comptée */}
+          <div className="space-y-2">
+            <Label htmlFor="quantite">Quantité comptée</Label>
+            <div className="flex items-center gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                size="icon"
+                onClick={() =>
+                  setQuantiteComptee(Math.max(0, quantiteComptee - 1))
+                }
+              >
+                <ChevronDown className="w-4 h-4" />
+              </Button>
+              <Input
+                id="quantite"
+                type="number"
+                min="0"
+                value={quantiteComptee}
+                onChange={(e) =>
+                  setQuantiteComptee(Math.max(0, parseInt(e.target.value) || 0))
+                }
+                className="text-center text-2xl font-bold"
               />
+              <Button
+                type="button"
+                variant="outline"
+                size="icon"
+                onClick={() => setQuantiteComptee(quantiteComptee + 1)}
+              >
+                <ChevronUp className="w-4 h-4" />
+              </Button>
             </div>
           </div>
 
-          <DialogFooter>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => onOpenChange(false)}
-            >
-              Annuler
-            </Button>
-            <Button type="submit" disabled={addComptageMutation.isPending}>
-              {addComptageMutation.isPending
-                ? 'Enregistrement...'
-                : 'Enregistrer'}
-            </Button>
-          </DialogFooter>
-        </form>
+          {/* Différence */}
+          <div className={`p-4 rounded-lg text-center ${getEcartColor()}`}>
+            <p className="text-sm font-medium mb-1">Différence</p>
+            <p className="text-2xl font-bold">
+              {ecart > 0 ? '+' : ''}
+              {ecart}
+            </p>
+            <p className="text-sm mt-1">{getEcartMessage()}</p>
+          </div>
+
+          {/* Note */}
+          <div className="space-y-2">
+            <Label htmlFor="note">Note (optionnel)</Label>
+            <Textarea
+              id="note"
+              placeholder="Ex: 2 articles abîmés"
+              value={note}
+              onChange={(e) => setNote(e.target.value)}
+              rows={2}
+            />
+          </div>
+        </div>
+      </div>
+
+      <DialogFooter className="flex-shrink-0 px-6 pb-6">
+        <Button
+          type="button"
+          variant="outline"
+          onClick={() => onOpenChange(false)}
+        >
+          Annuler
+        </Button>
+        <Button type="submit" disabled={addComptageMutation.isPending}>
+          {addComptageMutation.isPending
+            ? 'Enregistrement...'
+            : 'Enregistrer'}
+        </Button>
+      </DialogFooter>
+    </form>
+  );
+
+  if (isMobile) {
+    return (
+      <Sheet open={open} onOpenChange={onOpenChange}>
+        <SheetContent side="bottom" className="h-[95vh] p-0">
+          {content}
+        </SheetContent>
+      </Sheet>
+    );
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-md h-[90vh] flex flex-col p-0">
+        {content}
       </DialogContent>
     </Dialog>
   );

@@ -7,10 +7,12 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { Sheet, SheetContent } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
 import { AlertTriangle } from 'lucide-react';
 import { useValiderInventaire } from '@/hooks/useInventaires';
 import { Inventaire } from '@/types';
+import { useIsMobile } from '@/hooks/useMediaQuery';
 
 interface ValiderInventaireDialogProps {
   open: boolean;
@@ -23,6 +25,7 @@ export default function ValiderInventaireDialog({
   onOpenChange,
   inventaire,
 }: ValiderInventaireDialogProps) {
+  const isMobile = useIsMobile();
   const navigate = useNavigate();
   const validerMutation = useValiderInventaire();
 
@@ -37,20 +40,20 @@ export default function ValiderInventaireDialog({
     }
   };
 
-  return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-lg max-h-[90vh] flex flex-col">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <AlertTriangle className="w-5 h-5 text-orange-600" />
-            Confirmer les Ajustements
-          </DialogTitle>
-          <DialogDescription>
-            Vous êtes sur le point de valider cet inventaire
-          </DialogDescription>
-        </DialogHeader>
+  const content = (
+    <div className="h-full flex flex-col">
+      <DialogHeader className="flex-shrink-0 px-6 pt-6">
+        <DialogTitle className="flex items-center gap-2">
+          <AlertTriangle className="w-5 h-5 text-orange-600" />
+          Confirmer les Ajustements
+        </DialogTitle>
+        <DialogDescription>
+          Vous êtes sur le point de valider cet inventaire
+        </DialogDescription>
+      </DialogHeader>
 
-        <div className="space-y-4 overflow-y-auto flex-1 px-1">
+      <div className="flex-1 min-h-0 overflow-y-auto px-6 py-4">
+        <div className="space-y-4">
           {/* Résumé compact */}
           <div className="bg-blue-50 rounded-lg p-3">
             <div className="grid grid-cols-3 gap-2 text-center text-sm">
@@ -157,23 +160,41 @@ export default function ValiderInventaireDialog({
             </p>
           </div>
         </div>
+      </div>
 
-        <DialogFooter>
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => onOpenChange(false)}
-          >
-            Non, revenir
-          </Button>
-          <Button
-            onClick={handleValider}
-            disabled={validerMutation.isPending}
-            className="bg-orange-600 hover:bg-orange-700"
-          >
-            {validerMutation.isPending ? 'Validation...' : 'Oui, ajuster'}
-          </Button>
-        </DialogFooter>
+      <DialogFooter className="flex-shrink-0 px-6 pb-6">
+        <Button
+          type="button"
+          variant="outline"
+          onClick={() => onOpenChange(false)}
+        >
+          Non, revenir
+        </Button>
+        <Button
+          onClick={handleValider}
+          disabled={validerMutation.isPending}
+          className="bg-orange-600 hover:bg-orange-700"
+        >
+          {validerMutation.isPending ? 'Validation...' : 'Oui, ajuster'}
+        </Button>
+      </DialogFooter>
+    </div>
+  );
+
+  if (isMobile) {
+    return (
+      <Sheet open={open} onOpenChange={onOpenChange}>
+        <SheetContent side="bottom" className="h-[95vh] p-0">
+          {content}
+        </SheetContent>
+      </Sheet>
+    );
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-lg h-[90vh] flex flex-col p-0">
+        {content}
       </DialogContent>
     </Dialog>
   );

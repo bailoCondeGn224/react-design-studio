@@ -188,58 +188,65 @@ export default function MobileInventaireDetail({
       </div>
 
       <div className="px-4 py-4 space-y-4">
-        {/* Statistiques - 4 cartes */}
-        <div className="grid grid-cols-2 gap-3">
-          <div className="bg-card border border-border rounded-xl p-4">
-            <div className="flex items-center gap-2 mb-2">
-              <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
-                <Package className="w-4 h-4 text-primary" />
+        {/* Statistiques - disposition verticale */}
+        <div className="space-y-3">
+          {/* Articles comptés */}
+          <div className="bg-gradient-to-br from-primary/5 to-primary/10 border border-primary/20 rounded-xl p-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-primary/20 flex items-center justify-center">
+                  <Package className="w-5 h-5 text-primary" />
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground font-medium">Articles Comptés</p>
+                  <p className="text-2xl font-bold text-foreground mt-0.5">
+                    {inventaire.articlesComptes}<span className="text-lg text-muted-foreground">/{inventaire.totalArticles}</span>
+                  </p>
+                </div>
               </div>
-              <span className="text-xs text-muted-foreground font-medium">Comptés</span>
             </div>
-            <p className="text-xl font-bold text-foreground">
-              {inventaire.articlesComptes}/{inventaire.totalArticles}
-            </p>
           </div>
 
-          <div className="bg-card border border-border rounded-xl p-4">
-            <div className="flex items-center gap-2 mb-2">
-              <div className="w-8 h-8 rounded-lg bg-warning/10 flex items-center justify-center">
-                <AlertTriangle className="w-4 h-4 text-warning" />
+          {/* Progression */}
+          <div className="bg-gradient-to-br from-success/5 to-success/10 border border-success/20 rounded-xl p-4">
+            <div className="flex items-center gap-3 mb-3">
+              <div className="w-10 h-10 rounded-xl bg-success/20 flex items-center justify-center">
+                <TrendingUp className="w-5 h-5 text-success" />
               </div>
-              <span className="text-xs text-muted-foreground font-medium">Écarts</span>
-            </div>
-            <p className="text-xl font-bold text-warning">
-              {inventaire.articlesAvecEcarts}
-            </p>
-          </div>
-
-          <div className="bg-card border border-border rounded-xl p-4">
-            <div className="flex items-center gap-2 mb-2">
-              <div className="w-8 h-8 rounded-lg bg-success/10 flex items-center justify-center">
-                <TrendingUp className="w-4 h-4 text-success" />
+              <div className="flex-1">
+                <p className="text-xs text-muted-foreground font-medium">Progression</p>
+                <p className="text-2xl font-bold text-foreground mt-0.5">{Math.round(progressPercent)}%</p>
               </div>
-              <span className="text-xs text-muted-foreground font-medium">Progression</span>
             </div>
-            <p className="text-xl font-bold text-foreground">{Math.round(progressPercent)}%</p>
-            <div className="w-full bg-secondary rounded-full h-2 mt-3">
+            <div className="w-full bg-secondary rounded-full h-2.5">
               <div
-                className="bg-success h-2 rounded-full transition-all"
+                className="bg-gradient-to-r from-success to-success/80 h-2.5 rounded-full transition-all shadow-sm"
                 style={{ width: `${progressPercent}%` }}
               />
             </div>
           </div>
 
-          <div className="bg-card border border-border rounded-xl p-4">
-            <div className="flex items-center gap-2 mb-2">
-              <div className="w-8 h-8 rounded-lg bg-destructive/10 flex items-center justify-center">
-                <TrendingDown className="w-4 h-4 text-destructive" />
+          {/* Écarts et Restants - côte à côte */}
+          <div className="grid grid-cols-2 gap-3">
+            <div className="bg-gradient-to-br from-warning/5 to-warning/10 border border-warning/20 rounded-xl p-4">
+              <div className="w-10 h-10 rounded-xl bg-warning/20 flex items-center justify-center mb-2">
+                <AlertTriangle className="w-5 h-5 text-warning" />
               </div>
-              <span className="text-xs text-muted-foreground font-medium">Restants</span>
+              <p className="text-xs text-muted-foreground font-medium mb-1">Avec Écarts</p>
+              <p className="text-2xl font-bold text-warning">
+                {inventaire.articlesAvecEcarts}
+              </p>
             </div>
-            <p className="text-xl font-bold text-foreground">
-              {inventaire.totalArticles - inventaire.articlesComptes}
-            </p>
+
+            <div className="bg-gradient-to-br from-muted/30 to-muted/50 border border-border rounded-xl p-4">
+              <div className="w-10 h-10 rounded-xl bg-muted flex items-center justify-center mb-2">
+                <TrendingDown className="w-5 h-5 text-muted-foreground" />
+              </div>
+              <p className="text-xs text-muted-foreground font-medium mb-1">Restants</p>
+              <p className="text-2xl font-bold text-foreground">
+                {inventaire.totalArticles - inventaire.articlesComptes}
+              </p>
+            </div>
           </div>
         </div>
 
