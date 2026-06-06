@@ -335,8 +335,8 @@ const ApprovisionnementForm = ({ open, onOpenChange, onSubmit, initialData = nul
               ) : (
                 <div className="space-y-3">
                 {form.lignes.map((ligne: any, index: number) => {
-                  const stockActuel = ligne.stockActuel || 0;
-                  const nouveauStock = stockActuel + (ligne.quantite || 0);
+                  const stockActuel = Number(ligne.stockActuel) || 0;
+                  const nouveauStock = stockActuel + Number(ligne.quantite || 0);
                   const nouveauPMP = ligne.articleId && ligne.quantite > 0 && ligne.prixUnitaire > 0 && stockActuel >= 0
                     ? (stockActuel * (ligne.ancienPMP || 0) + ligne.quantite * ligne.prixUnitaire) / nouveauStock
                     : ligne.prixUnitaire || 0;

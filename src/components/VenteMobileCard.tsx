@@ -61,11 +61,17 @@ const VenteMobileCard = ({
               </p>
             </div>
           </div>
-          {hasCredit && (
-            <div className="px-2 py-1 rounded-full bg-warning/10 border border-warning/20">
-              <p className="text-xs font-bold text-warning">Crédit</p>
-            </div>
-          )}
+          <div className="flex items-center gap-2">
+            {vente.statut === 'annulee' ? (
+              <div className="px-2 py-1 rounded-full bg-red-100 dark:bg-red-900/30 border border-red-300 dark:border-red-800">
+                <p className="text-xs font-bold text-red-700 dark:text-red-400">Annulée</p>
+              </div>
+            ) : hasCredit ? (
+              <div className="px-2 py-1 rounded-full bg-warning/10 border border-warning/20">
+                <p className="text-xs font-bold text-warning">Crédit</p>
+              </div>
+            ) : null}
+          </div>
         </div>
 
         {/* Client et infos principales */}

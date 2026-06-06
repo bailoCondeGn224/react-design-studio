@@ -29,7 +29,7 @@ const ApprovisionnementFournisseurSelector = ({
   value,
   onChange,
   selectedApprovisionnement,
-  placeholder = "Sélectionner un approvisionnement (optionnel)...",
+  placeholder = "Sélectionner un approvisionnement...",
 }: ApprovisionnementFournisseurSelectorProps) => {
   const [open, setOpen] = useState(false);
 
@@ -96,27 +96,9 @@ const ApprovisionnementFournisseurSelector = ({
         <Command>
           <CommandInput placeholder="Rechercher un approvisionnement..." />
           <CommandEmpty>
-            {loading ? "Chargement..." : "Aucun approvisionnement avec reste à payer"}
+            {loading ? "Chargement..." : "Aucun approvisionnement avec reste à payer pour ce fournisseur"}
           </CommandEmpty>
           <CommandGroup className="max-h-64 overflow-auto">
-            {/* Option pour ne pas lier à un approvisionnement */}
-            <CommandItem
-              value="none"
-              onSelect={() => {
-                onChange(null);
-                setOpen(false);
-              }}
-              className="cursor-pointer"
-            >
-              <Check
-                className={cn(
-                  "mr-2 h-4 w-4",
-                  !value ? "opacity-100" : "opacity-0"
-                )}
-              />
-              <span className="text-muted-foreground italic">Aucun (paiement global)</span>
-            </CommandItem>
-
             {approvisionnements.map((appro) => (
               <CommandItem
                 key={appro.id}

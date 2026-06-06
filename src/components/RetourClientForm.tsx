@@ -386,20 +386,107 @@ const RetourClientForm = ({ open, onOpenChange, onSubmit }: RetourClientFormProp
 
         {/* Total à rembourser */}
         {form.lignes.some(l => l.selected) && (
-          <div className="relative overflow-hidden rounded-xl bg-gradient-to-br from-primary/10 via-primary/5 to-background border-2 border-primary/30 p-5 sm:p-6 shadow-lg">
-            <div className="absolute top-0 right-0 w-32 h-32 bg-primary/10 rounded-full -mr-16 -mt-16"></div>
-            <div className="relative">
-              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-                <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
-                    <DollarSign className="w-4 h-4 text-primary" />
+          <>
+            <div className="relative overflow-hidden rounded-xl bg-gradient-to-br from-primary/10 via-primary/5 to-background border-2 border-primary/30 p-5 sm:p-6 shadow-lg">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-primary/10 rounded-full -mr-16 -mt-16"></div>
+              <div className="relative">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                  <div className="flex items-center gap-2">
+                    <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+                      <DollarSign className="w-4 h-4 text-primary" />
+                    </div>
+                    <span className="text-sm font-semibold text-muted-foreground">Montant total du retour</span>
                   </div>
-                  <span className="text-sm font-semibold text-muted-foreground">Montant à rembourser</span>
+                  <span className="text-lg sm:text-base font-black text-primary">{formatPrix(calculerTotal())}</span>
                 </div>
-                <span className="text-lg sm:text-base font-black text-primary">{formatPrix(calculerTotal())}</span>
               </div>
             </div>
-          </div>
+
+            {/* Détail du remboursement selon logique Q2:C */}
+            {selectedVente && (() => {
+              const montantRetour = calculerTotal();
+              const detteClient = selectedVente.montantRestant || 0;
+              const montantPaye = selectedVente.montantPaye || 0;
+
+              // Logique Q2:C
+              const isRetourSuperDette = montantRetour > detteClient;
+              const remboursementCash = isRetourSuperDette ? montantPaye : 0;
+              const reductionDette = isRetourSuperDette ? detteClient : montantRetour;
+
+              return (
+                <div className="relative overflow-hidden rounded-xl bg-gradient-to-br from-green-500/10 via-green-500/5 to-background border-2 border-green-500/30 p-5 sm:p-6 shadow-lg">
+                  <div className="absolute top-0 right-0 w-32 h-32 bg-green-500/10 rounded-full -mr-16 -mt-16"></div>
+                  <div className="relative space-y-3">
+                    <div className="flex items-center gap-2 mb-2">
+                      <div className="w-7 h-7 rounded-lg bg-green-500/20 flex items-center justify-center flex-shrink-0">
+                        <Check className="w-4 h-4 text-green-600 dark:text-green-400" />
+                      </div>
+                      <span className="text-sm font-bold text-green-700 dark:text-green-400">Détail du remboursement</span>
+                    </div>
+
+                    {/* Dette actuelle du client */}
+                    <div className="flex items-center justify-between p-3 bg-blue-50 dark:bg-blue-950/30 rounded-lg border border-blue-200 dark:border-blue-800">
+                      <span className="text-xs sm:text-sm font-medium text-blue-700 dark:text-blue-300">Dette actuelle du client</span>
+                      <span className="text-sm sm:text-base font-bold text-blue-600 dark:text-blue-400">{formatPrix(detteClient)}</span>
+                    </div>
+
+                    {/* Montant payé */}
+                    {montantPaye > 0 && (
+                      <div className="flex items-center justify-between p-3 bg-green-50 dark:bg-green-950/30 rounded-lg border border-green-200 dark:border-green-800">
+                        <span className="text-xs sm:text-sm font-medium text-green-700 dark:text-green-300">Montant déjà payé</span>
+                        <span className="text-sm sm:text-base font-bold text-green-600 dark:text-green-400">{formatPrix(montantPaye)}</span>
+                      </div>
+                    )}
+
+                    <div className="border-t-2 border-dashed border-green-300 dark:border-green-700 my-2"></div>
+
+                    {/* Résultat selon Q2:C */}
+                    {isRetourSuperDette ? (
+                      <>
+                        {/* Cas: Retour > Dette - Annulation totale + remboursement cash */}
+                        <div className="space-y-2">
+                          <div className="flex items-center justify-between p-3 bg-orange-50 dark:bg-orange-950/30 rounded-lg border border-orange-200 dark:border-orange-800">
+                            <span className="text-xs sm:text-sm font-semibold text-orange-700 dark:text-orange-300">✓ Annulation de la dette</span>
+                            <span className="text-sm sm:text-base font-black text-orange-600 dark:text-orange-400">{formatPrix(reductionDette)}</span>
+                          </div>
+                          <div className="flex items-center justify-between p-4 bg-gradient-to-r from-emerald-500 to-emerald-600 rounded-lg shadow-lg">
+                            <span className="text-xs sm:text-sm font-bold text-white">💵 Remboursement en espèces</span>
+                            <span className="text-base sm:text-lg font-black text-white">{formatPrix(remboursementCash)}</span>
+                          </div>
+                        </div>
+                        <p className="text-xs text-muted-foreground italic">
+                          Le montant du retour dépasse la dette. La dette sera annulée et le surplus remboursé.
+                        </p>
+                      </>
+                    ) : (
+                      <>
+                        {/* Cas: Retour ≤ Dette - Réduction de dette uniquement */}
+                        <div className="flex items-center justify-between p-4 bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg shadow-lg">
+                          <span className="text-xs sm:text-sm font-bold text-white">📉 Réduction de la dette</span>
+                          <span className="text-base sm:text-lg font-black text-white">{formatPrix(reductionDette)}</span>
+                        </div>
+                        <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-900/30 rounded-lg border border-gray-200 dark:border-gray-800">
+                          <span className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-400">💵 Remboursement en espèces</span>
+                          <span className="text-sm sm:text-base font-bold text-gray-400 dark:text-gray-600">0 FG</span>
+                        </div>
+                        <p className="text-xs text-muted-foreground italic">
+                          Le montant du retour sera déduit de la dette. Aucun remboursement en espèces.
+                        </p>
+                      </>
+                    )}
+
+                    {/* Nouvelle dette après retour */}
+                    <div className="flex items-center justify-between p-3 bg-violet-50 dark:bg-violet-950/30 rounded-lg border-2 border-violet-300 dark:border-violet-700">
+                      <span className="text-xs sm:text-sm font-bold text-violet-700 dark:text-violet-300">Dette après retour</span>
+                      <span className="text-sm sm:text-base font-black text-violet-600 dark:text-violet-400">
+                        {formatPrix(Math.max(0, detteClient - montantRetour))}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              );
+            })()}
+          </>
         )}
       </form>
 

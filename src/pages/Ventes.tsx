@@ -25,7 +25,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
-import { useVentes, useVente, useVenteVersements, useVentesStats, useCreateVente, useUpdateVente, useDeleteVente } from "@/hooks/useVentes";
+import { useVentes, useVente, useVenteVersements, useVentesStats, useCreateVente, useUpdateVente, useDeleteVente, useMoisDisponibles } from "@/hooks/useVentes";
 import { useIsMobile } from "@/hooks/useMediaQuery";
 import { ventesApi } from "@/api/ventes";
 import { printInvoice, shareInvoiceWhatsApp } from "@/utils/invoice-generator";
@@ -58,6 +58,11 @@ const Ventes = () => {
   const [versementPage, setVersementPage] = useState(1);
   const [versementLimit] = useState(10);
 
+  // État pour le filtre de mois
+  const now = new Date();
+  const [selectedMonth, setSelectedMonth] = useState(now.getMonth() + 1); // 1-12
+  const [selectedYear, setSelectedYear] = useState(now.getFullYear());
+
   const { data: ventesResponse, isLoading } = useVentes({ page, limit });
   const ventes = ventesResponse?.data || [];
   const meta = ventesResponse?.meta;
@@ -65,7 +70,8 @@ const Ventes = () => {
   const { data: versementsResponse } = useVenteVersements(detailsId, versementPage, versementLimit);
   const versements = versementsResponse?.data || [];
   const versementsMeta = versementsResponse?.meta;
-  const { data: statsVentes } = useVentesStats();
+  const { data: statsVentes } = useVentesStats({ mois: selectedMonth, annee: selectedYear });
+  const { data: moisDisponibles } = useMoisDisponibles();
   const isMobile = useIsMobile();
 
   // Reset pagination versements quand on ouvre le dialog
@@ -270,6 +276,20 @@ const Ventes = () => {
                   <p className="text-muted-foreground">Date</p>
                   <p className="font-semibold">{formatDate(venteDetails.date)} à {venteDetails.heure}</p>
                 </div>
+                <div>
+                  <p className="text-muted-foreground">Statut</p>
+                  {venteDetails.statut === 'annulee' ? (
+                    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 text-xs font-medium">
+                      <span className="w-1.5 h-1.5 rounded-full bg-red-500"></span>
+                      Annulée
+                    </span>
+                  ) : (
+                    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 text-xs font-medium">
+                      <span className="w-1.5 h-1.5 rounded-full bg-green-500"></span>
+                      Active
+                    </span>
+                  )}
+                </div>
                 <div className="col-span-2">
                   <p className="text-muted-foreground">Client</p>
                   <p className="font-semibold">{venteDetails.nom} {venteDetails.prenom}</p>
@@ -392,6 +412,20 @@ const Ventes = () => {
                     <p className="text-muted-foreground">Date</p>
                     <p className="font-semibold">{formatDate(venteDetails.date)} à {venteDetails.heure}</p>
                   </div>
+                  <div>
+                    <p className="text-muted-foreground">Statut</p>
+                    {venteDetails.statut === 'annulee' ? (
+                      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 text-xs font-medium">
+                        <span className="w-1.5 h-1.5 rounded-full bg-red-500"></span>
+                        Annulée
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 text-xs font-medium">
+                        <span className="w-1.5 h-1.5 rounded-full bg-green-500"></span>
+                        Active
+                      </span>
+                    )}
+                  </div>
                   <div className="col-span-2">
                     <p className="text-muted-foreground">Client</p>
                     <p className="font-semibold">{venteDetails.nom} {venteDetails.prenom}</p>
@@ -497,8 +531,86 @@ const Ventes = () => {
         </Dialog>
       )}
 
+      {/* Filtre de mois/année */}
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-4">
+        <h3 className="text-sm font-semibold text-foreground">Statistiques</h3>
+        <div className="flex items-center gap-2">
+          <select
+            value={selectedMonth}
+            onChange={(e) => setSelectedMonth(Number(e.target.value))}
+            className="px-3 py-2 text-sm border border-border rounded-lg bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30"
+          >
+            {[
+              { value: 1, label: 'Janvier' },
+              { value: 2, label: 'Février' },
+              { value: 3, label: 'Mars' },
+              { value: 4, label: 'Avril' },
+              { value: 5, label: 'Mai' },
+              { value: 6, label: 'Juin' },
+              { value: 7, label: 'Juillet' },
+              { value: 8, label: 'Août' },
+              { value: 9, label: 'Septembre' },
+              { value: 10, label: 'Octobre' },
+              { value: 11, label: 'Novembre' },
+              { value: 12, label: 'Décembre' },
+            ].map(month => {
+              // Désactiver les mois futurs
+              const isFutureMonth = selectedYear === now.getFullYear() && month.value > (now.getMonth() + 1);
+
+              // Désactiver les mois sans ventes
+              const hasVentes = moisDisponibles?.some(
+                m => m.annee === selectedYear && m.mois === month.value
+              );
+
+              const isDisabled = isFutureMonth || !hasVentes;
+
+              return (
+                <option key={month.value} value={month.value} disabled={isDisabled}>
+                  {month.label}{!hasVentes && !isFutureMonth ? ' (vide)' : ''}
+                </option>
+              );
+            })}
+          </select>
+          <select
+            value={selectedYear}
+            onChange={(e) => setSelectedYear(Number(e.target.value))}
+            className="px-3 py-2 text-sm border border-border rounded-lg bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30"
+          >
+            {(() => {
+              // Année de création de l'organisation (ou 2020 par défaut)
+              const orgCreationYear = organization?.createdAt
+                ? new Date(organization.createdAt).getFullYear()
+                : 2020;
+
+              const startYear = Math.max(orgCreationYear, 2020);
+              const currentYear = now.getFullYear();
+              const yearsCount = currentYear - startYear + 1;
+
+              return Array.from({ length: yearsCount }, (_, i) => currentYear - i).map(year => (
+                <option key={year} value={year}>{year}</option>
+              ));
+            })()}
+          </select>
+        </div>
+      </div>
+
+      {/* Message si aucune donnée */}
+      {statsVentes?.mois && statsVentes.mois.count === 0 && (
+        <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg p-4 mb-4">
+          <div className="flex items-start gap-3">
+            <AlertCircle className="w-5 h-5 text-amber-600 dark:text-amber-500 flex-shrink-0 mt-0.5" />
+            <div>
+              <p className="text-sm font-semibold text-amber-900 dark:text-amber-200">Aucune vente enregistrée</p>
+              <p className="text-xs text-amber-700 dark:text-amber-400 mt-1">
+                Aucune donnée disponible pour {['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin', 'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'][selectedMonth - 1]} {selectedYear}.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Statistiques du mois */}
-      {statsVentes?.mois && (
+      {statsVentes?.mois && statsVentes.mois.count > 0 && (
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
           <div className="bg-card border border-border rounded-lg p-4 shadow-card">
             <div className="flex items-center gap-3">
@@ -577,13 +689,14 @@ const Ventes = () => {
                 <th className="text-right text-[10px] sm:text-xs font-bold uppercase tracking-wide text-foreground px-4 sm:px-6 py-3 sm:py-4">Total</th>
                 <th className="text-center text-[10px] sm:text-xs font-bold uppercase tracking-wide text-foreground px-4 sm:px-6 py-3 sm:py-4 hidden md:table-cell">Paiement</th>
                 <th className="text-center text-[10px] sm:text-xs font-bold uppercase tracking-wide text-foreground px-4 sm:px-6 py-3 sm:py-4 hidden sm:table-cell">Date</th>
+                <th className="text-center text-[10px] sm:text-xs font-bold uppercase tracking-wide text-foreground px-4 sm:px-6 py-3 sm:py-4 hidden lg:table-cell">Statut</th>
                 <th className="text-center text-[10px] sm:text-xs font-bold uppercase tracking-wide text-foreground px-4 sm:px-6 py-3 sm:py-4">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border">
               {ventes.length === 0 ? (
                 <tr>
-                  <td colSpan={8} className="px-6 py-12 text-center text-muted-foreground">
+                  <td colSpan={9} className="px-6 py-12 text-center text-muted-foreground">
                     Aucune vente enregistrée
                   </td>
                 </tr>
@@ -660,6 +773,19 @@ const Ventes = () => {
                           <p>{formatDate(item.date)}</p>
                           <p className="text-[10px]">{item.heure}</p>
                         </div>
+                      </td>
+                      <td className="px-4 sm:px-6 py-3 sm:py-4 text-center hidden lg:table-cell">
+                        {item.statut === 'annulee' ? (
+                          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 text-xs font-medium">
+                            <span className="w-1.5 h-1.5 rounded-full bg-red-500"></span>
+                            Annulée
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 text-xs font-medium">
+                            <span className="w-1.5 h-1.5 rounded-full bg-green-500"></span>
+                            Active
+                          </span>
+                        )}
                       </td>
                       <td className="px-4 sm:px-6 py-4 text-center">
                         <DropdownMenu>

@@ -32,8 +32,8 @@ export const approvisionnementsApi = {
   },
 
   getByFournisseur: async (fournisseurId: string): Promise<Approvisionnement[]> => {
-    const response = await apiClient.get<Approvisionnement[]>(`/approvisionnements/fournisseur/${fournisseurId}`);
-    return response.data;
+    const response = await apiClient.get<{ data: Approvisionnement[] }>(`/approvisionnements/fournisseur/${fournisseurId}`);
+    return response.data.data;
   },
 
   getStatsByFournisseur: async (fournisseurId: string): Promise<any> => {

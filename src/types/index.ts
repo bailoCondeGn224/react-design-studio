@@ -277,6 +277,7 @@ export interface Vente {
   montantPaye: number;
   montantRestant: number;
   modePaiement: 'especes' | 'mobile_money' | 'virement' | 'credit' | 'acompte_50';
+  statut: 'active' | 'annulee';
   date: string;
   heure: string;
   createdAt?: string;
@@ -397,6 +398,8 @@ export interface Versement {
   id: string;
   fournisseurId: string;
   fournisseurNom: string;
+  approvisionnementId?: string;
+  approvisionnementNumero?: string;
   montant: number;
   modePaiement: 'especes' | 'mobile' | 'virement' | 'cheque';
   reference?: string;
@@ -409,9 +412,11 @@ export interface Versement {
 
 export interface CreateVersementDto {
   fournisseurId: string;
+  approvisionnementId?: string;
   montant: number;
   modePaiement: 'especes' | 'mobile' | 'virement' | 'cheque';
   reference?: string;
+  date: string;
   note?: string;
   statut?: 'valide' | 'en_attente' | 'annule';
 }

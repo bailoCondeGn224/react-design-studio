@@ -9,6 +9,8 @@ import DynamicFavicon from "./components/DynamicFavicon.tsx";
 import LoadingFallback from "./components/LoadingFallback.tsx";
 import { SidebarProvider } from "./contexts/SidebarContext";
 import { AuthProvider } from "./contexts/AuthContext";
+import { InstallPWA } from "./components/InstallPWA";
+import { PWAUpdateNotification, OfflineIndicator } from "./components/PWAUpdateNotification";
 
 // Lazy load all pages for code splitting and better performance
 const Login = lazy(() => import("./pages/Login.tsx"));
@@ -61,6 +63,9 @@ const App = () => (
           <DynamicFavicon />
           <Toaster />
           <Sonner />
+          <InstallPWA />
+          <PWAUpdateNotification />
+          <OfflineIndicator />
           <BrowserRouter>
           <Suspense fallback={<LoadingFallback />}>
             <Routes>

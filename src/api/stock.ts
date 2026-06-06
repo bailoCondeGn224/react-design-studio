@@ -87,6 +87,11 @@ export const stockApi = {
     return response.data;
   },
 
+  getArticleStats: async (articleId: string) => {
+    const response = await apiClient.get(`/stock/${articleId}/stats`);
+    return response.data;
+  },
+
   getByZone: async (zone: string): Promise<Article[]> => {
     const response = await apiClient.get<Article[]>(`/stock/zones/${zone}`);
     return response.data;

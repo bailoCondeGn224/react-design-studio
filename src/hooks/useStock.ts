@@ -26,6 +26,14 @@ export const useStockStats = () => {
   });
 };
 
+export const useArticleStats = (articleId: string | null) => {
+  return useQuery({
+    queryKey: ['stock', articleId, 'stats'],
+    queryFn: () => stockApi.getArticleStats(articleId!),
+    enabled: !!articleId, // Ne lance la requête que si articleId existe
+  });
+};
+
 export const useCreateArticle = () => {
   const queryClient = useQueryClient();
 

@@ -26,7 +26,6 @@ const ClientForm = ({ open, onOpenChange, onSubmit, initialData = null, mode = '
     return {
       nom: "",
       telephone: "",
-      email: "",
       adresse: "",
     };
   };
@@ -53,7 +52,6 @@ const ClientForm = ({ open, onOpenChange, onSubmit, initialData = null, mode = '
     const clientData = {
       nom: form.nom,
       telephone: form.telephone || undefined,
-      email: form.email || undefined,
       adresse: form.adresse || undefined,
     };
 
@@ -116,24 +114,14 @@ const ClientForm = ({ open, onOpenChange, onSubmit, initialData = null, mode = '
               <h3 className="text-sm font-bold text-foreground">Coordonnées</h3>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <FormField
-                label="Téléphone"
-                type="tel"
-                placeholder="+224 123 456 789"
-                value={form.telephone}
-                onChange={e => update("telephone", (e.target as HTMLInputElement).value)}
-                maxLength={20}
-              />
-              <FormField
-                label="Email"
-                type="email"
-                placeholder="client@email.com"
-                value={form.email}
-                onChange={e => update("email", (e.target as HTMLInputElement).value)}
-                maxLength={100}
-              />
-            </div>
+            <FormField
+              label="Téléphone"
+              type="tel"
+              placeholder="+224 123 456 789"
+              value={form.telephone}
+              onChange={e => update("telephone", (e.target as HTMLInputElement).value)}
+              maxLength={20}
+            />
 
             <FormField
               label="Adresse"

@@ -5,6 +5,7 @@ import FormField from "@/components/FormField";
 import { toast } from "sonner";
 import { useClients } from "@/hooks/useClients";
 import { useVentes } from "@/hooks/useVentes";
+import { useVente } from "@/hooks/useVentes";
 import { VersementClient } from "@/types";
 import { formatPrixInput, handlePrixChange } from "@/utils/format-prix";
 import { useIsMobile } from "@/hooks/useMediaQuery";
@@ -57,7 +58,21 @@ const VersementClientForm = ({ open, onOpenChange, onSubmit, versementClient, cl
     page: 1,
     limit: 50
   });
-  const ventesClient = ventesResponse?.data || [];
+
+  // En mode édition, récupérer aussi la vente originale (si elle existe)
+  const { data: venteOriginale } = useVente(versementClient?.venteId || '');
+
+  // Fusionner les listes: ventes du client + vente originale (si pas déjà dans la liste)
+  const ventesClient = (() => {
+    const ventes = ventesResponse?.data || [];
+
+    // Si vente originale existe et n'est pas déjà dans la liste, l'ajouter
+    if (venteOriginale && !ventes.find(v => v.id === venteOriginale.id)) {
+      return [venteOriginale, ...ventes];
+    }
+
+    return ventes;
+  })();
 
   useEffect(() => {
     if (open) {
@@ -105,17 +120,21 @@ const VersementClientForm = ({ open, onOpenChange, onSubmit, versementClient, cl
       return;
     }
 
-    // Vérifier que le montant ne dépasse pas la dette totale
-    if (selectedClient && montant > selectedClient.totalCredits) {
-      toast.error(`Le montant (${formatPrix(montant)}) dépasse la dette du client (${formatPrix(selectedClient.totalCredits)})`);
-      return;
-    }
+    // En mode CRÉATION uniquement, valider contre la dette et la vente
+    if (!versementClient) {
+      // Vérifier que le montant ne dépasse pas la dette totale
+      if (selectedClient && montant > selectedClient.totalCredits) {
+        toast.error(`Le montant (${formatPrix(montant)}) dépasse la dette du client (${formatPrix(selectedClient.totalCredits)})`);
+        return;
+      }
 
-    // Si une vente spécifique est sélectionnée, vérifier que le montant ne dépasse pas le montant restant
-    if (selectedVente && montant > selectedVente.montantRestant) {
-      toast.error(`Le montant (${formatPrix(montant)}) dépasse le montant restant de cette vente (${formatPrix(selectedVente.montantRestant)})`);
-      return;
+      // Si une vente spécifique est sélectionnée, vérifier que le montant ne dépasse pas le montant restant
+      if (selectedVente && montant > selectedVente.montantRestant) {
+        toast.error(`Le montant (${formatPrix(montant)}) dépasse le montant restant de cette vente (${formatPrix(selectedVente.montantRestant)})`);
+        return;
+      }
     }
+    // En mode ÉDITION, on laisse le backend valider
 
     onSubmit({
       clientId: form.clientId,
@@ -204,7 +223,12 @@ const VersementClientForm = ({ open, onOpenChange, onSubmit, versementClient, cl
             }`}>
               {formatPrix(selectedClient.totalCredits || 0)}
             </p>
-            {selectedClient.totalCredits === 0 && (
+            {versementClient && (
+              <p className="text-xs text-blue-600 mt-2 flex items-center gap-1">
+                ℹ️ Mode édition : validation assouplie
+              </p>
+            )}
+            {selectedClient.totalCredits === 0 && !versementClient && (
               <p className="text-xs text-success mt-2 flex items-center gap-1">
                 ✓ Ce client est à jour. Aucun paiement de dette nécessaire.
               </p>
@@ -240,22 +264,42 @@ const VersementClientForm = ({ open, onOpenChange, onSubmit, versementClient, cl
             onChange={e => update("montant", handlePrixChange(e.target.value))}
             onFocus={e => e.target.select()}
             className={`w-full px-4 py-2.5 rounded-lg border bg-card text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring/30 ${
-              (selectedClient && form.montant && parseFloat(form.montant) > selectedClient.totalCredits) ||
-              (selectedVente && form.montant && parseFloat(form.montant) > selectedVente.montantRestant)
-                ? "border-red-500 focus:ring-red-500/30"
-                : "border-border"
+              (() => {
+                // Validation visuelle uniquement en mode création
+                if (versementClient) return "border-border";
+
+                const montant = parseFloat(form.montant);
+                return (selectedClient && form.montant && montant > selectedClient.totalCredits) ||
+                       (selectedVente && form.montant && montant > selectedVente.montantRestant)
+                  ? "border-red-500 focus:ring-red-500/30"
+                  : "border-border";
+              })()
             }`}
           />
-          {selectedClient && form.montant && parseFloat(form.montant) > selectedClient.totalCredits && (
-            <p className="text-xs text-red-500 mt-1">
-              ⚠️ Le montant dépasse la dette totale du client ({formatPrix(selectedClient.totalCredits)})
-            </p>
-          )}
-          {selectedVente && form.montant && parseFloat(form.montant) > selectedVente.montantRestant && parseFloat(form.montant) <= (selectedClient?.totalCredits || 0) && (
-            <p className="text-xs text-red-500 mt-1">
-              ⚠️ Le montant dépasse le montant restant de cette vente ({formatPrix(selectedVente.montantRestant)})
-            </p>
-          )}
+          {(() => {
+            // Avertissements uniquement en mode création
+            if (versementClient) return null;
+
+            const montant = parseFloat(form.montant);
+
+            if (selectedClient && form.montant && montant > selectedClient.totalCredits) {
+              return (
+                <p className="text-xs text-red-500 mt-1">
+                  ⚠️ Le montant dépasse la dette totale du client ({formatPrix(selectedClient.totalCredits)})
+                </p>
+              );
+            }
+
+            if (selectedVente && form.montant && montant > selectedVente.montantRestant && montant <= (selectedClient?.totalCredits || 0)) {
+              return (
+                <p className="text-xs text-red-500 mt-1">
+                  ⚠️ Le montant dépasse le montant restant de cette vente ({formatPrix(selectedVente.montantRestant)})
+                </p>
+              );
+            }
+
+            return null;
+          })()}
         </div>
 
         <div className="space-y-1.5">

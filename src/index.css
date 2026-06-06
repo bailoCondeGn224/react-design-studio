@@ -167,4 +167,77 @@
   .elegant-scroll::-webkit-scrollbar-thumb:hover {
     background: hsl(120 35% 65% / 0.7);
   }
+
+  /* ========================================
+     Optimisations PWA Mobile
+     ======================================== */
+
+  /* Support des notches et safe areas (iPhone X+, Android modernes) */
+  .safe-area-inset-top {
+    padding-top: env(safe-area-inset-top);
+  }
+
+  .safe-area-inset-bottom {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  .safe-area-inset-left {
+    padding-left: env(safe-area-inset-left);
+  }
+
+  .safe-area-inset-right {
+    padding-right: env(safe-area-inset-right);
+  }
+
+  /* Désactiver le pull-to-refresh sur mobile */
+  body {
+    overscroll-behavior-y: contain;
+  }
+
+  /* Optimiser les interactions tactiles */
+  button, a, [role="button"] {
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+  }
+
+  /* Taille minimale des zones tactiles (44x44px recommandé Apple) */
+  button:not(.btn-icon-sm),
+  a:not(.link-inline),
+  [role="button"]:not(.btn-icon-sm) {
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  /* Performance des animations sur mobile */
+  @media (hover: none) and (pointer: coarse) {
+    * {
+      -webkit-overflow-scrolling: touch;
+    }
+  }
+
+  /* Désactiver la sélection de texte sur éléments interactifs */
+  button,
+  [role="button"],
+  .no-select {
+    -webkit-user-select: none;
+    user-select: none;
+  }
+
+  /* Améliorer le rendu des polices sur mobile */
+  body {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+
+  /* Optimiser les transitions pour mobile */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
 }

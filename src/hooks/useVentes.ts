@@ -28,10 +28,10 @@ export const useVenteVersements = (venteId: string | null, page: number = 1, lim
   });
 };
 
-export const useVentesStats = () => {
+export const useVentesStats = (params?: { mois?: number; annee?: number }) => {
   return useQuery({
-    queryKey: ['ventes', 'stats'],
-    queryFn: ventesApi.getStats,
+    queryKey: ['ventes', 'stats', params],
+    queryFn: () => ventesApi.getStats(params),
   });
 };
 
@@ -91,5 +91,13 @@ export const useDeleteVente = () => {
     onError: (error: any) => {
       toast.error(error.response?.data?.message || 'Erreur lors de l\'annulation');
     },
+  });
+};
+
+export const useMoisDisponibles = () => {
+  return useQuery({
+    queryKey: ['ventes', 'mois-disponibles'],
+    queryFn: ventesApi.getMoisDisponibles,
+    staleTime: 5 * 60 * 1000, // 5 minutes
   });
 };

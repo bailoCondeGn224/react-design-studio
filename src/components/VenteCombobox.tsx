@@ -153,6 +153,14 @@ const VenteCombobox = ({
                         <span className="font-medium text-primary">{formatPrix(vente.total)}</span>
                         <span>•</span>
                         <span>{formatDate(vente.date)}</span>
+                        {vente.statut === 'annulee' && (
+                          <>
+                            <span>•</span>
+                            <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 font-medium">
+                              Annulée
+                            </span>
+                          </>
+                        )}
                       </div>
                     </div>
                   </CommandItem>

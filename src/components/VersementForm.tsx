@@ -75,6 +75,11 @@ const VersementForm = ({ open, onOpenChange, onSubmit, versement, fournisseurId,
       return;
     }
 
+    if (!form.approvisionnementId) {
+      toast.error("Veuillez sélectionner un approvisionnement concerné");
+      return;
+    }
+
     const montant = parseFloat(form.montant);
     if (isNaN(montant) || montant <= 0) {
       toast.error("Veuillez entrer un montant valide");
@@ -99,7 +104,7 @@ const VersementForm = ({ open, onOpenChange, onSubmit, versement, fournisseurId,
 
     onSubmit({
       fournisseurId: form.fournisseurId,
-      approvisionnementId: form.approvisionnementId || undefined,
+      approvisionnementId: form.approvisionnementId,
       montant,
       modePaiement: form.modePaiement,
       reference: form.reference || undefined,
@@ -185,16 +190,20 @@ const VersementForm = ({ open, onOpenChange, onSubmit, versement, fournisseurId,
           </div>
         </div>
 
-        {/* Section Approvisionnement (optionnel) */}
+        {/* Section Approvisionnement */}
         {form.fournisseurId && (
-          <div className="relative overflow-hidden rounded-xl bg-gradient-to-br from-secondary/5 via-background to-background border-2 border-border p-4 sm:p-5">
-            <div className="absolute top-0 right-0 w-24 h-24 bg-secondary/5 rounded-full -mr-12 -mt-12"></div>
+          <div className="relative overflow-hidden rounded-xl bg-gradient-to-br from-warning/5 via-background to-background border-2 border-border p-4 sm:p-5">
+            <div className="absolute top-0 right-0 w-24 h-24 bg-warning/5 rounded-full -mr-12 -mt-12"></div>
             <div className="relative space-y-3">
               <div className="flex items-center gap-2 mb-2">
-                <div className="w-8 h-8 rounded-lg bg-secondary/10 flex items-center justify-center">
-                  <Package className="w-4 h-4 text-secondary-foreground" />
+                <div className="w-8 h-8 rounded-lg bg-warning/10 flex items-center justify-center">
+                  <Package className="w-4 h-4 text-warning" />
                 </div>
-                <h3 className="text-sm font-bold text-foreground">Approvisionnement concerné (optionnel)</h3>
+                <h3 className="text-sm font-bold text-foreground">Approvisionnement concerné *</h3>
+              </div>
+              <div className="text-xs text-muted-foreground mb-3 flex items-start gap-2">
+                <AlertCircle className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-warning" />
+                <span>Obligatoire pour assurer le suivi précis des paiements par approvisionnement</span>
               </div>
               <ApprovisionnementFournisseurSelector
                 fournisseurId={form.fournisseurId}

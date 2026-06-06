@@ -156,11 +156,12 @@ const RetoursClients = () => {
                 <thead className="bg-secondary/50">
                   <tr>
                     <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Date</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Article</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Quantité</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Prix Unit.</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Montant</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Référence</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Numéro</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Client</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Vente</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Articles</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Total</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Remboursement</th>
                     <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Utilisateur</th>
                   </tr>
                 </thead>
@@ -168,11 +169,25 @@ const RetoursClients = () => {
                   {retoursData.data.map((retour: any) => (
                     <tr key={retour.id} className="hover:bg-secondary/30 transition-colors">
                       <td className="px-4 py-3 text-sm text-foreground whitespace-nowrap">{formatDate(retour.date)}</td>
-                      <td className="px-4 py-3 text-sm font-medium text-foreground">{retour.articleNom}</td>
-                      <td className="px-4 py-3 text-sm text-foreground">{retour.quantite}</td>
-                      <td className="px-4 py-3 text-sm text-foreground">{formatPrix(retour.prixUnitaire)}</td>
-                      <td className="px-4 py-3 text-sm font-semibold text-blue-600 dark:text-blue-400">{formatPrix(retour.valeurTotal)}</td>
-                      <td className="px-4 py-3 text-sm text-muted-foreground">{retour.reference}</td>
+                      <td className="px-4 py-3 text-sm font-medium text-foreground">{retour.numero}</td>
+                      <td className="px-4 py-3 text-sm text-foreground">{retour.clientNom || '-'}</td>
+                      <td className="px-4 py-3 text-sm text-muted-foreground">{retour.venteNumero}</td>
+                      <td className="px-4 py-3 text-sm text-foreground">
+                        {retour.lignes?.length || 0} article{(retour.lignes?.length || 0) > 1 ? 's' : ''}
+                      </td>
+                      <td className="px-4 py-3 text-sm font-semibold text-orange-600 dark:text-orange-400">{formatPrix(retour.total)}</td>
+                      <td className="px-4 py-3 text-sm">
+                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                          retour.modeRemboursement === 'especes' ? 'bg-green-500/10 text-green-600 dark:text-green-400' :
+                          retour.modeRemboursement === 'credit_compte' ? 'bg-blue-500/10 text-blue-600 dark:text-blue-400' :
+                          'bg-gray-500/10 text-gray-600 dark:text-gray-400'
+                        }`}>
+                          {retour.modeRemboursement === 'especes' ? 'Espèces' :
+                           retour.modeRemboursement === 'mobile_money' ? 'Mobile Money' :
+                           retour.modeRemboursement === 'virement' ? 'Virement' :
+                           retour.modeRemboursement === 'credit_compte' ? 'Crédit compte' : retour.modeRemboursement}
+                        </span>
+                      </td>
                       <td className="px-4 py-3 text-sm text-muted-foreground">{retour.userNom}</td>
                     </tr>
                   ))}

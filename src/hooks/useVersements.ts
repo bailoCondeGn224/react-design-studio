@@ -34,6 +34,7 @@ export const useCreateVersement = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['versements'] });
       queryClient.invalidateQueries({ queryKey: ['fournisseurs'] });
+      queryClient.invalidateQueries({ queryKey: ['approvisionnements'] });
       toast.success('Versement enregistré');
     },
     onError: (error: any) => {
@@ -51,6 +52,7 @@ export const useUpdateVersement = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['versements'] });
       queryClient.invalidateQueries({ queryKey: ['fournisseurs'] });
+      queryClient.invalidateQueries({ queryKey: ['approvisionnements'] });
       toast.success('Versement modifié');
     },
     onError: (error: any) => {
@@ -67,6 +69,7 @@ export const useDeleteVersement = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['versements'] });
       queryClient.invalidateQueries({ queryKey: ['fournisseurs'] });
+      queryClient.invalidateQueries({ queryKey: ['approvisionnements'] });
       toast.success('Versement annulé');
     },
     onError: (error: any) => {
