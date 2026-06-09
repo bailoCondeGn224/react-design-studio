@@ -7,6 +7,7 @@ import {
   CheckCircle2,
   Clock,
   AlertTriangle,
+  Download,
 } from 'lucide-react';
 import AppLayout from '@/components/AppLayout';
 import PageHeader from '@/components/PageHeader';
@@ -19,12 +20,13 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { useInventaires } from '@/hooks/useInventaires';
+import { useInventaires, useExportInventairesExcel } from '@/hooks/useInventaires';
 import { Inventaire } from '@/types';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import CreateInventaireDialog from '@/components/inventaires/CreateInventaireDialog';
 import Pagination from '@/components/Pagination';
+import InventaireDashboard from '@/components/InventaireDashboard';
 
 export default function Inventaires() {
   const navigate = useNavigate();
@@ -32,6 +34,7 @@ export default function Inventaires() {
   const [limit] = useState(10);
   const { data: response, isLoading } = useInventaires({ page, limit });
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
+  const exportExcel = useExportInventairesExcel();
 
   const inventaires = response?.data || [];
   const meta = response?.meta;
@@ -80,16 +83,28 @@ export default function Inventaires() {
         title="Inventaires"
         description="Gérez vos inventaires physiques et ajustez les stocks"
         action={
-          <Button onClick={() => setCreateDialogOpen(true)}>
-            <Plus className="w-4 h-4 mr-2" />
-            Nouvel Inventaire
-          </Button>
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              onClick={() => exportExcel.mutate()}
+              disabled={exportExcel.isPending || !inventaires || inventaires.length === 0}
+            >
+              <Download className="w-4 h-4 mr-2" />
+              {exportExcel.isPending ? 'Export...' : 'Export Excel'}
+            </Button>
+            <Button onClick={() => setCreateDialogOpen(true)}>
+              <Plus className="w-4 h-4 mr-2" />
+              Nouvel Inventaire
+            </Button>
+          </div>
         }
       />
 
       <div className="space-y-6">
+        {/* Dashboard Statistiques */}
+        <InventaireDashboard />
 
-      {/* Liste des inventaires */}
+        {/* Liste des inventaires */}
       {!inventaires || inventaires.length === 0 ? (
         <Card>
           <CardContent className="flex flex-col items-center justify-center py-12">

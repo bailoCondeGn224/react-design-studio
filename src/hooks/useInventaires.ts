@@ -109,12 +109,70 @@ export const useCalculerFinances = () => {
       await Promise.all([
         queryClient.refetchQueries({ queryKey: ['inventaires'] }),
         queryClient.refetchQueries({ queryKey: ['inventaires', inventaireId] }),
+        queryClient.refetchQueries({ queryKey: ['inventaires', 'dashboard'] }),
       ]);
       toast.success('Finances calculées avec succès');
     },
     onError: (error: any) => {
       toast.error(
         error.response?.data?.message || 'Erreur lors du calcul des finances',
+      );
+    },
+  });
+};
+
+export const useInventairesDashboard = (params?: {
+  periode?: string;
+  dateDebut?: string;
+  dateFin?: string;
+}) => {
+  return useQuery({
+    queryKey: ['inventaires', 'dashboard', params],
+    queryFn: () => inventairesApi.getDashboardStats(params),
+    staleTime: 2 * 60 * 1000, // 2 minutes
+  });
+};
+
+export const useExportComptagesExcel = () => {
+  return useMutation({
+    mutationFn: (inventaireId: string) =>
+      inventairesApi.exportComptagesExcel(inventaireId),
+    onSuccess: (blob, inventaireId) => {
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `comptages-inventaire-${inventaireId}.xlsx`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+      toast.success('Export Excel téléchargé avec succès');
+    },
+    onError: (error: any) => {
+      toast.error(
+        error.response?.data?.message || 'Erreur lors de l\'export',
+      );
+    },
+  });
+};
+
+export const useExportInventairesExcel = () => {
+  return useMutation({
+    mutationFn: () => inventairesApi.exportInventairesExcel(),
+    onSuccess: (blob) => {
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `inventaires-${new Date().toISOString().split('T')[0]}.xlsx`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+      toast.success('Export Excel téléchargé avec succès');
+    },
+    onError: (error: any) => {
+      toast.error(
+        error.response?.data?.message || 'Erreur lors de l\'export',
       );
     },
   });

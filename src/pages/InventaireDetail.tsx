@@ -10,13 +10,14 @@ import {
   AlertTriangle,
   TrendingUp,
   TrendingDown,
+  Download,
 } from 'lucide-react';
 import AppLayout from '@/components/AppLayout';
 import PageHeader from '@/components/PageHeader';
 import Pagination from '@/components/Pagination';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { useInventaire, useAddComptage } from '@/hooks/useInventaires';
+import { useInventaire, useAddComptage, useExportComptagesExcel } from '@/hooks/useInventaires';
 import { useStock } from '@/hooks/useStock';
 import { useCategoriesActive } from '@/hooks/useCategories';
 import { useZonesActive } from '@/hooks/useZones';
@@ -35,6 +36,7 @@ export default function InventaireDetail() {
   const { data: categories = [] } = useCategoriesActive();
   const { data: zones = [] } = useZonesActive();
   const addComptageMutation = useAddComptage();
+  const exportComptagesExcel = useExportComptagesExcel();
 
   // Filtres
   const [searchQuery, setSearchQuery] = useState('');
@@ -241,17 +243,28 @@ export default function InventaireDetail() {
         backButton
         backTo="/inventaires"
         action={
-          inventaire.statut === 'EN_COURS' ? (
-            <Badge variant="secondary" className="text-base px-4 py-2">
-              <Clock className="w-4 h-4 mr-2" />
-              En cours
-            </Badge>
-          ) : (
-            <Badge variant="default" className="bg-success text-base px-4 py-2">
-              <CheckCircle2 className="w-4 h-4 mr-2" />
-              Terminé
-            </Badge>
-          )
+          <div className="flex items-center gap-3">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => exportComptagesExcel.mutate(id!)}
+              disabled={exportComptagesExcel.isPending || !inventaire?.comptages || inventaire.comptages.length === 0}
+            >
+              <Download className="w-4 h-4 mr-2" />
+              {exportComptagesExcel.isPending ? 'Export...' : 'Export Excel'}
+            </Button>
+            {inventaire.statut === 'EN_COURS' ? (
+              <Badge variant="secondary" className="text-base px-4 py-2">
+                <Clock className="w-4 h-4 mr-2" />
+                En cours
+              </Badge>
+            ) : (
+              <Badge variant="default" className="bg-success text-base px-4 py-2">
+                <CheckCircle2 className="w-4 h-4 mr-2" />
+                Terminé
+              </Badge>
+            )}
+          </div>
         }
       />
 

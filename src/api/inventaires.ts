@@ -61,4 +61,31 @@ export const inventairesApi = {
     const response = await apiClient.post(`/inventaires/${inventaireId}/calculer-finances`);
     return response.data;
   },
+
+  // Dashboard statistiques
+  getDashboardStats: async (params?: {
+    periode?: string;
+    dateDebut?: string;
+    dateFin?: string;
+  }): Promise<any> => {
+    const response = await apiClient.get('/inventaires/dashboard/stats', { params });
+    return response.data;
+  },
+
+  // Export comptages Excel
+  exportComptagesExcel: async (inventaireId: string): Promise<Blob> => {
+    const response = await apiClient.get(
+      `/inventaires/${inventaireId}/export-comptages-excel`,
+      { responseType: 'blob' }
+    );
+    return response.data;
+  },
+
+  // Export liste inventaires Excel
+  exportInventairesExcel: async (): Promise<Blob> => {
+    const response = await apiClient.get('/inventaires/export-excel', {
+      responseType: 'blob',
+    });
+    return response.data;
+  },
 };
