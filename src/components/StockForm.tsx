@@ -181,7 +181,6 @@ const StockForm = ({ open, onOpenChange, onSubmit, initialData = null, mode = 'c
                     type="file"
                     id="photo-upload-edit-mobile"
                     accept="image/jpeg,image/png,image/webp,image/jpg"
-                    capture="environment"
                     onChange={handlePhotoChange}
                     className="hidden"
                   />
@@ -190,8 +189,8 @@ const StockForm = ({ open, onOpenChange, onSubmit, initialData = null, mode = 'c
                     className="flex flex-col items-center justify-center w-full h-32 rounded-xl border-2 border-dashed border-primary/30 bg-primary/5 active:scale-[0.98] transition-transform cursor-pointer"
                   >
                     <Upload className="w-8 h-8 text-primary mb-2" />
-                    <span className="text-sm font-semibold text-foreground">Prendre ou choisir une photo</span>
-                    <span className="text-xs text-muted-foreground mt-1">📷 Caméra ou 🖼️ Galerie</span>
+                    <span className="text-sm font-semibold text-foreground">Ajouter une photo</span>
+                    <span className="text-xs text-muted-foreground mt-1">Caméra ou Galerie</span>
                   </label>
                 </div>
               )}
