@@ -15,9 +15,16 @@ interface VenteFormProps {
   onSubmit: (data: any) => void;
   initialData?: any;
   mode?: 'create' | 'edit';
+  preselectedArticle?: {
+    id: string;
+    nom: string;
+    prixVente: number;
+    prixAchat?: number;
+    stock: number;
+  };
 }
 
-const VenteForm = ({ open, onOpenChange, onSubmit, initialData = null, mode = 'create' }: VenteFormProps) => {
+const VenteForm = ({ open, onOpenChange, onSubmit, initialData = null, mode = 'create', preselectedArticle }: VenteFormProps) => {
   const getInitialState = () => {
     if (mode === 'edit' && initialData) {
       // Si on a nom et prenom séparés, les concaténer
@@ -62,6 +69,25 @@ const VenteForm = ({ open, onOpenChange, onSubmit, initialData = null, mode = 'c
       });
     }
   }, [mode, initialData, open]);
+
+  // Ajouter l'article pré-sélectionné automatiquement
+  useEffect(() => {
+    if (preselectedArticle && open && mode === 'create') {
+      const ligne = {
+        articleId: preselectedArticle.id,
+        nom: preselectedArticle.nom,
+        quantite: 1,
+        prixUnitaire: preselectedArticle.prixVente,
+        prixAchat: preselectedArticle.prixAchat,
+        sousTotal: preselectedArticle.prixVente,
+      };
+      setForm(prev => ({
+        ...prev,
+        lignes: [ligne],
+        montantPaye: preselectedArticle.prixVente,
+      }));
+    }
+  }, [preselectedArticle, open, mode]);
 
   const update = (field: string, value: any) => setForm(prev => ({ ...prev, [field]: value }));
 

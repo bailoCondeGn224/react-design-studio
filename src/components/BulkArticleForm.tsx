@@ -316,6 +316,7 @@ const BulkArticleForm = ({ open, onOpenChange, onSubmit }: BulkArticleFormProps)
                       <input
                         type="file"
                         accept="image/*"
+                        capture="environment"
                         onChange={(e) => {
                           const file = e.target.files?.[0];
                           if (file) handlePhotoChange(index, file);
@@ -334,7 +335,7 @@ const BulkArticleForm = ({ open, onOpenChange, onSubmit }: BulkArticleFormProps)
                               <Upload className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
                             </div>
                             <p className="text-sm font-medium text-foreground px-4 text-center">
-                              Ajouter une photo
+                              📷 Prendre ou choisir une photo
                             </p>
                             <p className="text-xs text-muted-foreground">
                               PNG, JPG - Max 5MB
@@ -690,6 +691,7 @@ const BulkArticleForm = ({ open, onOpenChange, onSubmit }: BulkArticleFormProps)
                       <input
                         type="file"
                         accept="image/*"
+                        capture="environment"
                         onChange={(e) => {
                           const file = e.target.files?.[0];
                           if (file) handlePhotoChange(index, file);
@@ -708,7 +710,7 @@ const BulkArticleForm = ({ open, onOpenChange, onSubmit }: BulkArticleFormProps)
                               <Upload className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
                             </div>
                             <p className="text-sm font-medium text-foreground px-4 text-center">
-                              Ajouter une photo
+                              📷 Prendre ou choisir une photo
                             </p>
                             <p className="text-xs text-muted-foreground">
                               PNG, JPG - Max 5MB

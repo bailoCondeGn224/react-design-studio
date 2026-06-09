@@ -5,8 +5,9 @@ import StockMobileCard from "@/components/StockMobileCard";
 import ArticleCard from "@/components/ArticleCard";
 import Pagination from "@/components/Pagination";
 import CanAccess from "@/components/CanAccess";
-import { Package, AlertTriangle, Search, Plus, Edit, Trash, MoreVertical, AlertCircle, TrendingDown, History, ArrowUpCircle, ArrowDownCircle, Flame, Zap, Clock, Snail, Snowflake, TrendingUp as TrendUp, RotateCcw } from "lucide-react";
+import { Package, AlertTriangle, Search, Plus, Edit, Trash, MoreVertical, AlertCircle, TrendingDown, History, ArrowUpCircle, ArrowDownCircle, Flame, Zap, Clock, Snail, Snowflake, TrendingUp as TrendUp, RotateCcw, Upload, ShoppingCart } from "lucide-react";
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { getPhotoUrl } from "@/lib/api-client";
 import { toast } from "sonner";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -34,6 +35,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { useStock, useStockStats, useArticleStats, useCreateArticle, useUpdateArticle, useDeleteArticle, useCreateBulkArticles } from "@/hooks/useStock";
 import BulkArticleForm from "@/components/BulkArticleForm";
+import ExcelImportDialog from "@/components/ExcelImportDialog";
 import { useCategoriesActive } from "@/hooks/useCategories";
 import { useZonesActive } from "@/hooks/useZones";
 import { useDebounce } from "@/hooks/useDebounce";
@@ -44,6 +46,7 @@ const Stock = () => {
   const debouncedSearch = useDebounce(searchInput, 800);
   const [formOpen, setFormOpen] = useState(false);
   const [bulkFormOpen, setBulkFormOpen] = useState(false);
+  const [importDialogOpen, setImportDialogOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<any>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [historyArticleId, setHistoryArticleId] = useState<string | null>(null);
@@ -53,6 +56,7 @@ const Stock = () => {
   const [historyPage, setHistoryPage] = useState(1);
   const [historyLimit] = useState(10);
   const isMobile = useIsMobile();
+  const navigate = useNavigate();
 
   // Hooks React Query avec filtres backend et recherche débouncée
   const { data: stockResponse, isLoading, isFetching } = useStock({
@@ -93,6 +97,21 @@ const Stock = () => {
   const handleEdit = (item: any) => {
     setEditingItem(item);
     setFormOpen(true);
+  };
+
+  const handleSell = (item: any) => {
+    // Naviguer vers la page ventes avec l'article pré-sélectionné
+    navigate('/ventes', {
+      state: {
+        preselectedArticle: {
+          id: item.id,
+          nom: item.nom,
+          prixVente: item.prixVente,
+          prixAchat: item.prixAchat,
+          stock: item.stock
+        }
+      }
+    });
   };
 
   const handleSubmit = (data: any) => {
@@ -243,13 +262,23 @@ const Stock = () => {
           description="Gestion des articles en stock"
         />
         <CanAccess permissions={['stock.create']}>
-          <Button
-            onClick={() => setBulkFormOpen(true)}
-            className="gap-2 whitespace-nowrap"
-          >
-            <Plus className="w-4 h-4" />
-            Ajouter des articles
-          </Button>
+          <div className="flex gap-2">
+            <Button
+              onClick={() => setImportDialogOpen(true)}
+              variant="outline"
+              className="gap-2"
+            >
+              <Upload className="w-4 h-4" />
+              Import
+            </Button>
+            <Button
+              onClick={() => setBulkFormOpen(true)}
+              className="gap-2"
+            >
+              <Plus className="w-4 h-4" />
+              Ajouter
+            </Button>
+          </div>
         </CanAccess>
       </div>
 
@@ -258,6 +287,16 @@ const Stock = () => {
         open={bulkFormOpen}
         onOpenChange={setBulkFormOpen}
         onSubmit={handleBulkSubmit}
+      />
+
+      {/* Dialog Import Excel */}
+      <ExcelImportDialog
+        open={importDialogOpen}
+        onOpenChange={setImportDialogOpen}
+        onSuccess={() => {
+          setImportDialogOpen(false);
+          setPage(1);
+        }}
       />
 
       {/* Formulaire de modification (infos article uniquement, pas la quantité) */}
@@ -999,6 +1038,7 @@ const Stock = () => {
                 onEdit={handleEdit}
                 onDelete={setDeleteId}
                 onViewHistory={setHistoryArticleId}
+                onSell={handleSell}
                 onViewPhoto={(photo, nom) => setSelectedImage({ url: getPhotoUrl(photo) || '', nom })}
               />
             ))}
@@ -1177,6 +1217,16 @@ const Stock = () => {
                           </button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
+                          <CanAccess permissions={['ventes.create']}>
+                            <DropdownMenuItem
+                              onClick={() => handleSell(item)}
+                              className="text-primary focus:text-primary"
+                            >
+                              <ShoppingCart className="w-4 h-4 mr-2" />
+                              Vendre
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                          </CanAccess>
                           <DropdownMenuItem onClick={() => setHistoryArticleId(item.id)}>
                             <History className="w-4 h-4 mr-2" />
                             Voir historique

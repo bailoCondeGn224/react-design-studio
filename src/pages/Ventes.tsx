@@ -6,6 +6,7 @@ import Pagination from "@/components/Pagination";
 import CanAccess from "@/components/CanAccess";
 import { Plus, Receipt, CreditCard, Banknote, Smartphone, Edit, Trash, MoreVertical, AlertCircle, Printer, Eye, TrendingUp, DollarSign, MessageCircle } from "lucide-react";
 import { useState, useEffect } from "react";
+import { useLocation } from "react-router-dom";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -49,6 +50,9 @@ const paymentLabels: Record<string, string> = {
 };
 
 const Ventes = () => {
+  const location = useLocation();
+  const preselectedArticle = location.state?.preselectedArticle;
+
   const [formOpen, setFormOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<any>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);
@@ -62,6 +66,13 @@ const Ventes = () => {
   const now = new Date();
   const [selectedMonth, setSelectedMonth] = useState(now.getMonth() + 1); // 1-12
   const [selectedYear, setSelectedYear] = useState(now.getFullYear());
+
+  // Ouvrir le formulaire automatiquement si article pré-sélectionné
+  useEffect(() => {
+    if (preselectedArticle) {
+      setFormOpen(true);
+    }
+  }, [preselectedArticle]);
 
   const { data: ventesResponse, isLoading } = useVentes({ page, limit });
   const ventes = ventesResponse?.data || [];
@@ -234,6 +245,7 @@ const Ventes = () => {
         onSubmit={handleSubmit}
         initialData={editingItem}
         mode={editingItem ? 'edit' : 'create'}
+        preselectedArticle={preselectedArticle}
       />
 
       <AlertDialog open={deleteId !== null} onOpenChange={() => setDeleteId(null)}>

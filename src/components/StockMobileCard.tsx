@@ -2,7 +2,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import CanAccess from "@/components/CanAccess";
-import { Package, History, Edit, Trash, AlertCircle, AlertTriangle } from "lucide-react";
+import { Package, History, Edit, Trash, AlertCircle, AlertTriangle, ShoppingCart } from "lucide-react";
 import { getPhotoUrl } from "@/lib/api-client";
 
 interface StockMobileCardProps {
@@ -10,6 +10,7 @@ interface StockMobileCardProps {
   onEdit: (article: any) => void;
   onDelete: (id: string) => void;
   onViewHistory: (id: string) => void;
+  onSell?: (article: any) => void;
   onViewPhoto: (photo: string, nom: string) => void;
   formatPrix: (prix: number) => string;
   getStockStatus: (stock: number, seuilAlerte: number) => any;
@@ -21,6 +22,7 @@ const StockMobileCard = ({
   onEdit,
   onDelete,
   onViewHistory,
+  onSell,
   onViewPhoto,
   formatPrix,
   getStockStatus,
@@ -160,6 +162,19 @@ const StockMobileCard = ({
 
               {/* Actions */}
               <div className="space-y-3">
+                {onSell && (
+                  <CanAccess permissions={['ventes.create']}>
+                    <Button
+                      variant="default"
+                      size="lg"
+                      className="w-full h-14 justify-start text-left text-base bg-primary hover:bg-primary/90"
+                      onClick={() => onSell(article)}
+                    >
+                      <ShoppingCart className="w-5 h-5 mr-3" />
+                      Vendre cet article
+                    </Button>
+                  </CanAccess>
+                )}
                 <Button
                   variant="outline"
                   size="lg"

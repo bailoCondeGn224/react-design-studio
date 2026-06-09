@@ -1,4 +1,4 @@
-import { Package, Edit, Trash2, History, AlertCircle, Flame, Zap, Clock, Snail } from "lucide-react";
+import { Package, Edit, Trash2, History, AlertCircle, Flame, Zap, Clock, Snail, ShoppingCart } from "lucide-react";
 import { getPhotoUrl } from "@/lib/api-client";
 
 interface ArticleCardProps {
@@ -8,6 +8,7 @@ interface ArticleCardProps {
   onEdit: (article: any) => void;
   onDelete: (id: string) => void;
   onViewHistory: (id: string) => void;
+  onSell?: (article: any) => void;
   onViewPhoto?: (photo: string, nom: string) => void;
 }
 
@@ -18,6 +19,7 @@ const ArticleCard = ({
   onEdit,
   onDelete,
   onViewHistory,
+  onSell,
   onViewPhoto
 }: ArticleCardProps) => {
   const status = getStockStatus(article.stock, article.seuilAlerte);
@@ -136,27 +138,37 @@ const ArticleCard = ({
           </p>
         )}
 
-        {/* Actions - Style boutons Facebook */}
+        {/* Actions - Une ligne avec icônes sur mobile, texte sur desktop */}
         <div className="flex gap-1.5 pt-2 border-t border-border">
+          {onSell && (
+            <button
+              onClick={() => onSell(article)}
+              className="flex-1 h-9 rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-medium transition-colors flex items-center justify-center gap-1.5"
+            >
+              <ShoppingCart className="w-3.5 h-3.5" />
+              <span className="hidden lg:inline">Vendre</span>
+            </button>
+          )}
           <button
             onClick={() => onEdit(article)}
             className="flex-1 h-9 rounded-lg bg-secondary hover:bg-secondary/80 text-secondary-foreground text-xs font-medium transition-colors flex items-center justify-center gap-1.5"
           >
             <Edit className="w-3.5 h-3.5" />
-            Modifier
+            <span className="hidden lg:inline">Modifier</span>
           </button>
           <button
             onClick={() => onViewHistory(article.id)}
             className="flex-1 h-9 rounded-lg bg-secondary hover:bg-secondary/80 text-secondary-foreground text-xs font-medium transition-colors flex items-center justify-center gap-1.5"
           >
             <History className="w-3.5 h-3.5" />
-            Historique
+            <span className="hidden lg:inline">Historique</span>
           </button>
           <button
             onClick={() => onDelete(article.id)}
-            className="h-9 px-3 rounded-lg bg-destructive/10 hover:bg-destructive/20 text-destructive text-xs font-medium transition-colors flex items-center justify-center"
+            className="flex-1 h-9 rounded-lg bg-destructive/10 hover:bg-destructive/20 text-destructive text-xs font-medium transition-colors flex items-center justify-center gap-1.5"
           >
             <Trash2 className="w-3.5 h-3.5" />
+            <span className="hidden lg:inline">Supprimer</span>
           </button>
         </div>
       </div>
