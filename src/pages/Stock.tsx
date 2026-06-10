@@ -688,54 +688,43 @@ const Stock = () => {
 
       {/* Dialog Visualisation Photo */}
       {isMobile ? (
-        <Sheet open={selectedImage !== null} onOpenChange={() => setSelectedImage(null)}>
-          <SheetContent side="bottom" className="h-[90vh] p-0 overflow-hidden bg-background/95 backdrop-blur-sm">
-            <div className="relative h-full">
-              {/* Header avec nom de l'article */}
-              {selectedImage && (
-                <div className="absolute top-0 left-0 right-0 z-10 bg-gradient-to-b from-background/90 to-transparent p-4">
-                  <h3 className="text-lg font-semibold text-foreground truncate">
-                    {selectedImage.nom}
-                  </h3>
-                </div>
-              )}
-
-              {/* Image */}
-              {selectedImage && (
-                <div className="flex items-center justify-center h-full p-4 pt-16">
-                  <img
-                    src={selectedImage.url}
-                    alt={selectedImage.nom}
-                    className="max-w-full max-h-full object-contain rounded-lg shadow-2xl"
-                  />
-                </div>
-              )}
-
-              {/* Bouton de fermeture personnalisé */}
-              <button
-                onClick={() => setSelectedImage(null)}
-                className="absolute top-4 right-4 w-10 h-10 rounded-full bg-background/80 hover:bg-background border-2 border-border flex items-center justify-center transition-all hover:scale-110 shadow-lg z-20"
-                aria-label="Fermer"
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="20"
-                  height="20"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  className="text-foreground"
-                >
-                  <line x1="18" y1="6" x2="6" y2="18" />
-                  <line x1="6" y1="6" x2="18" y2="18" />
-                </svg>
-              </button>
+        // Lightbox mobile plein écran - Style moderne naturel
+        selectedImage && (
+          <div
+            className="fixed inset-0 z-50 bg-black animate-in fade-in duration-200"
+            onClick={() => setSelectedImage(null)}
+          >
+            {/* Titre en overlay - Top */}
+            <div className="absolute top-0 left-0 right-0 z-20 bg-gradient-to-b from-black/80 to-transparent p-4 pt-8">
+              <h3 className="text-base font-semibold text-white truncate">
+                {selectedImage.nom}
+              </h3>
             </div>
-          </SheetContent>
-        </Sheet>
+
+            {/* Image - Tap pour fermer, support pinch-to-zoom */}
+            <div className="flex items-center justify-center h-full w-full p-4">
+              <img
+                src={selectedImage.url}
+                alt={selectedImage.nom}
+                className="max-w-full max-h-full object-contain select-none"
+                style={{ touchAction: 'pinch-zoom' }}
+                onClick={(e) => e.stopPropagation()}
+              />
+            </div>
+
+            {/* Indicateur de fermeture - Bottom */}
+            <div className="absolute bottom-0 left-0 right-0 z-20 bg-gradient-to-t from-black/80 to-transparent p-6 pb-8">
+              <div className="flex items-center justify-center">
+                <div className="text-white/60 text-sm flex items-center gap-2">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                  Touchez pour fermer
+                </div>
+              </div>
+            </div>
+          </div>
+        )
       ) : (
         <Dialog open={selectedImage !== null} onOpenChange={() => setSelectedImage(null)}>
           <DialogContent className="max-w-[95vw] sm:max-w-4xl h-[95vh] p-0 overflow-hidden bg-background/95 backdrop-blur-sm border-2">
