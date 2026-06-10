@@ -607,44 +607,13 @@ const Fournisseurs = () => {
                       </div>
                     )}
                   </div>
-                  <div className="flex items-center gap-1.5 sm:gap-2 flex-shrink-0">
-                    <span className={`text-[10px] sm:text-xs px-1.5 sm:px-2 py-0.5 rounded-full font-medium whitespace-nowrap ${
-                      f.statut === "actif" ? "bg-success/10 text-success" :
-                      f.statut === "en_attente" ? "bg-warning/10 text-warning" :
-                      "bg-secondary text-secondary-foreground"
-                    }`}>
-                      {f.statut === "actif" ? "Actif" : f.statut === "en_attente" ? "En att." : "Inactif"}
-                    </span>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <button className="text-muted-foreground hover:text-foreground transition-colors">
-                          <MoreVertical className="w-4 h-4" />
-                        </button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem onClick={() => setDetailsItem(f)}>
-                          <Eye className="w-4 h-4 mr-2" />
-                          Voir détails
-                        </DropdownMenuItem>
-                        <CanAccess permissions={['fournisseurs.update']}>
-                          <DropdownMenuItem onClick={() => handleEdit(f)}>
-                            <Edit className="w-4 h-4 mr-2" />
-                            Modifier
-                          </DropdownMenuItem>
-                        </CanAccess>
-                        <CanAccess permissions={['fournisseurs.delete']}>
-                          <DropdownMenuSeparator />
-                          <DropdownMenuItem
-                            onClick={() => setDeleteId(f.id)}
-                            className="text-destructive focus:text-destructive"
-                          >
-                            <Trash className="w-4 h-4 mr-2" />
-                            Supprimer
-                          </DropdownMenuItem>
-                        </CanAccess>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </div>
+                  <span className={`text-[10px] sm:text-xs px-1.5 sm:px-2 py-0.5 rounded-full font-medium whitespace-nowrap flex-shrink-0 ${
+                    f.statut === "actif" ? "bg-success/10 text-success" :
+                    f.statut === "en_attente" ? "bg-warning/10 text-warning" :
+                    "bg-secondary text-secondary-foreground"
+                  }`}>
+                    {f.statut === "actif" ? "Actif" : f.statut === "en_attente" ? "En att." : "Inactif"}
+                  </span>
                 </div>
 
                 {f.rating && (
@@ -711,6 +680,37 @@ const Fournisseurs = () => {
                       <span>Dette en cours</span>
                     </div>
                   )}
+                </div>
+
+                {/* Actions - Boutons directs */}
+                <div className="pt-3 border-t border-border">
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => setDetailsItem(f)}
+                      className="flex-1 h-11 rounded-lg bg-primary/10 hover:bg-primary/20 text-primary text-sm font-medium transition-colors flex items-center justify-center gap-1.5"
+                    >
+                      <Eye className="w-4 h-4" />
+                      <span className="hidden sm:inline">Détails</span>
+                    </button>
+                    <CanAccess permissions={['fournisseurs.update']}>
+                      <button
+                        onClick={() => handleEdit(f)}
+                        className="flex-1 h-11 rounded-lg bg-secondary hover:bg-secondary/80 text-secondary-foreground text-sm font-medium transition-colors flex items-center justify-center gap-1.5"
+                      >
+                        <Edit className="w-4 h-4" />
+                        <span className="hidden sm:inline">Modifier</span>
+                      </button>
+                    </CanAccess>
+                    <CanAccess permissions={['fournisseurs.delete']}>
+                      <button
+                        onClick={() => setDeleteId(f.id)}
+                        className="flex-1 h-11 rounded-lg bg-destructive/10 hover:bg-destructive/20 text-destructive text-sm font-medium transition-colors flex items-center justify-center gap-1.5"
+                      >
+                        <Trash className="w-4 h-4" />
+                        <span className="hidden sm:inline">Supprimer</span>
+                      </button>
+                    </CanAccess>
+                  </div>
                 </div>
               </div>
             ))}
