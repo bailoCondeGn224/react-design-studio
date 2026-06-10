@@ -17,7 +17,7 @@ const UtilisateurMobileCard = ({
   getRoleBadgeColor,
 }: UtilisateurMobileCardProps) => {
   return (
-    <Card className="transition-shadow hover:shadow-lg">
+    <Card className="transition-shadow hover:shadow-lg overflow-hidden">
       <CardContent className="p-0">
         {/* En-tête */}
         <div className="flex items-center justify-between p-4 border-b border-border/50">

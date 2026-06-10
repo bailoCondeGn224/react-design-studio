@@ -12,7 +12,7 @@ interface ZoneMobileCardProps {
 
 const ZoneMobileCard = ({ zone, onEdit, onDelete }: ZoneMobileCardProps) => {
   return (
-    <Card className={`transition-shadow hover:shadow-lg ${
+    <Card className={`transition-shadow hover:shadow-lg overflow-hidden ${
       zone.actif ? 'border-success/30 bg-success/5' : 'border-border'
     }`}>
       <CardContent className="p-0">

@@ -16,7 +16,7 @@ const CategoryMobileCard = ({
   onDelete,
 }: CategoryMobileCardProps) => {
   return (
-    <Card className={`transition-shadow hover:shadow-lg ${
+    <Card className={`transition-shadow hover:shadow-lg overflow-hidden ${
       categorie.actif ? 'border-success/30 bg-success/5' : 'border-border'
     }`}>
       <CardContent className="p-0">

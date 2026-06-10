@@ -24,7 +24,7 @@ const DepenseMobileCard = ({
   };
 
   return (
-    <Card className="transition-shadow hover:shadow-lg border-destructive/30 bg-destructive/5">
+    <Card className="transition-shadow hover:shadow-lg overflow-hidden border-destructive/30 bg-destructive/5">
       <CardContent className="p-0">
         {/* En-tête */}
         <div className="flex items-center justify-between p-4 border-b border-border/50">
