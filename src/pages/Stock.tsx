@@ -429,9 +429,10 @@ const Stock = () => {
               )}
 
               {mouvements.length === 0 ? (
-            <div className="text-center py-8 sm:py-12">
-              <Package className="w-10 h-10 sm:w-12 sm:h-12 text-muted-foreground mx-auto mb-2 sm:mb-3 opacity-50" />
-              <p className="text-xs sm:text-sm text-muted-foreground">Aucun mouvement enregistré pour cet article</p>
+            <div className="text-center py-12 md:py-8">
+              <Package className="w-16 h-16 md:w-12 md:h-12 text-muted-foreground mx-auto mb-3 md:mb-2 opacity-30" />
+              <p className="text-sm md:text-xs text-muted-foreground font-medium">Aucun mouvement enregistré</p>
+              <p className="text-xs text-muted-foreground/60 mt-1">Les mouvements s'afficheront ici</p>
             </div>
           ) : (
             <div className="space-y-2 sm:space-y-3">

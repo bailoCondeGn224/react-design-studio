@@ -153,10 +153,10 @@ const Categories = () => {
             />
           ))
         ) : (
-          <div className="bg-card border border-border rounded-xl p-12 text-center">
-            <FolderTree className="w-12 h-12 mx-auto mb-3 text-muted-foreground opacity-30" />
-            <p className="text-foreground font-medium">Aucune catégorie</p>
-            <p className="text-sm text-muted-foreground mt-1">Créez votre première catégorie</p>
+          <div className="bg-card border border-border rounded-xl p-8 md:p-12 text-center">
+            <FolderTree className="w-16 h-16 md:w-12 md:h-12 mx-auto mb-4 md:mb-3 text-muted-foreground opacity-30" />
+            <p className="text-foreground font-semibold text-base md:text-sm">Aucune catégorie</p>
+            <p className="text-sm md:text-xs text-muted-foreground mt-2 md:mt-1">Créez votre première catégorie</p>
           </div>
         )}
       </div>
