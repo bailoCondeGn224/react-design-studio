@@ -73,12 +73,12 @@ const DepenseMobileCard = ({
 
         {/* Actions */}
         <div className="p-3 border-t border-border bg-card">
-          <div className="space-y-2">
+          <div className="flex gap-2">
             <CanAccess permissions={['depenses.update']}>
               <Button
                 variant="outline"
                 onClick={() => onEdit(depense)}
-                className="w-full h-11"
+                className="flex-1 h-11"
               >
                 <Pencil className="w-4 h-4 mr-2" />
                 Modifier
@@ -88,7 +88,7 @@ const DepenseMobileCard = ({
               <Button
                 variant="destructive"
                 onClick={() => onDelete(depense.id)}
-                className="w-full h-11"
+                className="flex-1 h-11"
               >
                 <Trash2 className="w-4 h-4 mr-2" />
                 Supprimer
