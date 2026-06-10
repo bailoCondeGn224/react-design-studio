@@ -109,7 +109,7 @@ const VenteMobileCard = ({
               {vente.lignes.length > 2 && (
                 <button
                   onClick={() => onViewDetails(vente.id)}
-                  className="text-xs text-primary font-medium hover:underline"
+                  className="text-xs text-primary font-medium hover:underline transition-transform active:scale-95"
                 >
                   + {vente.lignes.length - 2} autre{vente.lignes.length - 2 > 1 ? 's' : ''}
                 </button>

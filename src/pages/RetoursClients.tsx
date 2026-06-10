@@ -61,7 +61,7 @@ const RetoursClients = () => {
         description="Gérer les retours de produits des clients"
         action={
           <CanAccess permissions={['retours.create']}>
-            <button onClick={() => setFormOpen(true)} className="gradient-gold text-primary-foreground px-4 py-2.5 rounded-lg text-sm font-semibold flex items-center gap-2 shadow-elevated hover:opacity-90 transition-opacity">
+            <button onClick={() => setFormOpen(true)} className="gradient-gold text-primary-foreground px-4 py-2.5 rounded-lg text-sm font-semibold flex items-center gap-2 shadow-elevated hover:opacity-90 transition-all active:scale-95">
               <Plus className="w-4 h-4" /> Nouveau Retour
             </button>
           </CanAccess>

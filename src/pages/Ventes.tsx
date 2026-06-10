@@ -802,7 +802,7 @@ const Ventes = () => {
                       <td className="px-4 sm:px-6 py-4 text-center">
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
-                            <button className="text-muted-foreground hover:text-foreground transition-colors">
+                            <button className="text-muted-foreground hover:text-foreground transition-all active:scale-95">
                               <MoreVertical className="w-4 h-4" />
                             </button>
                           </DropdownMenuTrigger>

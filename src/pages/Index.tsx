@@ -161,7 +161,7 @@ const Dashboard = () => {
         <div className="bg-card border border-border rounded-xl p-4 sm:p-5 shadow-card">
           <div className="flex items-center justify-between mb-3 sm:mb-4">
             <h3 className="font-heading font-semibold text-sm sm:text-base text-foreground">Ventes Récentes</h3>
-            <button className="text-[10px] sm:text-xs text-primary font-medium flex items-center gap-1 hover:underline">
+            <button className="text-[10px] sm:text-xs text-primary font-medium flex items-center gap-1 hover:underline transition-transform active:scale-95">
               Voir tout <ArrowUpRight className="w-3 h-3" />
             </button>
           </div>

@@ -44,7 +44,7 @@ const ApprovisionnementMobileCard = ({
           </div>
           <Sheet>
             <SheetTrigger asChild>
-              <button className="w-8 h-8 rounded-full hover:bg-muted flex items-center justify-center flex-shrink-0">
+              <button className="w-8 h-8 rounded-full hover:bg-muted transition-all active:scale-95 flex items-center justify-center flex-shrink-0">
                 <MoreVertical className="w-4 h-4 text-muted-foreground" />
               </button>
             </SheetTrigger>

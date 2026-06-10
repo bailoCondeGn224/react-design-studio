@@ -105,7 +105,7 @@ const Utilisateurs = () => {
         description="Gérez les comptes utilisateurs et leurs rôles"
         action={
           <CanAccess permissions={['users.create']}>
-            <button onClick={() => setFormOpen(true)} className="gradient-gold text-primary-foreground px-4 py-2.5 rounded-lg text-sm font-semibold flex items-center gap-2 shadow-elevated hover:opacity-90 transition-opacity">
+            <button onClick={() => setFormOpen(true)} className="gradient-gold text-primary-foreground px-4 py-2.5 rounded-lg text-sm font-semibold flex items-center gap-2 shadow-elevated hover:opacity-90 transition-all active:scale-95">
               <Plus className="w-4 h-4" /> Nouvel Utilisateur
             </button>
           </CanAccess>
@@ -221,7 +221,7 @@ const Utilisateurs = () => {
                     <td className="px-4 sm:px-6 py-4 text-center">
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                          <button className="text-muted-foreground hover:text-foreground transition-colors">
+                          <button className="text-muted-foreground hover:text-foreground transition-all active:scale-95">
                             <MoreVertical className="w-4 h-4" />
                           </button>
                         </DropdownMenuTrigger>

@@ -90,7 +90,7 @@ const Categories = () => {
           <CanAccess permissions={['categories.create']}>
             <button
               onClick={handleCreate}
-              className="gradient-gold text-primary-foreground px-4 py-2.5 rounded-lg text-sm font-semibold flex items-center gap-2 shadow-elevated hover:opacity-90 transition-opacity"
+              className="gradient-gold text-primary-foreground px-4 py-2.5 rounded-lg text-sm font-semibold flex items-center gap-2 shadow-elevated hover:opacity-90 transition-all active:scale-95"
             >
               <Plus className="w-4 h-4" />
               Nouvelle Catégorie
@@ -211,7 +211,7 @@ const Categories = () => {
                         <CanAccess permissions={['categories.update']}>
                           <button
                             onClick={() => handleEdit(categorie)}
-                            className="p-2 hover:bg-primary/10 rounded-lg text-primary transition-colors"
+                            className="p-2 hover:bg-primary/10 rounded-lg text-primary transition-all active:scale-95"
                             title="Modifier"
                           >
                             <Pencil className="w-4 h-4" />
@@ -220,7 +220,7 @@ const Categories = () => {
                         <CanAccess permissions={['categories.delete']}>
                           <button
                             onClick={() => setDeleteId(categorie.id)}
-                            className="p-2 hover:bg-destructive/10 rounded-lg text-destructive transition-colors"
+                            className="p-2 hover:bg-destructive/10 rounded-lg text-destructive transition-all active:scale-95"
                             title="Supprimer"
                           >
                             <Trash2 className="w-4 h-4" />

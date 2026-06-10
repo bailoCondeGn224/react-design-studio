@@ -125,7 +125,7 @@ const Fournisseurs = () => {
         description="Gestion et suivi de vos partenaires commerciaux"
         action={
           <CanAccess permissions={['fournisseurs.create']}>
-            <button onClick={() => setFormOpen(true)} className="gradient-gold text-primary-foreground px-4 py-2.5 rounded-lg text-sm font-semibold flex items-center gap-2 shadow-elevated hover:opacity-90 transition-opacity">
+            <button onClick={() => setFormOpen(true)} className="gradient-gold text-primary-foreground px-4 py-2.5 rounded-lg text-sm font-semibold flex items-center gap-2 shadow-elevated hover:opacity-90 transition-all active:scale-95">
               <Plus className="w-4 h-4" /> Nouveau Fournisseur
             </button>
           </CanAccess>
@@ -351,14 +351,14 @@ const Fournisseurs = () => {
                       setDetailsItem(null);
                       handleEdit(itemToEdit);
                     }}
-                    className="flex-1 py-2.5 rounded-lg border border-border text-sm font-medium text-foreground hover:bg-secondary transition-colors"
+                    className="flex-1 py-2.5 rounded-lg border border-border text-sm font-medium text-foreground hover:bg-secondary transition-all active:scale-95"
                   >
                     Modifier
                   </button>
                 </CanAccess>
                 <button
                   onClick={() => setDetailsItem(null)}
-                  className="flex-1 py-2.5 rounded-lg gradient-gold text-primary-foreground text-sm font-semibold hover:opacity-90 transition-opacity"
+                  className="flex-1 py-2.5 rounded-lg gradient-gold text-primary-foreground text-sm font-semibold hover:opacity-90 transition-all active:scale-95"
                 >
                   Fermer
                 </button>
@@ -559,14 +559,14 @@ const Fournisseurs = () => {
                         setDetailsItem(null);
                         handleEdit(itemToEdit);
                       }}
-                      className="flex-1 py-2.5 rounded-lg border border-border text-sm font-medium text-foreground hover:bg-secondary transition-colors"
+                      className="flex-1 py-2.5 rounded-lg border border-border text-sm font-medium text-foreground hover:bg-secondary transition-all active:scale-95"
                     >
                       Modifier
                     </button>
                   </CanAccess>
                   <button
                     onClick={() => setDetailsItem(null)}
-                    className="flex-1 py-2.5 rounded-lg gradient-gold text-primary-foreground text-sm font-semibold hover:opacity-90 transition-opacity"
+                    className="flex-1 py-2.5 rounded-lg gradient-gold text-primary-foreground text-sm font-semibold hover:opacity-90 transition-all active:scale-95"
                   >
                     Fermer
                   </button>
@@ -687,7 +687,7 @@ const Fournisseurs = () => {
                   <div className="flex gap-2">
                     <button
                       onClick={() => setDetailsItem(f)}
-                      className="flex-1 h-11 rounded-lg bg-primary/10 hover:bg-primary/20 text-primary text-sm font-medium transition-colors flex items-center justify-center gap-1.5"
+                      className="flex-1 h-11 rounded-lg bg-primary/10 hover:bg-primary/20 text-primary text-sm font-medium transition-all active:scale-95 flex items-center justify-center gap-1.5"
                     >
                       <Eye className="w-4 h-4" />
                       <span className="hidden sm:inline">Détails</span>
@@ -695,7 +695,7 @@ const Fournisseurs = () => {
                     <CanAccess permissions={['fournisseurs.update']}>
                       <button
                         onClick={() => handleEdit(f)}
-                        className="flex-1 h-11 rounded-lg bg-secondary hover:bg-secondary/80 text-secondary-foreground text-sm font-medium transition-colors flex items-center justify-center gap-1.5"
+                        className="flex-1 h-11 rounded-lg bg-secondary hover:bg-secondary/80 text-secondary-foreground text-sm font-medium transition-all active:scale-95 flex items-center justify-center gap-1.5"
                       >
                         <Edit className="w-4 h-4" />
                         <span className="hidden sm:inline">Modifier</span>
@@ -704,7 +704,7 @@ const Fournisseurs = () => {
                     <CanAccess permissions={['fournisseurs.delete']}>
                       <button
                         onClick={() => setDeleteId(f.id)}
-                        className="flex-1 h-11 rounded-lg bg-destructive/10 hover:bg-destructive/20 text-destructive text-sm font-medium transition-colors flex items-center justify-center gap-1.5"
+                        className="flex-1 h-11 rounded-lg bg-destructive/10 hover:bg-destructive/20 text-destructive text-sm font-medium transition-all active:scale-95 flex items-center justify-center gap-1.5"
                       >
                         <Trash className="w-4 h-4" />
                         <span className="hidden sm:inline">Supprimer</span>

@@ -73,7 +73,7 @@ const VersementClientMobileCard = ({
               <CanAccess permissions={['versements-client.create']}>
                 <button
                   onClick={onOpenPaymentForm}
-                  className="flex-1 h-11 rounded-lg bg-success text-white text-sm font-semibold hover:bg-success/90 transition-colors flex items-center justify-center gap-2"
+                  className="flex-1 h-11 rounded-lg bg-success text-white text-sm font-semibold hover:bg-success/90 transition-all active:scale-95 flex items-center justify-center gap-2"
                 >
                   <Wallet className="w-4 h-4" />
                   Paiement
@@ -82,7 +82,7 @@ const VersementClientMobileCard = ({
             )}
             <button
               onClick={() => onViewHistory(client)}
-              className={`${hasDebt ? 'flex-1' : 'w-full'} h-11 rounded-lg border-2 border-border text-sm font-semibold text-foreground hover:bg-secondary transition-colors flex items-center justify-center gap-2`}
+              className={`${hasDebt ? 'flex-1' : 'w-full'} h-11 rounded-lg border-2 border-border text-sm font-semibold text-foreground hover:bg-secondary transition-all active:scale-95 flex items-center justify-center gap-2`}
             >
               <Eye className="w-4 h-4" />
               Historique
