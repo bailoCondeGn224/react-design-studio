@@ -259,7 +259,7 @@ const VersementsClient = () => {
                           )}
                         </div>
 
-                        <div className="grid grid-cols-3 gap-3">
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                           <div className="bg-card rounded p-3">
                             <p className="text-xs text-muted-foreground mb-1">Total Achats</p>
                             <p className="text-sm font-bold text-foreground">{formatPrix(selectedClientForHistory.totalAchats || 0)}</p>
