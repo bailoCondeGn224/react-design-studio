@@ -479,7 +479,7 @@ const CommandeForm = ({ open, onOpenChange, onSubmit, initialData = null, mode =
   if (isMobile) {
     return (
       <Sheet open={open} onOpenChange={onOpenChange}>
-        <SheetContent side="bottom" className="h-[95vh] p-0">
+        <SheetContent side="bottom" className="h-[95vh] p-0" onOpenAutoFocus={(e) => e.preventDefault()}>
           <div className="h-full flex flex-col bg-gradient-to-br from-background via-background to-primary/5">
             {/* Header Sheet */}
             <div className="px-4 sm:px-6 py-4 sm:py-5 border-b bg-gradient-to-r from-primary/10 via-primary/5 to-transparent flex-shrink-0">
@@ -507,7 +507,7 @@ const CommandeForm = ({ open, onOpenChange, onSubmit, initialData = null, mode =
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-[95vw] sm:max-w-4xl h-[90vh] flex flex-col p-0 bg-gradient-to-br from-background via-background to-primary/5">
+      <DialogContent className="max-w-[95vw] sm:max-w-4xl h-[90vh] flex flex-col p-0 bg-gradient-to-br from-background via-background to-primary/5" onOpenAutoFocus={(e) => e.preventDefault()}>
         {/* Header Dialog avec DialogTitle pour l'accessibilité */}
         <DialogHeader className="px-4 sm:px-6 py-4 sm:py-5 border-b bg-gradient-to-r from-primary/10 via-primary/5 to-transparent flex-shrink-0">
           <div className="flex items-center gap-3 pr-12">

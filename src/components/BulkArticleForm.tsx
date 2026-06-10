@@ -230,7 +230,7 @@ const BulkArticleForm = ({ open, onOpenChange, onSubmit }: BulkArticleFormProps)
   if (isMobile) {
     return (
       <Sheet open={open} onOpenChange={onOpenChange}>
-        <SheetContent side="bottom" className="h-[95vh] p-0 flex flex-col bg-gradient-to-br from-background via-background to-primary/5">
+        <SheetContent side="bottom" className="h-[95vh] p-0 flex flex-col bg-gradient-to-br from-background via-background to-primary/5" onOpenAutoFocus={(e) => e.preventDefault()}>
           {/* Header mobile */}
           <div className="px-4 py-4 border-b bg-gradient-to-r from-primary/10 via-primary/5 to-transparent flex-shrink-0">
             <div className="flex items-center gap-3">
@@ -617,7 +617,7 @@ const BulkArticleForm = ({ open, onOpenChange, onSubmit }: BulkArticleFormProps)
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-[98vw] w-full max-h-[95vh] overflow-hidden flex flex-col p-0 bg-gradient-to-br from-background via-background to-primary/5">
+      <DialogContent className="max-w-[98vw] w-full max-h-[95vh] overflow-hidden flex flex-col p-0 bg-gradient-to-br from-background via-background to-primary/5" onOpenAutoFocus={(e) => e.preventDefault()}>
         {/* Header avec gradient - Desktop */}
         <DialogHeader className="px-6 py-5 border-b bg-gradient-to-r from-primary/10 via-primary/5 to-transparent flex-shrink-0">
           <div className="flex items-center gap-3 pr-12">

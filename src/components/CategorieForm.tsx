@@ -262,7 +262,7 @@ const CategorieForm = ({ open, onOpenChange, onSubmit, initialData = null, mode 
   if (isMobile) {
     return (
       <Sheet open={open} onOpenChange={onOpenChange}>
-        <SheetContent side="bottom" className="h-[95vh] p-0">
+        <SheetContent side="bottom" className="h-[95vh] p-0" onOpenAutoFocus={(e) => e.preventDefault()}>
           {formContent}
         </SheetContent>
       </Sheet>
@@ -271,7 +271,7 @@ const CategorieForm = ({ open, onOpenChange, onSubmit, initialData = null, mode 
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-[95vw] sm:max-w-2xl h-[90vh] flex flex-col p-0">
+      <DialogContent className="max-w-[95vw] sm:max-w-2xl h-[90vh] flex flex-col p-0" onOpenAutoFocus={(e) => e.preventDefault()}>
         <DialogHeader className="sr-only">
           <DialogTitle>{mode === 'edit' ? 'Modifier la Catégorie' : 'Nouvelle Catégorie'}</DialogTitle>
           <DialogDescription>

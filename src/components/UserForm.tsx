@@ -275,7 +275,7 @@ const UserForm = ({ open, onOpenChange, onSubmit, initialData = null, mode = 'cr
   if (isMobile) {
     return (
       <Sheet open={open} onOpenChange={onOpenChange}>
-        <SheetContent side="bottom" className="h-[95vh] p-0">
+        <SheetContent side="bottom" className="h-[95vh] p-0" onOpenAutoFocus={(e) => e.preventDefault()}>
           <DialogHeader className="sr-only">
             <DialogTitle>{mode === 'edit' ? 'Modifier l\'Utilisateur' : 'Nouvel Utilisateur'}</DialogTitle>
             <DialogDescription>
@@ -290,7 +290,7 @@ const UserForm = ({ open, onOpenChange, onSubmit, initialData = null, mode = 'cr
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-[95vw] sm:max-w-2xl h-[90vh] flex flex-col p-0">
+      <DialogContent className="max-w-[95vw] sm:max-w-2xl h-[90vh] flex flex-col p-0" onOpenAutoFocus={(e) => e.preventDefault()}>
         <DialogHeader className="sr-only">
           <DialogTitle>{mode === 'edit' ? 'Modifier l\'Utilisateur' : 'Nouvel Utilisateur'}</DialogTitle>
           <DialogDescription>

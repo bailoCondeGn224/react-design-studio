@@ -514,7 +514,7 @@ const RetourClientForm = ({ open, onOpenChange, onSubmit }: RetourClientFormProp
   if (isMobile) {
     return (
       <Sheet open={open} onOpenChange={onOpenChange}>
-        <SheetContent side="bottom" className="h-[95vh] p-0">
+        <SheetContent side="bottom" className="h-[95vh] p-0" onOpenAutoFocus={(e) => e.preventDefault()}>
           <div className="h-full flex flex-col bg-gradient-to-br from-background via-background to-orange-500/5">
             {content}
           </div>
@@ -525,7 +525,7 @@ const RetourClientForm = ({ open, onOpenChange, onSubmit }: RetourClientFormProp
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-[95vw] sm:max-w-4xl h-[90vh] flex flex-col p-0 bg-gradient-to-br from-background via-background to-orange-500/5">
+      <DialogContent className="max-w-[95vw] sm:max-w-4xl h-[90vh] flex flex-col p-0 bg-gradient-to-br from-background via-background to-orange-500/5" onOpenAutoFocus={(e) => e.preventDefault()}>
         {content}
       </DialogContent>
     </Dialog>
