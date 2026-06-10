@@ -7,7 +7,7 @@ import MobileCombobox from "@/components/MobileCombobox";
 import { toast } from "sonner";
 import { useCategoriesActive } from "@/hooks/useCategories";
 import { formatPrixInput, handlePrixChange } from "@/utils/format-prix";
-import { ImageIcon, Upload, X } from "lucide-react";
+import { ImageIcon, Upload, X, Camera } from "lucide-react";
 import { getPhotoUrl } from "@/lib/api-client";
 
 interface StockFormProps {
@@ -176,21 +176,41 @@ const StockForm = ({ open, onOpenChange, onSubmit, initialData = null, mode = 'c
                   </div>
                 </div>
               ) : (
-                <div className="w-full">
+                <div className="w-full space-y-2">
+                  {/* Input pour caméra */}
                   <input
                     type="file"
-                    id="photo-upload-edit-mobile"
-                    accept="image/jpeg,image/png,image/webp,image/jpg"
+                    id="photo-camera-edit-mobile"
+                    accept="image/*"
+                    capture="environment"
                     onChange={handlePhotoChange}
                     className="hidden"
                   />
+                  {/* Input pour galerie */}
+                  <input
+                    type="file"
+                    id="photo-gallery-edit-mobile"
+                    accept="image/*"
+                    onChange={handlePhotoChange}
+                    className="hidden"
+                  />
+
+                  {/* Bouton Prendre une photo */}
                   <label
-                    htmlFor="photo-upload-edit-mobile"
-                    className="flex flex-col items-center justify-center w-full h-32 rounded-xl border-2 border-dashed border-primary/30 bg-primary/5 active:scale-[0.98] transition-transform cursor-pointer"
+                    htmlFor="photo-camera-edit-mobile"
+                    className="flex items-center justify-center gap-2 w-full h-14 border-2 border-primary/30 rounded-xl cursor-pointer bg-primary text-primary-foreground active:scale-[0.98] transition-all font-semibold"
                   >
-                    <Upload className="w-8 h-8 text-primary mb-2" />
-                    <span className="text-sm font-semibold text-foreground">Ajouter une photo</span>
-                    <span className="text-xs text-muted-foreground mt-1">Caméra ou Galerie</span>
+                    <Camera className="w-5 h-5" />
+                    Prendre une photo
+                  </label>
+
+                  {/* Bouton Choisir depuis galerie */}
+                  <label
+                    htmlFor="photo-gallery-edit-mobile"
+                    className="flex items-center justify-center gap-2 w-full h-14 border-2 border-dashed border-primary/30 rounded-xl cursor-pointer bg-primary/5 active:bg-primary/10 active:scale-[0.98] transition-all font-medium"
+                  >
+                    <Upload className="w-5 h-5 text-primary" />
+                    Choisir depuis la galerie
                   </label>
                 </div>
               )}

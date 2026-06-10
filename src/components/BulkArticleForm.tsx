@@ -4,7 +4,7 @@ import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { useIsMobile } from "@/hooks/useMediaQuery";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { Plus, Trash2, Package, CheckCircle2, Sparkles, TrendingUp, Layers, Upload, X, Image as ImageIcon } from "lucide-react";
+import { Plus, Trash2, Package, CheckCircle2, Sparkles, TrendingUp, Layers, Upload, X, Image as ImageIcon, Camera } from "lucide-react";
 import { formatPrixInput, handlePrixChange } from "@/utils/format-prix";
 import { useCategoriesActive } from "@/hooks/useCategories";
 import { useZonesActive } from "@/hooks/useZones";
@@ -313,35 +313,53 @@ const BulkArticleForm = ({ open, onOpenChange, onSubmit }: BulkArticleFormProps)
                         Photo de l'article
                       </label>
 
+                      {/* Input pour caméra (mobile) */}
+                      <input
+                        type="file"
+                        accept="image/*"
+                        capture="environment"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) handlePhotoChange(index, file);
+                          e.target.value = '';
+                        }}
+                        className="hidden"
+                        id={`photo-camera-${index}`}
+                      />
+
+                      {/* Input pour galerie */}
                       <input
                         type="file"
                         accept="image/*"
                         onChange={(e) => {
                           const file = e.target.files?.[0];
                           if (file) handlePhotoChange(index, file);
-                          e.target.value = ''; // Reset pour permettre de resélectionner
+                          e.target.value = '';
                         }}
                         className="hidden"
-                        id={`photo-input-${index}`}
+                        id={`photo-gallery-${index}`}
                       />
 
                       {!ligne.photoPreview ? (
-                        <label
-                          htmlFor={`photo-input-${index}`}
-                          className="flex flex-col items-center justify-center w-full h-32 sm:h-36 border-2 border-dashed border-primary/30 rounded-xl cursor-pointer bg-primary/5 active:bg-primary/10 active:scale-[0.99] transition-all"
-                        >
-                          <div className="flex flex-col items-center gap-2">
-                            <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-primary/20 flex items-center justify-center">
-                              <Upload className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
-                            </div>
-                            <p className="text-sm font-medium text-foreground px-4 text-center">
-                              Ajouter une photo
-                            </p>
-                            <p className="text-xs text-muted-foreground">
-                              PNG, JPG - Max 5MB
-                            </p>
-                          </div>
-                        </label>
+                        <div className="w-full space-y-2">
+                          {/* Bouton Prendre une photo */}
+                          <label
+                            htmlFor={`photo-camera-${index}`}
+                            className="flex items-center justify-center gap-2 w-full h-14 border-2 border-primary/30 rounded-xl cursor-pointer bg-primary text-primary-foreground active:scale-[0.99] transition-all font-semibold"
+                          >
+                            <Camera className="w-5 h-5" />
+                            Prendre une photo
+                          </label>
+
+                          {/* Bouton Choisir depuis galerie */}
+                          <label
+                            htmlFor={`photo-gallery-${index}`}
+                            className="flex items-center justify-center gap-2 w-full h-14 border-2 border-dashed border-primary/30 rounded-xl cursor-pointer bg-primary/5 active:bg-primary/10 active:scale-[0.99] transition-all font-medium"
+                          >
+                            <Upload className="w-5 h-5 text-primary" />
+                            Choisir depuis la galerie
+                          </label>
+                        </div>
                       ) : (
                         <div className="relative w-full rounded-xl overflow-hidden border-2 border-primary/30 bg-muted/30">
                           <img
@@ -688,35 +706,53 @@ const BulkArticleForm = ({ open, onOpenChange, onSubmit }: BulkArticleFormProps)
                         Photo de l'article
                       </label>
 
+                      {/* Input pour caméra (mobile) */}
+                      <input
+                        type="file"
+                        accept="image/*"
+                        capture="environment"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) handlePhotoChange(index, file);
+                          e.target.value = '';
+                        }}
+                        className="hidden"
+                        id={`photo-camera-${index}`}
+                      />
+
+                      {/* Input pour galerie */}
                       <input
                         type="file"
                         accept="image/*"
                         onChange={(e) => {
                           const file = e.target.files?.[0];
                           if (file) handlePhotoChange(index, file);
-                          e.target.value = ''; // Reset pour permettre de resélectionner
+                          e.target.value = '';
                         }}
                         className="hidden"
-                        id={`photo-input-${index}`}
+                        id={`photo-gallery-${index}`}
                       />
 
                       {!ligne.photoPreview ? (
-                        <label
-                          htmlFor={`photo-input-${index}`}
-                          className="flex flex-col items-center justify-center w-full h-32 sm:h-36 border-2 border-dashed border-primary/30 rounded-xl cursor-pointer bg-primary/5 active:bg-primary/10 active:scale-[0.99] transition-all"
-                        >
-                          <div className="flex flex-col items-center gap-2">
-                            <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-primary/20 flex items-center justify-center">
-                              <Upload className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
-                            </div>
-                            <p className="text-sm font-medium text-foreground px-4 text-center">
-                              Ajouter une photo
-                            </p>
-                            <p className="text-xs text-muted-foreground">
-                              PNG, JPG - Max 5MB
-                            </p>
-                          </div>
-                        </label>
+                        <div className="w-full space-y-2">
+                          {/* Bouton Prendre une photo */}
+                          <label
+                            htmlFor={`photo-camera-${index}`}
+                            className="flex items-center justify-center gap-2 w-full h-14 border-2 border-primary/30 rounded-xl cursor-pointer bg-primary text-primary-foreground active:scale-[0.99] transition-all font-semibold"
+                          >
+                            <Camera className="w-5 h-5" />
+                            Prendre une photo
+                          </label>
+
+                          {/* Bouton Choisir depuis galerie */}
+                          <label
+                            htmlFor={`photo-gallery-${index}`}
+                            className="flex items-center justify-center gap-2 w-full h-14 border-2 border-dashed border-primary/30 rounded-xl cursor-pointer bg-primary/5 active:bg-primary/10 active:scale-[0.99] transition-all font-medium"
+                          >
+                            <Upload className="w-5 h-5 text-primary" />
+                            Choisir depuis la galerie
+                          </label>
+                        </div>
                       ) : (
                         <div className="relative w-full rounded-xl overflow-hidden border-2 border-primary/30 bg-muted/30">
                           <img
