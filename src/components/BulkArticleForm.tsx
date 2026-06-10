@@ -50,9 +50,39 @@ const BulkArticleForm = ({ open, onOpenChange, onSubmit }: BulkArticleFormProps)
 
   const [lignes, setLignes] = useState<LigneArticle[]>([{ ...ligneVide }]);
 
+  // Restaurer l'état depuis sessionStorage au montage
+  useEffect(() => {
+    const saved = sessionStorage.getItem('bulkArticleFormState');
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        setLignes(parsed);
+        sessionStorage.removeItem('bulkArticleFormState'); // Nettoyer après restauration
+      } catch (e) {
+        console.error('Erreur restauration formulaire:', e);
+      }
+    }
+  }, []);
+
+  // Sauvegarder l'état dans sessionStorage quand les lignes changent
+  useEffect(() => {
+    if (open && lignes.length > 0) {
+      // Sauvegarder uniquement les données (pas les fichiers File, juste les previews)
+      const dataToSave = lignes.map(ligne => ({
+        ...ligne,
+        photo: null, // Ne pas sauvegarder l'objet File
+      }));
+      sessionStorage.setItem('bulkArticleFormState', JSON.stringify(dataToSave));
+    }
+  }, [lignes, open]);
+
   useEffect(() => {
     if (open) {
-      setLignes([{ ...ligneVide }]);
+      // Ne réinitialiser que si pas de données sauvegardées
+      const saved = sessionStorage.getItem('bulkArticleFormState');
+      if (!saved) {
+        setLignes([{ ...ligneVide }]);
+      }
     } else {
       // Nettoyer les previews quand on ferme
       lignes.forEach(ligne => {
@@ -60,6 +90,8 @@ const BulkArticleForm = ({ open, onOpenChange, onSubmit }: BulkArticleFormProps)
           URL.revokeObjectURL(ligne.photoPreview);
         }
       });
+      // Nettoyer sessionStorage quand on ferme le formulaire
+      sessionStorage.removeItem('bulkArticleFormState');
     }
   }, [open]);
 

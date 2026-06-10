@@ -50,6 +50,36 @@ const StockForm = ({ open, onOpenChange, onSubmit, initialData = null, mode = 'c
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
   const isMobile = useIsMobile();
 
+  // Restaurer l'état depuis sessionStorage au montage (mode create seulement)
+  useEffect(() => {
+    if (mode === 'create') {
+      const saved = sessionStorage.getItem('stockFormState');
+      if (saved) {
+        try {
+          const parsed = JSON.parse(saved);
+          setForm(parsed.form);
+          if (parsed.photoPreview) {
+            setPhotoPreview(parsed.photoPreview);
+          }
+          sessionStorage.removeItem('stockFormState');
+        } catch (e) {
+          console.error('Erreur restauration formulaire:', e);
+        }
+      }
+    }
+  }, [mode]);
+
+  // Sauvegarder l'état dans sessionStorage quand le formulaire change (mode create seulement)
+  useEffect(() => {
+    if (open && mode === 'create') {
+      const dataToSave = {
+        form,
+        photoPreview,
+      };
+      sessionStorage.setItem('stockFormState', JSON.stringify(dataToSave));
+    }
+  }, [form, photoPreview, open, mode]);
+
   useEffect(() => {
     if (mode === 'edit' && initialData) {
       setForm({
@@ -68,6 +98,11 @@ const StockForm = ({ open, onOpenChange, onSubmit, initialData = null, mode = 'c
         setPhotoPreview(null);
       }
       setPhotoFile(null); // Pas de fichier (juste l'aperçu depuis l'URL)
+    }
+
+    // Nettoyer sessionStorage quand on ferme le formulaire
+    if (!open) {
+      sessionStorage.removeItem('stockFormState');
     }
   }, [mode, initialData, open]);
 
