@@ -184,7 +184,7 @@ const Fournisseurs = () => {
                   <MapPin className="w-4 h-4 text-primary" />
                   Informations Générales
                 </h3>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
                   <div>
                     <p className="text-xs text-muted-foreground mb-1">Nom complet</p>
                     <p className="text-sm font-semibold text-foreground">{fournisseurDetails.nom}</p>
@@ -262,7 +262,7 @@ const Fournisseurs = () => {
               )}
 
               {/* Statistiques financières */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 md:gap-4">
                 <div className="bg-card border border-border rounded-lg p-4">
                   <div className="flex items-center gap-2 mb-2">
                     <TrendingUp className="w-4 h-4 text-primary" />
@@ -392,7 +392,7 @@ const Fournisseurs = () => {
                     <MapPin className="w-4 h-4 text-primary" />
                     Informations Générales
                   </h3>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
                     <div>
                       <p className="text-xs text-muted-foreground mb-1">Nom complet</p>
                       <p className="text-sm font-semibold text-foreground">{fournisseurDetails.nom}</p>
@@ -470,7 +470,7 @@ const Fournisseurs = () => {
                 )}
 
                 {/* Statistiques financières */}
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 md:gap-4">
                   <div className="bg-card border border-border rounded-lg p-4">
                     <div className="flex items-center gap-2 mb-2">
                       <TrendingUp className="w-4 h-4 text-primary" />
