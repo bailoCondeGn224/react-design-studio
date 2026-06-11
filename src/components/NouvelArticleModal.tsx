@@ -7,7 +7,7 @@ import { toast } from "sonner";
 import { useCategoriesActive } from "@/hooks/useCategories";
 import { useCreateArticle } from "@/hooks/useStock";
 import { formatPrixInput, handlePrixChange } from "@/utils/format-prix";
-import { ImageIcon, Upload, X, Calendar } from "lucide-react";
+import { ImageIcon, Upload, X, Calendar, Package } from "lucide-react";
 
 interface NouvelArticleModalProps {
   open: boolean;
@@ -123,11 +123,18 @@ const NouvelArticleModal = ({ open, onOpenChange, onArticleCreated }: NouvelArti
   const formContent = (
     <>
       {/* Header pour Sheet (mobile) */}
-      <div className="md:hidden p-4 sm:p-6 border-b flex-shrink-0">
-        <h2 className="font-heading text-base font-bold">Créer un Nouvel Article</h2>
-        <p className="text-xs text-muted-foreground mt-1">
-          Stock initial de 0. La quantité sera ajoutée par l'approvisionnement.
-        </p>
+      <div className="md:hidden px-4 sm:px-6 py-4 sm:py-5 border-b bg-gradient-to-r from-success/10 via-success/5 to-transparent flex-shrink-0">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-success to-success/70 flex items-center justify-center shadow-lg">
+            <Package className="w-5 h-5 text-white" />
+          </div>
+          <div>
+            <h2 className="text-base font-bold">Créer un Nouvel Article</h2>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              Stock initial de 0. Ajouté par l'approvisionnement.
+            </p>
+          </div>
+        </div>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-3 sm:space-y-4 overflow-y-auto flex-1 min-h-0 p-4 sm:p-6">
@@ -300,13 +307,6 @@ const NouvelArticleModal = ({ open, onOpenChange, onArticleCreated }: NouvelArti
             </p>
           </div>
 
-          <div className="bg-muted/50 border border-border rounded-lg p-3">
-            <p className="text-xs text-muted-foreground">
-              <strong>Note:</strong> L'article sera créé avec un stock de 0. La quantité sera automatiquement
-              ajoutée lorsque vous compléterez l'approvisionnement.
-            </p>
-          </div>
-
           <div className="flex flex-col-reverse sm:flex-row gap-3 pt-2">
             <button
               type="button"
@@ -344,11 +344,20 @@ const NouvelArticleModal = ({ open, onOpenChange, onArticleCreated }: NouvelArti
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-[95vw] sm:max-w-md h-[90vh] flex flex-col p-0" onOpenAutoFocus={(e) => e.preventDefault()}>
-        <DialogHeader className="px-4 sm:px-6 py-4 sm:py-5 border-b flex-shrink-0">
-          <DialogTitle className="font-heading">Créer un Nouvel Article</DialogTitle>
-          <DialogDescription>
-            L'article sera créé avec un stock initial de 0. La quantité sera ajoutée par l'approvisionnement.
-          </DialogDescription>
+        <DialogHeader className="px-4 sm:px-6 py-4 sm:py-5 border-b bg-gradient-to-r from-success/10 via-success/5 to-transparent flex-shrink-0">
+          <div className="flex items-center gap-3 pr-12">
+            <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br from-success to-success/70 flex items-center justify-center shadow-lg">
+              <Package className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
+            </div>
+            <div>
+              <DialogTitle className="text-base sm:text-lg font-bold bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text">
+                Créer un Nouvel Article
+              </DialogTitle>
+              <DialogDescription className="text-xs sm:text-sm text-muted-foreground mt-0.5">
+                Stock initial de 0. La quantité sera ajoutée par l'approvisionnement.
+              </DialogDescription>
+            </div>
+          </div>
         </DialogHeader>
         {formContent}
       </DialogContent>
