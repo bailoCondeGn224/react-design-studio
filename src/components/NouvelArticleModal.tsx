@@ -5,7 +5,7 @@ import { toast } from "sonner";
 import { useCategoriesActive } from "@/hooks/useCategories";
 import { useCreateArticle } from "@/hooks/useStock";
 import { formatPrixInput, handlePrixChange } from "@/utils/format-prix";
-import { ImageIcon, Upload, X } from "lucide-react";
+import { ImageIcon, Upload, X, Calendar } from "lucide-react";
 
 interface NouvelArticleModalProps {
   open: boolean;
@@ -25,6 +25,8 @@ const NouvelArticleModal = ({ open, onOpenChange, onArticleCreated }: NouvelArti
     seuilAlerte: "10",
     prixVente: "",
     prixAchat: "",
+    dateExpiration: "",
+    delaiAlerteExpiration: "30",
   });
 
   const [photoFile, setPhotoFile] = useState<File | null>(null);
@@ -41,6 +43,8 @@ const NouvelArticleModal = ({ open, onOpenChange, onArticleCreated }: NouvelArti
       seuilAlerte: "10",
       prixVente: "",
       prixAchat: "",
+      dateExpiration: "",
+      delaiAlerteExpiration: "30",
     });
     setPhotoFile(null);
     setPhotoPreview(null);
@@ -90,6 +94,8 @@ const NouvelArticleModal = ({ open, onOpenChange, onArticleCreated }: NouvelArti
       seuilAlerte: Number(form.seuilAlerte),
       prixVente: Number(form.prixVente),
       prixAchat: form.prixAchat ? Number(form.prixAchat) : undefined,
+      dateExpiration: form.dateExpiration || undefined,
+      delaiAlerteExpiration: form.delaiAlerteExpiration ? Number(form.delaiAlerteExpiration) : undefined,
     };
 
     createArticle.mutate(
@@ -229,6 +235,31 @@ const NouvelArticleModal = ({ open, onOpenChange, onArticleCreated }: NouvelArti
               value={form.seuilAlerte}
               onChange={e => update("seuilAlerte", (e.target as HTMLInputElement).value)}
               min="0"
+            />
+          </div>
+
+          {/* Date d'expiration */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label className="block text-sm font-medium text-foreground mb-2 flex items-center gap-1.5">
+                <Calendar className="w-4 h-4 text-orange-500" />
+                Date d'expiration
+              </label>
+              <input
+                type="date"
+                value={form.dateExpiration}
+                onChange={e => update("dateExpiration", e.target.value)}
+                className="w-full px-4 py-2.5 rounded-lg border border-border bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-orange-500/30"
+              />
+            </div>
+            <FormField
+              label="Délai alerte (jours)"
+              type="number"
+              placeholder="30"
+              value={form.delaiAlerteExpiration}
+              onChange={e => update("delaiAlerteExpiration", (e.target as HTMLInputElement).value)}
+              min="1"
+              max="365"
             />
           </div>
 
