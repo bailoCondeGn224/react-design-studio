@@ -1,8 +1,8 @@
 import { Card, CardContent } from "@/components/ui/card";
-import { Wallet, Calendar, Pencil, Trash2 } from "lucide-react";
+import { Wallet, Calendar, Pencil, Trash2, CheckCircle, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import CanAccess from "./CanAccess";
-import { Depense, typeDepenseLabels, categorieDepenseLabels } from "@/types";
+import { Depense, typeDepenseLabels, categorieDepenseLabels, StatutDepense, statutDepenseLabels } from "@/types";
 
 interface DepenseMobileCardProps {
   depense: Depense;
@@ -22,6 +22,22 @@ const DepenseMobileCard = ({
     if (categorie === 'VARIABLE') return 'bg-warning/10 text-warning border-warning/20';
     return 'bg-secondary/10 text-secondary-foreground border-secondary/20';
   };
+
+  const getStatutConfig = (statut: StatutDepense) => {
+    if (statut === StatutDepense.INCLUSE) {
+      return {
+        color: 'bg-success/10 text-success border-success/20',
+        icon: CheckCircle,
+      };
+    }
+    return {
+      color: 'bg-orange-500/10 text-orange-600 dark:text-orange-400 border-orange-500/20',
+      icon: Clock,
+    };
+  };
+
+  const statutConfig = getStatutConfig(depense.statut);
+  const StatutIcon = statutConfig.icon;
 
   return (
     <Card className="transition-shadow hover:shadow-lg overflow-hidden border-destructive/30 bg-destructive/5">
@@ -49,6 +65,14 @@ const DepenseMobileCard = ({
 
         {/* Détails */}
         <div className="p-4 space-y-3 bg-muted/30">
+          {/* Badge Statut */}
+          <div className="flex items-center gap-2">
+            <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border ${statutConfig.color}`}>
+              <StatutIcon className="w-3 h-3" />
+              {statutDepenseLabels[depense.statut]}
+            </span>
+          </div>
+
           {depense.description && (
             <div>
               <p className="text-xs font-medium text-muted-foreground mb-1">Description</p>

@@ -6,8 +6,8 @@ import DepenseMobileCard from "@/components/DepenseMobileCard";
 import Pagination from "@/components/Pagination";
 import CanAccess from "@/components/CanAccess";
 import { useDepenses, useDepensesStats, useCreateDepense, useUpdateDepense, useDeleteDepense } from "@/hooks/useDepenses";
-import { Depense, typeDepenseLabels, categorieDepenseLabels } from "@/types";
-import { Plus, Wallet, TrendingUp, TrendingDown, AlertCircle, Pencil, Trash2, Calendar } from "lucide-react";
+import { Depense, typeDepenseLabels, categorieDepenseLabels, StatutDepense, statutDepenseLabels } from "@/types";
+import { Plus, Wallet, TrendingUp, TrendingDown, AlertCircle, Pencil, Trash2, Calendar, CheckCircle, Clock } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -253,6 +253,7 @@ const Depenses = () => {
                     <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Date</th>
                     <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Type</th>
                     <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Catégorie</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Statut</th>
                     <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Description</th>
                     <th className="px-4 py-3 text-right text-xs font-medium text-muted-foreground uppercase tracking-wider">Montant</th>
                     <th className="px-4 py-3 text-right text-xs font-medium text-muted-foreground uppercase tracking-wider">Actions</th>
@@ -285,6 +286,22 @@ const Depenses = () => {
                           }`}
                         >
                           {categorieDepenseLabels[depense.categorie]}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3">
+                        <span
+                          className={`inline-flex items-center gap-1.5 px-2 py-1 rounded-full text-xs font-medium ${
+                            depense.statut === StatutDepense.INCLUSE
+                              ? 'bg-success/10 text-success'
+                              : 'bg-orange-500/10 text-orange-600 dark:text-orange-400'
+                          }`}
+                        >
+                          {depense.statut === StatutDepense.INCLUSE ? (
+                            <CheckCircle className="w-3 h-3" />
+                          ) : (
+                            <Clock className="w-3 h-3" />
+                          )}
+                          {statutDepenseLabels[depense.statut]}
                         </span>
                       </td>
                       <td className="px-4 py-3">

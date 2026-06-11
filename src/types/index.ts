@@ -977,6 +977,11 @@ export enum CategorieDepense {
   EXCEPTIONNELLE = 'EXCEPTIONNELLE',
 }
 
+export enum StatutDepense {
+  EN_ATTENTE = 'EN_ATTENTE',
+  INCLUSE = 'INCLUSE',
+}
+
 export const typeDepenseLabels: Record<TypeDepense, string> = {
   [TypeDepense.LOYER]: 'Loyer',
   [TypeDepense.TRANSPORT]: 'Transport',
@@ -998,6 +1003,11 @@ export const categorieDepenseLabels: Record<CategorieDepense, string> = {
   [CategorieDepense.FIXE]: 'Fixe',
   [CategorieDepense.VARIABLE]: 'Variable',
   [CategorieDepense.EXCEPTIONNELLE]: 'Exceptionnelle',
+};
+
+export const statutDepenseLabels: Record<StatutDepense, string> = {
+  [StatutDepense.EN_ATTENTE]: 'En attente',
+  [StatutDepense.INCLUSE]: 'Incluse',
 };
 
 /**
@@ -1034,6 +1044,8 @@ export interface Depense {
   reference?: string;
   userId?: string;
   userNom?: string;
+  statut: StatutDepense;
+  inventaireId?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -1054,6 +1066,7 @@ export interface DepenseFilterParams extends PaginationParams {
   dateFin?: string;
   type?: TypeDepense;
   categorie?: CategorieDepense;
+  statut?: StatutDepense;
 }
 
 export interface DepenseStats {
