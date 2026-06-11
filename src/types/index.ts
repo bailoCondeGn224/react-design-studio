@@ -214,6 +214,8 @@ export interface Article {
   prixAchat?: number;
   description?: string;
   photo?: string; // Chemin relatif de la photo
+  dateExpiration?: string; // Date d'expiration du produit (YYYY-MM-DD)
+  delaiAlerteExpiration?: number; // Jours avant expiration pour alerte (défaut: 30)
   // Statistiques de rotation
   tauxRotation?: number; // Nombre de fois que le stock se renouvelle
   derniereVente?: string; // Date de la dernière vente
@@ -254,6 +256,8 @@ export interface CreateArticleDto {
   prixAchat?: number;
   description?: string;
   photo?: string;
+  dateExpiration?: string;
+  delaiAlerteExpiration?: number;
 }
 
 // Types pour les Ventes
