@@ -1,5 +1,7 @@
 import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { Sheet, SheetContent } from "@/components/ui/sheet";
+import { useIsMobile } from "@/hooks/useMediaQuery";
 import FormField from "@/components/FormField";
 import { toast } from "sonner";
 import { useCategoriesActive } from "@/hooks/useCategories";
@@ -16,6 +18,7 @@ interface NouvelArticleModalProps {
 const NouvelArticleModal = ({ open, onOpenChange, onArticleCreated }: NouvelArticleModalProps) => {
   const { data: categories = [], isLoading: loadingCategories } = useCategoriesActive();
   const createArticle = useCreateArticle();
+  const isMobile = useIsMobile();
 
   const [form, setForm] = useState({
     nom: "",
@@ -116,16 +119,18 @@ const NouvelArticleModal = ({ open, onOpenChange, onArticleCreated }: NouvelArti
     );
   };
 
-  return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-[95vw] sm:max-w-md max-h-[90vh] flex flex-col">
-        <DialogHeader className="flex-shrink-0">
-          <DialogTitle className="font-heading">Créer un Nouvel Article</DialogTitle>
-          <DialogDescription>
-            L'article sera créé avec un stock initial de 0. La quantité sera ajoutée par l'approvisionnement.
-          </DialogDescription>
-        </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4 overflow-y-auto flex-1 pr-2">
+  // Contenu partagé entre Sheet et Dialog
+  const formContent = (
+    <>
+      {/* Header pour Sheet (mobile) */}
+      <div className="md:hidden p-4 sm:p-6 border-b flex-shrink-0">
+        <h2 className="font-heading text-base font-bold">Créer un Nouvel Article</h2>
+        <p className="text-xs text-muted-foreground mt-1">
+          Stock initial de 0. La quantité sera ajoutée par l'approvisionnement.
+        </p>
+      </div>
+
+      <form onSubmit={handleSubmit} className="space-y-3 sm:space-y-4 overflow-y-auto flex-1 min-h-0 p-4 sm:p-6">
           <FormField
             label="Nom de l'article *"
             placeholder="Ex: Abaya Noire Premium"
@@ -295,26 +300,57 @@ const NouvelArticleModal = ({ open, onOpenChange, onArticleCreated }: NouvelArti
             </p>
           </div>
 
-          <div className="flex gap-2 pt-2">
+          <div className="bg-muted/50 border border-border rounded-lg p-3">
+            <p className="text-xs text-muted-foreground">
+              <strong>Note:</strong> L'article sera créé avec un stock de 0. La quantité sera automatiquement
+              ajoutée lorsque vous compléterez l'approvisionnement.
+            </p>
+          </div>
+
+          <div className="flex flex-col-reverse sm:flex-row gap-3 pt-2">
             <button
               type="button"
               onClick={() => {
                 resetForm();
                 onOpenChange(false);
               }}
-              className="flex-1 py-2.5 rounded-lg border border-border text-sm font-medium text-muted-foreground hover:bg-secondary transition-colors"
+              className="w-full sm:flex-1 h-12 rounded-lg border border-border text-base font-medium text-muted-foreground hover:bg-secondary active:scale-[0.98] transition-all"
             >
               Annuler
             </button>
             <button
               type="submit"
               disabled={createArticle.isPending}
-              className="flex-1 py-2.5 rounded-lg gradient-gold text-primary-foreground text-sm font-semibold hover:opacity-90 transition-opacity disabled:opacity-50"
+              className="w-full sm:flex-1 h-12 rounded-lg gradient-gold text-primary-foreground text-base font-semibold hover:opacity-90 active:scale-[0.98] transition-all disabled:opacity-50"
             >
               {createArticle.isPending ? 'Création...' : 'Créer l\'article'}
             </button>
           </div>
         </form>
+    </>
+  );
+
+  // Rendu conditionnel : Sheet pour mobile, Dialog pour desktop
+  if (isMobile) {
+    return (
+      <Sheet open={open} onOpenChange={onOpenChange}>
+        <SheetContent side="bottom" className="h-[95vh] p-0 flex flex-col" onOpenAutoFocus={(e) => e.preventDefault()}>
+          {formContent}
+        </SheetContent>
+      </Sheet>
+    );
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-[95vw] sm:max-w-md h-[90vh] flex flex-col p-0" onOpenAutoFocus={(e) => e.preventDefault()}>
+        <DialogHeader className="px-4 sm:px-6 py-4 sm:py-5 border-b flex-shrink-0">
+          <DialogTitle className="font-heading">Créer un Nouvel Article</DialogTitle>
+          <DialogDescription>
+            L'article sera créé avec un stock initial de 0. La quantité sera ajoutée par l'approvisionnement.
+          </DialogDescription>
+        </DialogHeader>
+        {formContent}
       </DialogContent>
     </Dialog>
   );
