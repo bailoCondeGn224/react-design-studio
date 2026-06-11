@@ -1,5 +1,6 @@
-import { Package, Edit, Trash2, History, AlertCircle, Flame, Zap, Clock, Snail, ShoppingCart } from "lucide-react";
+import { Package, Edit, Trash2, History, AlertCircle, Flame, Zap, Clock, Snail, ShoppingCart, Calendar } from "lucide-react";
 import { getPhotoUrl } from "@/lib/api-client";
+import { getExpirationInfo } from "@/utils/expiration";
 
 interface ArticleCardProps {
   article: any;
@@ -24,6 +25,7 @@ const ArticleCard = ({
 }: ArticleCardProps) => {
   const status = getStockStatus(article.stock, article.seuilAlerte);
   const photoUrl = article.photo ? getPhotoUrl(article.photo) : null;
+  const expirationInfo = getExpirationInfo(article.dateExpiration, article.delaiAlerteExpiration);
 
   // Couleurs du badge stock
   const isRupture = article.stock === 0;
@@ -79,6 +81,14 @@ const ArticleCard = ({
             {getRotationIcon()}
           </div>
         )}
+
+        {/* Badge Expiration - Overlay en bas (urgent seulement) */}
+        {expirationInfo.urgent && (
+          <div className={`absolute bottom-2 left-2 right-2 px-2.5 py-1.5 rounded-lg backdrop-blur-sm flex items-center gap-1.5 shadow-lg border ${expirationInfo.couleur}`}>
+            <Calendar className="w-3.5 h-3.5 flex-shrink-0" />
+            <span className="text-xs font-bold truncate">{expirationInfo.label}</span>
+          </div>
+        )}
       </div>
 
       {/* INFORMATIONS - Style Post Facebook */}
@@ -130,6 +140,14 @@ const ArticleCard = ({
           <span>•</span>
           <span className="truncate">{article.categorieNom || '-'}</span>
         </div>
+
+        {/* Badge Expiration complet (tous statuts) */}
+        {expirationInfo.statut !== 'aucune' && (
+          <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border ${expirationInfo.couleur}`}>
+            <Calendar className="w-3 h-3" />
+            {expirationInfo.label}
+          </div>
+        )}
 
         {/* Code article */}
         {article.code && (

@@ -31,6 +31,8 @@ const StockForm = ({ open, onOpenChange, onSubmit, initialData = null, mode = 'c
         prixVente: initialData.prixVente?.toString().replace(' GNF', '') || '',
         prixAchat: initialData.prixAchat?.toString().replace(' GNF', '') || '',
         reference: initialData.reference || '',
+        dateExpiration: initialData.dateExpiration || '',
+        delaiAlerteExpiration: initialData.delaiAlerteExpiration?.toString() || '30',
       };
     }
     return {
@@ -42,6 +44,8 @@ const StockForm = ({ open, onOpenChange, onSubmit, initialData = null, mode = 'c
       seuilAlerte: "",
       prixVente: "",
       prixAchat: "",
+      dateExpiration: "",
+      delaiAlerteExpiration: "30",
     };
   };
 
@@ -89,6 +93,8 @@ const StockForm = ({ open, onOpenChange, onSubmit, initialData = null, mode = 'c
         prixVente: initialData.prixVente?.replace(' GNF', '') || '',
         prixAchat: initialData.prixAchat?.replace(' GNF', '') || '',
         reference: initialData.reference || '',
+        dateExpiration: initialData.dateExpiration || '',
+        delaiAlerteExpiration: initialData.delaiAlerteExpiration?.toString() || '30',
       });
 
       // Afficher la photo existante si présente
@@ -151,6 +157,8 @@ const StockForm = ({ open, onOpenChange, onSubmit, initialData = null, mode = 'c
       seuilAlerte: Number(form.seuilAlerte),
       prixVente: Number(form.prixVente),
       prixAchat: form.prixAchat ? Number(form.prixAchat) : undefined,
+      dateExpiration: form.dateExpiration || undefined,
+      delaiAlerteExpiration: form.delaiAlerteExpiration ? Number(form.delaiAlerteExpiration) : undefined,
     };
 
     // Ne passer photo que si un nouveau fichier a été sélectionné
@@ -389,6 +397,25 @@ const StockForm = ({ open, onOpenChange, onSubmit, initialData = null, mode = 'c
               value={form.seuilAlerte}
               onChange={e => update("seuilAlerte", (e.target as HTMLInputElement).value)}
               min="0"
+            />
+          </div>
+
+          {/* Date d'expiration */}
+          <div className="grid grid-cols-1 gap-3">
+            <FormField
+              label="Date d'expiration (optionnel)"
+              type="date"
+              value={form.dateExpiration}
+              onChange={e => update("dateExpiration", (e.target as HTMLInputElement).value)}
+            />
+            <FormField
+              label="Délai d'alerte expiration (jours)"
+              type="number"
+              placeholder="30"
+              value={form.delaiAlerteExpiration}
+              onChange={e => update("delaiAlerteExpiration", (e.target as HTMLInputElement).value)}
+              min="1"
+              max="365"
             />
           </div>
 

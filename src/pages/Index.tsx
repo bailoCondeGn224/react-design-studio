@@ -3,7 +3,7 @@ import PageHeader from "@/components/PageHeader";
 import StatCard from "@/components/StatCard";
 import {
   Package, ShoppingCart, Users, Wallet, TrendingUp,
-  AlertTriangle, ArrowUpRight, UserCheck, Truck
+  AlertTriangle, ArrowUpRight, UserCheck, Truck, Calendar, Clock
 } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, AreaChart, Area } from "recharts";
 import { useVentesStats, useVentesRecent } from "@/hooks/useVentes";
@@ -11,6 +11,7 @@ import { useStockStats, useStockAlerts } from "@/hooks/useStock";
 import { useTopClients } from "@/hooks/useClients";
 import { useApprovisionnements } from "@/hooks/useApprovisionnements";
 import { useStatsFournisseurs } from "@/hooks/useFournisseurs";
+import { useExpirationStats } from "@/hooks/useExpirationStats";
 
 const Dashboard = () => {
   // Données temporaires pour les graphiques (à remplacer par vraies données quand disponibles)
@@ -38,6 +39,7 @@ const Dashboard = () => {
   const { data: approvisionnementsResponse } = useApprovisionnements({ page: 1, limit: 10 });
   const approvisionnements = approvisionnementsResponse?.data || [];
   const { data: fournisseursStats } = useStatsFournisseurs();
+  const { data: expirationStats } = useExpirationStats();
 
   const formatPrix = (prix: number) => {
     return new Intl.NumberFormat('fr-GN', {
@@ -97,6 +99,47 @@ const Dashboard = () => {
           icon={<AlertTriangle className="w-5 h-5 text-destructive" />}
         />
       </div>
+
+      {/* Alertes Expiration */}
+      {expirationStats && (expirationStats.expires > 0 || expirationStats.expirantBientot > 0) && (
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5 mb-6 sm:mb-8">
+          {expirationStats.expires > 0 && (
+            <div className="bg-gradient-to-br from-destructive/10 to-destructive/5 border-2 border-destructive/30 rounded-xl p-4 sm:p-5 shadow-card">
+              <div className="flex items-start justify-between">
+                <div className="flex-1">
+                  <div className="flex items-center gap-2 mb-2">
+                    <div className="w-10 h-10 rounded-lg bg-destructive/20 flex items-center justify-center">
+                      <Calendar className="w-5 h-5 text-destructive" />
+                    </div>
+                    <h3 className="font-heading font-semibold text-sm text-foreground">Produits Expirés</h3>
+                  </div>
+                  <p className="text-3xl font-black text-destructive mb-1">{expirationStats.expires}</p>
+                  <p className="text-xs text-muted-foreground">Produits à retirer du stock</p>
+                </div>
+                <AlertTriangle className="w-6 h-6 text-destructive animate-pulse" />
+              </div>
+            </div>
+          )}
+
+          {expirationStats.expirantBientot > 0 && (
+            <div className="bg-gradient-to-br from-orange-500/10 to-orange-500/5 border-2 border-orange-500/30 rounded-xl p-4 sm:p-5 shadow-card">
+              <div className="flex items-start justify-between">
+                <div className="flex-1">
+                  <div className="flex items-center gap-2 mb-2">
+                    <div className="w-10 h-10 rounded-lg bg-orange-500/20 flex items-center justify-center">
+                      <Clock className="w-5 h-5 text-orange-600 dark:text-orange-400" />
+                    </div>
+                    <h3 className="font-heading font-semibold text-sm text-foreground">Expirent Bientôt</h3>
+                  </div>
+                  <p className="text-3xl font-black text-orange-600 dark:text-orange-400 mb-1">{expirationStats.expirantBientot}</p>
+                  <p className="text-xs text-muted-foreground">Produits à vendre en priorité</p>
+                </div>
+                <Clock className="w-6 h-6 text-orange-600 dark:text-orange-400" />
+              </div>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Charts Row */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-5 mb-6 sm:mb-8">
