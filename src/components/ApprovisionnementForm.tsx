@@ -101,7 +101,7 @@ const ApprovisionnementForm = ({ open, onOpenChange, onSubmit, initialData = nul
   const ajouterLigne = () => {
     setForm(prev => ({
       ...prev,
-      lignes: [...prev.lignes, { articleId: "", nom: "", quantite: 1, prixUnitaire: 0, sousTotal: 0 }]
+      lignes: [...prev.lignes, { articleId: "", nom: "", quantite: 1, prixUnitaire: 0, sousTotal: 0, dateExpiration: "", delaiAlerteExpiration: 30 }]
     }));
   };
 
@@ -155,6 +155,8 @@ const ApprovisionnementForm = ({ open, onOpenChange, onSubmit, initialData = nul
           seuilAlerte: newArticle.seuilAlerte,
           ancienPMP: newArticle.prixAchat || 0,
           fournisseurPrefereNom: newArticle.fournisseurPrefereNom,
+          dateExpiration: newArticle.dateExpiration || "",
+          delaiAlerteExpiration: newArticle.delaiAlerteExpiration || 30,
           sousTotal: Number(newLignes[currentLigneIndex].quantite || 1) * (Number(newArticle.prixAchat) || 0)
         };
         return { ...prev, lignes: newLignes };
@@ -232,6 +234,8 @@ const ApprovisionnementForm = ({ open, onOpenChange, onSubmit, initialData = nul
       quantite: Number(ligne.quantite),
       prixUnitaire: Number(ligne.prixUnitaire),
       sousTotal: Number(ligne.sousTotal),
+      dateExpiration: ligne.dateExpiration || undefined,
+      delaiAlerteExpiration: ligne.delaiAlerteExpiration ? Number(ligne.delaiAlerteExpiration) : undefined,
     }));
 
     const approvisionementData = {
@@ -362,6 +366,8 @@ const ApprovisionnementForm = ({ open, onOpenChange, onSubmit, initialData = nul
                                     seuilAlerte: article.seuilAlerte,
                                     ancienPMP: article.prixAchat || 0,
                                     fournisseurPrefereNom: article.fournisseurPrefereNom,
+                                    dateExpiration: article.dateExpiration || "",
+                                    delaiAlerteExpiration: article.delaiAlerteExpiration || 30,
                                     sousTotal: Number(newLignes[index].quantite || 1) * (Number(article.prixAchat) || 0)
                                   };
                                   return { ...prev, lignes: newLignes };
@@ -439,6 +445,38 @@ const ApprovisionnementForm = ({ open, onOpenChange, onSubmit, initialData = nul
                           </Button>
                         </div>
                       </div>
+
+                      {/* Champs Date d'expiration */}
+                      {ligne.articleId && (
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3 pt-2 border-t border-border">
+                          <div>
+                            <label className="block text-xs font-medium text-muted-foreground mb-1.5 flex items-center gap-1">
+                              <Calendar className="w-3 h-3" />
+                              Date d'expiration
+                            </label>
+                            <input
+                              type="date"
+                              className="w-full px-3 h-10 rounded-lg border border-border bg-background text-foreground focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 text-sm"
+                              value={ligne.dateExpiration || ""}
+                              onChange={e => updateLigne(index, "dateExpiration", e.target.value)}
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-xs font-medium text-muted-foreground mb-1.5">
+                              Délai alerte (jours)
+                            </label>
+                            <input
+                              type="number"
+                              className="w-full px-3 h-10 rounded-lg border border-border bg-background text-foreground focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 text-sm"
+                              placeholder="30"
+                              min="1"
+                              max="365"
+                              value={ligne.delaiAlerteExpiration || ""}
+                              onChange={e => updateLigne(index, "delaiAlerteExpiration", e.target.value)}
+                            />
+                          </div>
+                        </div>
+                      )}
 
                       {/* Affichage de l'impact */}
                       {ligne.articleId && ligne.quantite > 0 && ligne.prixUnitaire > 0 && (
