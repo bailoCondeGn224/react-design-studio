@@ -1,7 +1,7 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
-import { Building2, Mail, Phone, Clock, CheckCircle, XCircle, AlertTriangle, RefreshCw, Edit, Trash2, UserPlus, Calendar } from "lucide-react";
+import { Building2, Mail, Phone, Clock, CheckCircle, XCircle, AlertTriangle, RefreshCw, Edit, Trash2, UserPlus, Calendar, MoreHorizontal, Sparkles } from "lucide-react";
 import { OrganizationStatus } from "@/types";
 
 interface OrganizationMobileCardProps {
@@ -30,156 +30,221 @@ const OrganizationMobileCard = ({
   formatDate,
 }: OrganizationMobileCardProps) => {
 
-  const getStatusBadge = (statut: OrganizationStatus) => {
+  const getStatusConfig = (statut: OrganizationStatus) => {
     switch (statut) {
       case OrganizationStatus.EN_ATTENTE:
-        return (
-          <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-warning/10 text-warning">
-            <Clock className="w-3 h-3" />
-            En attente
-          </span>
-        );
+        return {
+          icon: Clock,
+          label: "En attente",
+          bgColor: "bg-warning/10",
+          textColor: "text-warning",
+          borderColor: "border-warning/30"
+        };
       case OrganizationStatus.APPROUVE:
-        return (
-          <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-success/10 text-success">
-            <CheckCircle className="w-3 h-3" />
-            Approuvée
-          </span>
-        );
+        return {
+          icon: CheckCircle,
+          label: "Approuvée",
+          bgColor: "bg-success/10",
+          textColor: "text-success",
+          borderColor: "border-success/30"
+        };
       case OrganizationStatus.REJETE:
-        return (
-          <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-destructive/10 text-destructive">
-            <XCircle className="w-3 h-3" />
-            Rejetée
-          </span>
-        );
+        return {
+          icon: XCircle,
+          label: "Rejetée",
+          bgColor: "bg-destructive/10",
+          textColor: "text-destructive",
+          borderColor: "border-destructive/30"
+        };
       case OrganizationStatus.SUSPENDU:
-        return (
-          <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-orange-500/10 text-orange-500">
-            <AlertTriangle className="w-3 h-3" />
-            Suspendue
-          </span>
-        );
+        return {
+          icon: AlertTriangle,
+          label: "Suspendue",
+          bgColor: "bg-orange-500/10",
+          textColor: "text-orange-500",
+          borderColor: "border-orange-500/30"
+        };
       default:
         return null;
     }
   };
 
+  const statusConfig = org.statut ? getStatusConfig(org.statut) : null;
+  const StatusIcon = statusConfig?.icon;
+
   return (
-    <Card className="transition-shadow hover:shadow-lg overflow-hidden">
+    <Card className={`overflow-hidden transition-all duration-200 ${
+      statusConfig ? `border-l-4 ${statusConfig.borderColor}` : ''
+    }`}>
       <CardContent className="p-0">
-        {/* En-tête */}
-        <div className="flex items-center justify-between p-4 border-b border-border/50">
-          <div className="flex items-center gap-3 flex-1 min-w-0">
-            <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-              <Building2 className="w-5 h-5 text-primary" />
+        {/* Header avec nom et statut */}
+        <div className="p-4 pb-3">
+          <div className="flex items-start justify-between gap-3">
+            <div className="flex items-center gap-3 flex-1 min-w-0">
+              <div className={`w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0 ${
+                statusConfig ? statusConfig.bgColor : 'bg-primary/10'
+              }`}>
+                <Building2 className={`w-5 h-5 ${statusConfig ? statusConfig.textColor : 'text-primary'}`} />
+              </div>
+              <div className="flex-1 min-w-0">
+                <h3 className="text-base font-bold text-foreground truncate">{org.nom}</h3>
+                <p className="text-xs text-muted-foreground truncate">{org.slug}</p>
+              </div>
             </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-bold text-foreground truncate">{org.nom}</p>
-              <p className="text-xs text-muted-foreground">{org.slug}</p>
-            </div>
-          </div>
-          <div className="flex-shrink-0">
-            {org.statut && getStatusBadge(org.statut)}
+
+            {/* Badge statut compact */}
+            {statusConfig && StatusIcon && (
+              <div className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${statusConfig.bgColor} ${statusConfig.textColor}`}>
+                <StatusIcon className="w-3.5 h-3.5" />
+                <span className="hidden xs:inline">{statusConfig.label}</span>
+              </div>
+            )}
           </div>
         </div>
 
-        {/* Plan */}
-        <div className="px-4 py-2 border-b border-border/50">
+        {/* Infos compactes */}
+        <div className="px-4 pb-3 space-y-2">
+          {/* Plan */}
           <div className="flex items-center justify-between">
-            <span className="text-xs text-muted-foreground">Plan</span>
-            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-primary/10 text-primary">
+            <div className="flex items-center gap-2 text-muted-foreground">
+              <Sparkles className="w-4 h-4" />
+              <span className="text-xs">Plan</span>
+            </div>
+            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-primary/10 text-primary">
               {org.plan?.nom || 'N/A'}
             </span>
           </div>
-        </div>
 
-        {/* Détails */}
-        <div className="p-4 space-y-3 bg-muted/30">
-          {org.email && (
-            <div className="flex items-center gap-2">
-              <Mail className="w-4 h-4 text-muted-foreground flex-shrink-0" />
-              <p className="text-sm text-foreground truncate">{org.email}</p>
+          {/* Contact */}
+          {(org.email || org.telephone) && (
+            <div className="flex items-center gap-3 text-sm">
+              {org.email && (
+                <div className="flex items-center gap-1.5 text-muted-foreground flex-1 min-w-0">
+                  <Mail className="w-3.5 h-3.5 flex-shrink-0" />
+                  <span className="truncate text-xs">{org.email}</span>
+                </div>
+              )}
+              {org.telephone && (
+                <div className="flex items-center gap-1.5 text-muted-foreground">
+                  <Phone className="w-3.5 h-3.5 flex-shrink-0" />
+                  <span className="text-xs">{org.telephone}</span>
+                </div>
+              )}
             </div>
           )}
-          {org.telephone && (
-            <div className="flex items-center gap-2">
-              <Phone className="w-4 h-4 text-muted-foreground flex-shrink-0" />
-              <p className="text-sm text-foreground">{org.telephone}</p>
-            </div>
-          )}
+
+          {/* Date création */}
           {org.createdAt && (
-            <div className="flex items-center justify-between pt-2 border-t border-border/50">
-              <div className="flex items-center gap-2">
-                <Calendar className="w-4 h-4 text-muted-foreground" />
-                <span className="text-xs text-muted-foreground">Créée le</span>
-              </div>
-              <span className="text-xs font-medium text-foreground">{formatDate(org.createdAt)}</span>
+            <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+              <Calendar className="w-3.5 h-3.5" />
+              <span>Créée le {formatDate(org.createdAt)}</span>
             </div>
           )}
         </div>
 
         {/* Actions */}
-        <div className="p-3 border-t border-border bg-card">
+        <div className="p-3 pt-0">
           {showPendingActions ? (
+            /* Actions rapides pour organisations en attente */
             <div className="flex gap-2">
               <Button
                 variant="outline"
-                size="lg"
+                size="default"
                 onClick={() => onApprove(org.id)}
-                className="flex-1 text-success border-success/30 hover:bg-success/10"
+                className="flex-1 h-11 text-success border-success/30 hover:bg-success/10 hover:text-success font-semibold"
               >
                 <CheckCircle className="w-4 h-4 mr-2" />
                 Approuver
               </Button>
               <Button
                 variant="outline"
-                size="lg"
+                size="default"
                 onClick={() => onReject(org.id)}
-                className="flex-1 text-destructive border-destructive/30 hover:bg-destructive/10"
+                className="flex-1 h-11 text-destructive border-destructive/30 hover:bg-destructive/10 hover:text-destructive font-semibold"
               >
                 <XCircle className="w-4 h-4 mr-2" />
                 Rejeter
               </Button>
             </div>
           ) : (
+            /* Sheet avec toutes les actions */
             <Sheet>
               <SheetTrigger asChild>
-                <Button variant="outline" size="lg" className="w-full text-sm font-semibold">
+                <Button
+                  variant="outline"
+                  size="default"
+                  className="w-full h-11 text-sm font-semibold gap-2"
+                >
+                  <MoreHorizontal className="w-4 h-4" />
                   Actions
                 </Button>
               </SheetTrigger>
-              <SheetContent side="bottom" className="h-auto max-h-[85vh]">
-                <SheetHeader className="mb-4">
-                  <SheetTitle className="text-left text-lg">{org.nom}</SheetTitle>
+              <SheetContent side="bottom" className="h-auto max-h-[85vh] rounded-t-2xl">
+                <SheetHeader className="pb-4 border-b border-border">
+                  <div className="flex items-center gap-3">
+                    <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${
+                      statusConfig ? statusConfig.bgColor : 'bg-primary/10'
+                    }`}>
+                      <Building2 className={`w-6 h-6 ${statusConfig ? statusConfig.textColor : 'text-primary'}`} />
+                    </div>
+                    <div className="flex-1 text-left">
+                      <SheetTitle className="text-lg">{org.nom}</SheetTitle>
+                      <p className="text-sm text-muted-foreground">{org.plan?.nom || 'Aucun plan'}</p>
+                    </div>
+                    {statusConfig && StatusIcon && (
+                      <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium ${statusConfig.bgColor} ${statusConfig.textColor}`}>
+                        <StatusIcon className="w-3.5 h-3.5" />
+                        {statusConfig.label}
+                      </div>
+                    )}
+                  </div>
                 </SheetHeader>
 
-                {/* Infos rapides */}
-                <div className="space-y-3 mb-6">
+                {/* Infos détaillées */}
+                <div className="py-4 space-y-3 border-b border-border">
                   {org.email && (
-                    <div className="flex items-center gap-3 py-2 border-b border-border">
-                      <Mail className="w-4 h-4 text-muted-foreground flex-shrink-0" />
-                      <span className="text-sm">{org.email}</span>
+                    <div className="flex items-center gap-3">
+                      <div className="w-9 h-9 rounded-lg bg-muted flex items-center justify-center">
+                        <Mail className="w-4 h-4 text-muted-foreground" />
+                      </div>
+                      <div className="flex-1">
+                        <p className="text-xs text-muted-foreground">Email</p>
+                        <p className="text-sm font-medium">{org.email}</p>
+                      </div>
                     </div>
                   )}
                   {org.telephone && (
-                    <div className="flex items-center gap-3 py-2 border-b border-border">
-                      <Phone className="w-4 h-4 text-muted-foreground flex-shrink-0" />
-                      <span className="text-sm">{org.telephone}</span>
+                    <div className="flex items-center gap-3">
+                      <div className="w-9 h-9 rounded-lg bg-muted flex items-center justify-center">
+                        <Phone className="w-4 h-4 text-muted-foreground" />
+                      </div>
+                      <div className="flex-1">
+                        <p className="text-xs text-muted-foreground">Téléphone</p>
+                        <p className="text-sm font-medium">{org.telephone}</p>
+                      </div>
                     </div>
                   )}
-                  <div className="flex items-center justify-between py-2">
-                    <span className="text-sm text-muted-foreground">Statut</span>
-                    {org.statut && getStatusBadge(org.statut)}
-                  </div>
+                  {org.createdAt && (
+                    <div className="flex items-center gap-3">
+                      <div className="w-9 h-9 rounded-lg bg-muted flex items-center justify-center">
+                        <Calendar className="w-4 h-4 text-muted-foreground" />
+                      </div>
+                      <div className="flex-1">
+                        <p className="text-xs text-muted-foreground">Date de création</p>
+                        <p className="text-sm font-medium">{formatDate(org.createdAt)}</p>
+                      </div>
+                    </div>
+                  )}
                 </div>
 
-                {/* Actions buttons */}
-                <div className="space-y-3">
+                {/* Boutons d'actions */}
+                <div className="pt-4 space-y-2">
+                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3">Actions</p>
+
                   <Button
                     variant="outline"
                     size="lg"
-                    className="w-full justify-start text-left text-base"
+                    className="w-full justify-start h-12 text-base"
                     onClick={() => onEdit(org)}
                   >
                     <Edit className="w-5 h-5 mr-3" />
@@ -189,7 +254,7 @@ const OrganizationMobileCard = ({
                   <Button
                     variant="outline"
                     size="lg"
-                    className="w-full justify-start text-left text-base"
+                    className="w-full justify-start h-12 text-base"
                     onClick={() => onCreateAdmin(org)}
                   >
                     <UserPlus className="w-5 h-5 mr-3" />
@@ -202,7 +267,7 @@ const OrganizationMobileCard = ({
                       <Button
                         variant="outline"
                         size="lg"
-                        className="w-full justify-start text-left text-base text-success hover:text-success hover:bg-success/10 border-success/30"
+                        className="w-full justify-start h-12 text-base text-success hover:text-success hover:bg-success/10 border-success/30"
                         onClick={() => onApprove(org.id)}
                       >
                         <CheckCircle className="w-5 h-5 mr-3" />
@@ -211,7 +276,7 @@ const OrganizationMobileCard = ({
                       <Button
                         variant="outline"
                         size="lg"
-                        className="w-full justify-start text-left text-base text-destructive hover:text-destructive hover:bg-destructive/10 border-destructive/30"
+                        className="w-full justify-start h-12 text-base text-destructive hover:text-destructive hover:bg-destructive/10 border-destructive/30"
                         onClick={() => onReject(org.id)}
                       >
                         <XCircle className="w-5 h-5 mr-3" />
@@ -224,7 +289,7 @@ const OrganizationMobileCard = ({
                     <Button
                       variant="outline"
                       size="lg"
-                      className="w-full justify-start text-left text-base text-orange-500 hover:text-orange-500 hover:bg-orange-500/10 border-orange-500/30"
+                      className="w-full justify-start h-12 text-base text-orange-500 hover:text-orange-500 hover:bg-orange-500/10 border-orange-500/30"
                       onClick={() => onSuspend(org.id)}
                     >
                       <AlertTriangle className="w-5 h-5 mr-3" />
@@ -236,7 +301,7 @@ const OrganizationMobileCard = ({
                     <Button
                       variant="outline"
                       size="lg"
-                      className="w-full justify-start text-left text-base text-success hover:text-success hover:bg-success/10 border-success/30"
+                      className="w-full justify-start h-12 text-base text-success hover:text-success hover:bg-success/10 border-success/30"
                       onClick={() => onReactivate(org.id)}
                     >
                       <RefreshCw className="w-5 h-5 mr-3" />
@@ -248,7 +313,7 @@ const OrganizationMobileCard = ({
                     <Button
                       variant="outline"
                       size="lg"
-                      className="w-full justify-start text-left text-base text-success hover:text-success hover:bg-success/10 border-success/30"
+                      className="w-full justify-start h-12 text-base text-success hover:text-success hover:bg-success/10 border-success/30"
                       onClick={() => onApprove(org.id)}
                     >
                       <CheckCircle className="w-5 h-5 mr-3" />
@@ -256,15 +321,17 @@ const OrganizationMobileCard = ({
                     </Button>
                   )}
 
-                  <Button
-                    variant="outline"
-                    size="lg"
-                    className="w-full justify-start text-left text-base text-destructive hover:text-destructive hover:bg-destructive/10 border-destructive/30"
-                    onClick={() => onDelete(org.id)}
-                  >
-                    <Trash2 className="w-5 h-5 mr-3" />
-                    Supprimer
-                  </Button>
+                  <div className="pt-2 mt-2 border-t border-border">
+                    <Button
+                      variant="outline"
+                      size="lg"
+                      className="w-full justify-start h-12 text-base text-destructive hover:text-destructive hover:bg-destructive/10 border-destructive/30"
+                      onClick={() => onDelete(org.id)}
+                    >
+                      <Trash2 className="w-5 h-5 mr-3" />
+                      Supprimer
+                    </Button>
+                  </div>
                 </div>
               </SheetContent>
             </Sheet>

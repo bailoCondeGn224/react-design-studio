@@ -3,10 +3,10 @@ import PageHeader from "@/components/PageHeader";
 import OrganizationForm from "@/components/admin/OrganizationForm";
 import CreateOrgAdminForm from "@/components/admin/CreateOrgAdminForm";
 import OrganizationMobileCard from "@/components/admin/OrganizationMobileCard";
-import { Building2, Plus, Edit, Trash, Check, X, UserPlus, Clock, CheckCircle, XCircle, AlertTriangle, RefreshCw } from "lucide-react";
+import { Building2, Plus, Edit, Trash, Check, X, UserPlus, Clock, CheckCircle, XCircle, AlertTriangle, RefreshCw, Filter } from "lucide-react";
 import { toast } from "sonner";
 import { usersApi } from "@/api/users";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -59,6 +59,7 @@ const Organizations = () => {
   const [suspendDialogOpen, setSuspendDialogOpen] = useState(false);
   const [suspendOrgId, setSuspendOrgId] = useState<string | null>(null);
   const [suspendMotif, setSuspendMotif] = useState("");
+  const [mobileFilter, setMobileFilter] = useState<'all' | 'pending' | 'approved' | 'rejected' | 'suspended'>('all');
 
   const { data: organizations = [], isLoading } = useOrganizations();
   const { data: pendingOrganizations = [], isLoading: isPendingLoading } = usePendingOrganizations();
@@ -166,6 +167,31 @@ const Organizations = () => {
     });
   };
 
+  // Organisations filtrées pour mobile
+  const filteredMobileOrgs = useMemo(() => {
+    switch (mobileFilter) {
+      case 'pending':
+        return pendingOrganizations;
+      case 'approved':
+        return organizations.filter(o => o.statut === OrganizationStatus.APPROUVE);
+      case 'rejected':
+        return organizations.filter(o => o.statut === OrganizationStatus.REJETE);
+      case 'suspended':
+        return organizations.filter(o => o.statut === OrganizationStatus.SUSPENDU);
+      default:
+        return organizations;
+    }
+  }, [mobileFilter, organizations, pendingOrganizations]);
+
+  // Compteurs pour les filtres
+  const filterCounts = useMemo(() => ({
+    all: organizations.length,
+    pending: pendingOrganizations.length,
+    approved: organizations.filter(o => o.statut === OrganizationStatus.APPROUVE).length,
+    rejected: organizations.filter(o => o.statut === OrganizationStatus.REJETE).length,
+    suspended: organizations.filter(o => o.statut === OrganizationStatus.SUSPENDU).length,
+  }), [organizations, pendingOrganizations]);
+
   const getStatusBadge = (statut: OrganizationStatus) => {
     switch (statut) {
       case OrganizationStatus.EN_ATTENTE:
@@ -214,31 +240,105 @@ const Organizations = () => {
     );
   }
 
-  // Rendu mobile avec cartes
-  const renderOrganizationMobile = (orgs: any[], showPendingActions = false) => (
-    <div className="md:hidden space-y-3">
-      {orgs.length === 0 ? (
-        <div className="bg-card border border-border rounded-xl p-12 text-center">
-          <Building2 className="w-12 h-12 mx-auto mb-3 text-muted-foreground opacity-30" />
-          <p className="text-foreground font-medium">Aucune organisation</p>
+  // Configuration des filtres mobile
+  const mobileFilters = [
+    { key: 'all' as const, label: 'Toutes', icon: Building2, color: 'text-primary bg-primary/10' },
+    { key: 'pending' as const, label: 'En attente', icon: Clock, color: 'text-warning bg-warning/10' },
+    { key: 'approved' as const, label: 'Approuvées', icon: CheckCircle, color: 'text-success bg-success/10' },
+    { key: 'rejected' as const, label: 'Rejetées', icon: XCircle, color: 'text-destructive bg-destructive/10' },
+    { key: 'suspended' as const, label: 'Suspendues', icon: AlertTriangle, color: 'text-orange-500 bg-orange-500/10' },
+  ];
+
+  // Rendu mobile complet
+  const renderMobileView = () => (
+    <div className="md:hidden space-y-4">
+      {/* Filtres horizontaux scrollables */}
+      <div className="overflow-x-auto pb-2 -mx-4 px-4">
+        <div className="flex gap-2 min-w-max">
+          {mobileFilters.map(({ key, label, icon: Icon, color }) => {
+            const isActive = mobileFilter === key;
+            const count = filterCounts[key];
+            return (
+              <button
+                key={key}
+                onClick={() => setMobileFilter(key)}
+                className={`
+                  flex items-center gap-2 px-4 py-2.5 rounded-full text-sm font-medium
+                  transition-all duration-200 whitespace-nowrap
+                  ${isActive
+                    ? `${color} ring-2 ring-offset-2 ring-offset-background`
+                    : 'bg-muted/50 text-muted-foreground hover:bg-muted'
+                  }
+                  ${key === 'pending' && count > 0 && !isActive ? 'ring-2 ring-warning/50' : ''}
+                `}
+              >
+                <Icon className="w-4 h-4" />
+                <span>{label}</span>
+                {count > 0 && (
+                  <span className={`
+                    inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 text-xs font-bold rounded-full
+                    ${isActive ? 'bg-background/30 text-current' : 'bg-foreground/10 text-foreground'}
+                    ${key === 'pending' && count > 0 ? 'bg-warning text-white' : ''}
+                  `}>
+                    {count}
+                  </span>
+                )}
+              </button>
+            );
+          })}
         </div>
-      ) : (
-        orgs.map((org) => (
-          <OrganizationMobileCard
-            key={org.id}
-            org={org}
-            onEdit={handleEdit}
-            onDelete={setDeleteId}
-            onCreateAdmin={handleOpenAdminForm}
-            onApprove={handleApprove}
-            onReject={handleOpenRejectDialog}
-            onSuspend={handleOpenSuspendDialog}
-            onReactivate={handleReactivate}
-            showPendingActions={showPendingActions}
-            formatDate={formatDate}
-          />
-        ))
-      )}
+      </div>
+
+      {/* Liste des organisations */}
+      <div className="space-y-3">
+        {isPendingLoading && mobileFilter === 'pending' ? (
+          <div className="flex items-center justify-center py-12">
+            <div className="text-center">
+              <div className="w-10 h-10 border-4 border-primary/30 border-t-primary rounded-full animate-spin mx-auto mb-3" />
+              <p className="text-sm text-muted-foreground">Chargement...</p>
+            </div>
+          </div>
+        ) : filteredMobileOrgs.length === 0 ? (
+          <div className="bg-card border border-border rounded-xl p-10 text-center">
+            <div className={`w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center ${
+              mobileFilter === 'pending' ? 'bg-warning/10' :
+              mobileFilter === 'approved' ? 'bg-success/10' :
+              mobileFilter === 'rejected' ? 'bg-destructive/10' :
+              mobileFilter === 'suspended' ? 'bg-orange-500/10' : 'bg-muted'
+            }`}>
+              {mobileFilter === 'pending' && <Clock className="w-8 h-8 text-warning" />}
+              {mobileFilter === 'approved' && <CheckCircle className="w-8 h-8 text-success" />}
+              {mobileFilter === 'rejected' && <XCircle className="w-8 h-8 text-destructive" />}
+              {mobileFilter === 'suspended' && <AlertTriangle className="w-8 h-8 text-orange-500" />}
+              {mobileFilter === 'all' && <Building2 className="w-8 h-8 text-muted-foreground" />}
+            </div>
+            <p className="text-foreground font-semibold">Aucune organisation</p>
+            <p className="text-sm text-muted-foreground mt-1">
+              {mobileFilter === 'pending' && "Aucune demande en attente"}
+              {mobileFilter === 'approved' && "Aucune organisation approuvée"}
+              {mobileFilter === 'rejected' && "Aucune organisation rejetée"}
+              {mobileFilter === 'suspended' && "Aucune organisation suspendue"}
+              {mobileFilter === 'all' && "Créez votre première organisation"}
+            </p>
+          </div>
+        ) : (
+          filteredMobileOrgs.map((org) => (
+            <OrganizationMobileCard
+              key={org.id}
+              org={org}
+              onEdit={handleEdit}
+              onDelete={setDeleteId}
+              onCreateAdmin={handleOpenAdminForm}
+              onApprove={handleApprove}
+              onReject={handleOpenRejectDialog}
+              onSuspend={handleOpenSuspendDialog}
+              onReactivate={handleReactivate}
+              showPendingActions={mobileFilter === 'pending'}
+              formatDate={formatDate}
+            />
+          ))
+        )}
+      </div>
     </div>
   );
 
@@ -552,64 +652,62 @@ const Organizations = () => {
         </DialogContent>
       </Dialog>
 
-      {/* Onglets */}
-      <Tabs defaultValue="all" className="space-y-4">
-        <TabsList className="flex-wrap h-auto gap-1">
-          <TabsTrigger value="all">
-            Toutes ({organizations.length})
-          </TabsTrigger>
-          <TabsTrigger value="pending" className="relative">
-            En attente
-            {pendingOrganizations.length > 0 && (
-              <span className="ml-2 inline-flex items-center justify-center w-5 h-5 text-xs font-bold text-white bg-warning rounded-full">
-                {pendingOrganizations.length}
-              </span>
+      {/* Version Mobile */}
+      {renderMobileView()}
+
+      {/* Version Desktop avec onglets */}
+      <div className="hidden md:block">
+        <Tabs defaultValue="all" className="space-y-4">
+          <TabsList className="flex-wrap h-auto gap-1">
+            <TabsTrigger value="all">
+              Toutes ({organizations.length})
+            </TabsTrigger>
+            <TabsTrigger value="pending" className="relative">
+              En attente
+              {pendingOrganizations.length > 0 && (
+                <span className="ml-2 inline-flex items-center justify-center w-5 h-5 text-xs font-bold text-white bg-warning rounded-full">
+                  {pendingOrganizations.length}
+                </span>
+              )}
+            </TabsTrigger>
+            <TabsTrigger value="approved">
+              Approuvées ({organizations.filter(o => o.statut === OrganizationStatus.APPROUVE).length})
+            </TabsTrigger>
+            <TabsTrigger value="rejected">
+              Rejetées ({organizations.filter(o => o.statut === OrganizationStatus.REJETE).length})
+            </TabsTrigger>
+            <TabsTrigger value="suspended">
+              Suspendues ({organizations.filter(o => o.statut === OrganizationStatus.SUSPENDU).length})
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="all">
+            {renderOrganizationTable(organizations)}
+          </TabsContent>
+
+          <TabsContent value="pending">
+            {isPendingLoading ? (
+              <div className="flex items-center justify-center h-48">
+                <div className="w-8 h-8 border-4 border-primary/30 border-t-primary rounded-full animate-spin" />
+              </div>
+            ) : (
+              renderOrganizationTable(pendingOrganizations, true)
             )}
-          </TabsTrigger>
-          <TabsTrigger value="approved">
-            Approuvées ({organizations.filter(o => o.statut === OrganizationStatus.APPROUVE).length})
-          </TabsTrigger>
-          <TabsTrigger value="rejected">
-            Rejetées ({organizations.filter(o => o.statut === OrganizationStatus.REJETE).length})
-          </TabsTrigger>
-          <TabsTrigger value="suspended">
-            Suspendues ({organizations.filter(o => o.statut === OrganizationStatus.SUSPENDU).length})
-          </TabsTrigger>
-        </TabsList>
+          </TabsContent>
 
-        <TabsContent value="all">
-          {renderOrganizationMobile(organizations)}
-          {renderOrganizationTable(organizations)}
-        </TabsContent>
+          <TabsContent value="approved">
+            {renderOrganizationTable(organizations.filter(o => o.statut === OrganizationStatus.APPROUVE))}
+          </TabsContent>
 
-        <TabsContent value="pending">
-          {isPendingLoading ? (
-            <div className="flex items-center justify-center h-48">
-              <div className="w-8 h-8 border-4 border-primary/30 border-t-primary rounded-full animate-spin" />
-            </div>
-          ) : (
-            <>
-              {renderOrganizationMobile(pendingOrganizations, true)}
-              {renderOrganizationTable(pendingOrganizations, true)}
-            </>
-          )}
-        </TabsContent>
+          <TabsContent value="rejected">
+            {renderOrganizationTable(organizations.filter(o => o.statut === OrganizationStatus.REJETE))}
+          </TabsContent>
 
-        <TabsContent value="approved">
-          {renderOrganizationMobile(organizations.filter(o => o.statut === OrganizationStatus.APPROUVE))}
-          {renderOrganizationTable(organizations.filter(o => o.statut === OrganizationStatus.APPROUVE))}
-        </TabsContent>
-
-        <TabsContent value="rejected">
-          {renderOrganizationMobile(organizations.filter(o => o.statut === OrganizationStatus.REJETE))}
-          {renderOrganizationTable(organizations.filter(o => o.statut === OrganizationStatus.REJETE))}
-        </TabsContent>
-
-        <TabsContent value="suspended">
-          {renderOrganizationMobile(organizations.filter(o => o.statut === OrganizationStatus.SUSPENDU))}
-          {renderOrganizationTable(organizations.filter(o => o.statut === OrganizationStatus.SUSPENDU))}
-        </TabsContent>
-      </Tabs>
+          <TabsContent value="suspended">
+            {renderOrganizationTable(organizations.filter(o => o.statut === OrganizationStatus.SUSPENDU))}
+          </TabsContent>
+        </Tabs>
+      </div>
     </AppLayout>
   );
 };
