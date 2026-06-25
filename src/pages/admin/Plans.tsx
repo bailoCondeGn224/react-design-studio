@@ -1,6 +1,7 @@
 import AppLayout from "@/components/AppLayout";
 import PageHeader from "@/components/PageHeader";
 import PlanForm from "@/components/admin/PlanForm";
+import PlanMobileCard from "@/components/admin/PlanMobileCard";
 import { Sparkles, Plus, Edit, Trash, Check, X } from "lucide-react";
 import { useState } from "react";
 import {
@@ -122,8 +123,29 @@ const Plans = () => {
         </AlertDialogContent>
       </AlertDialog>
 
-      {/* Grille des plans */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5 lg:gap-6">
+      {/* Version mobile: Cartes avec Sheet */}
+      <div className="md:hidden space-y-3 mb-6">
+        {plans.length === 0 ? (
+          <div className="bg-card border border-border rounded-xl p-12 text-center">
+            <Sparkles className="w-12 h-12 mx-auto mb-3 text-muted-foreground opacity-30" />
+            <p className="text-foreground font-medium">Aucun plan trouvé</p>
+            <p className="text-sm text-muted-foreground mt-1">Créez votre premier plan tarifaire</p>
+          </div>
+        ) : (
+          plans.map((plan) => (
+            <PlanMobileCard
+              key={plan.id}
+              plan={plan}
+              onEdit={handleEdit}
+              onDelete={setDeleteId}
+              formatPrix={formatPrix}
+            />
+          ))
+        )}
+      </div>
+
+      {/* Version desktop: Grille des plans */}
+      <div className="hidden md:grid grid-cols-2 lg:grid-cols-3 gap-5 lg:gap-6">
         {plans.length === 0 ? (
           <div className="col-span-full text-center py-12 text-muted-foreground">
             <Sparkles className="w-12 h-12 mx-auto mb-3 opacity-40" />
@@ -137,15 +159,15 @@ const Plans = () => {
               className="bg-card rounded-xl border shadow-card overflow-hidden hover:shadow-elevated transition-all duration-300"
             >
               {/* Header */}
-              <div className="p-4 sm:p-5 lg:p-6 bg-gradient-to-br from-primary/10 to-primary/5 border-b">
-                <div className="flex items-start justify-between mb-2 sm:mb-3">
+              <div className="p-5 lg:p-6 bg-gradient-to-br from-primary/10 to-primary/5 border-b">
+                <div className="flex items-start justify-between mb-3">
                   <div className="flex items-center gap-2">
-                    <div className="p-1.5 sm:p-2 rounded-lg bg-primary/20">
-                      <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
+                    <div className="p-2 rounded-lg bg-primary/20">
+                      <Sparkles className="w-5 h-5 text-primary" />
                     </div>
                     <div>
-                      <h3 className="font-heading font-bold text-sm sm:text-base lg:text-lg">{plan.nom}</h3>
-                      <p className="text-[10px] sm:text-xs text-muted-foreground">{plan.code}</p>
+                      <h3 className="font-heading font-bold text-base lg:text-lg">{plan.nom}</h3>
+                      <p className="text-xs text-muted-foreground">{plan.code}</p>
                     </div>
                   </div>
                   <DropdownMenu>
@@ -171,21 +193,21 @@ const Plans = () => {
                   </DropdownMenu>
                 </div>
 
-                <div className="mt-3 sm:mt-4">
+                <div className="mt-4">
                   <div className="flex items-baseline gap-1">
-                    <span className="text-base sm:text-lg lg:text-xl font-bold">{formatPrix(plan.prixMensuel)}</span>
-                    <span className="text-[10px] sm:text-xs text-muted-foreground">/mois</span>
+                    <span className="text-lg lg:text-xl font-bold">{formatPrix(plan.prixMensuel)}</span>
+                    <span className="text-xs text-muted-foreground">/mois</span>
                   </div>
                 </div>
 
-                <div className="mt-2 sm:mt-3">
+                <div className="mt-3">
                   {plan.actif ? (
-                    <span className="inline-flex items-center gap-1 text-[10px] sm:text-xs text-success bg-success/10 px-2 py-1 rounded-full">
+                    <span className="inline-flex items-center gap-1 text-xs text-success bg-success/10 px-2 py-1 rounded-full">
                       <Check className="w-3 h-3" />
                       Actif
                     </span>
                   ) : (
-                    <span className="inline-flex items-center gap-1 text-[10px] sm:text-xs text-muted-foreground bg-muted px-2 py-1 rounded-full">
+                    <span className="inline-flex items-center gap-1 text-xs text-muted-foreground bg-muted px-2 py-1 rounded-full">
                       <X className="w-3 h-3" />
                       Inactif
                     </span>
@@ -194,11 +216,11 @@ const Plans = () => {
               </div>
 
               {/* Body */}
-              <div className="p-4 sm:p-5 lg:p-6">
+              <div className="p-5 lg:p-6">
                 {plan.description ? (
-                  <p className="text-[10px] sm:text-xs lg:text-sm text-muted-foreground line-clamp-3">{plan.description}</p>
+                  <p className="text-xs lg:text-sm text-muted-foreground line-clamp-3">{plan.description}</p>
                 ) : (
-                  <p className="text-[10px] sm:text-xs lg:text-sm text-muted-foreground italic">Aucune description</p>
+                  <p className="text-xs lg:text-sm text-muted-foreground italic">Aucune description</p>
                 )}
               </div>
             </div>

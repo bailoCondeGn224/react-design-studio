@@ -52,7 +52,7 @@ const Stock = () => {
   const [historyArticleId, setHistoryArticleId] = useState<string | null>(null);
   const [selectedImage, setSelectedImage] = useState<{ url: string; nom: string } | null>(null);
   const [page, setPage] = useState(1);
-  const [limit] = useState(10);
+  const [limit, setLimit] = useState(20); // Par défaut 20 articles pour meilleure UX
   const [historyPage, setHistoryPage] = useState(1);
   const [historyLimit] = useState(10);
   const isMobile = useIsMobile();
@@ -147,10 +147,10 @@ const Stock = () => {
     }
   };
 
-  // Réinitialiser la page quand les filtres changent
+  // Réinitialiser la page quand les filtres ou la limite changent
   useEffect(() => {
     setPage(1);
-  }, [debouncedSearch, selectedCategorieId]);
+  }, [debouncedSearch, selectedCategorieId, limit]);
 
   // Statistiques d'alerte (depuis le backend)
   const articlesEnRupture = stockStats?.articlesEnRupture || 0;
@@ -1251,10 +1251,19 @@ const Stock = () => {
       </div>
       </div>
 
-      {/* Pagination partagée */}
+      {/* Pagination partagée - Optimisée pour grands datasets */}
       {meta && (
         <div className="mt-6">
-          <Pagination meta={meta} onPageChange={setPage} />
+          <Pagination
+            meta={meta}
+            onPageChange={setPage}
+            onLimitChange={(newLimit) => {
+              setLimit(newLimit);
+              setPage(1); // Retour à la première page quand on change la taille
+            }}
+            showPageSizeSelector={true}
+            pageSizeOptions={[10, 20, 50, 100]}
+          />
         </div>
       )}
     </AppLayout>

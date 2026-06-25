@@ -104,7 +104,7 @@ export default defineConfig(({ mode }) => ({
         clientsClaim: true
       },
       devOptions: {
-        enabled: true,
+        enabled: false, // Désactivé en dev pour éviter les problèmes de cache
         type: 'module',
         navigateFallback: 'index.html'
       }

@@ -14,6 +14,7 @@ import { PWAUpdateNotification, OfflineIndicator } from "./components/PWAUpdateN
 
 // Lazy load all pages for code splitting and better performance
 const Login = lazy(() => import("./pages/Login.tsx"));
+const Register = lazy(() => import("./pages/Register.tsx"));
 const ChangePassword = lazy(() => import("./pages/ChangePassword.tsx"));
 const Index = lazy(() => import("./pages/Index.tsx"));
 const Fournisseurs = lazy(() => import("./pages/Fournisseurs.tsx"));
@@ -70,6 +71,7 @@ const App = () => (
           <Suspense fallback={<LoadingFallback />}>
             <Routes>
               <Route path="/login" element={<Login />} />
+              <Route path="/register" element={<Register />} />
               <Route path="/change-password" element={<ChangePassword />} />
               <Route
                 path="/"

@@ -4,7 +4,7 @@ import UserForm from "@/components/UserForm";
 import UtilisateurMobileCard from "@/components/UtilisateurMobileCard";
 import Pagination from "@/components/Pagination";
 import CanAccess from "@/components/CanAccess";
-import { Plus, Edit, Trash, Shield, MoreVertical, UserCircle } from "lucide-react";
+import { Plus, Edit, Trash, Shield, MoreVertical, UserCircle, UserCheck, UserX, Check, X } from "lucide-react";
 import { useState } from "react";
 import {
   DropdownMenu,
@@ -23,7 +23,8 @@ import {
   AlertDialogHeader,
   AlertDialogTitle
 } from "@/components/ui/alert-dialog";
-import { useUsers, useCreateUser, useUpdateUser, useDeleteUser } from "@/hooks/useUsers";
+import { Switch } from "@/components/ui/switch";
+import { useUsers, useCreateUser, useUpdateUser, useDeleteUser, useToggleUserStatus } from "@/hooks/useUsers";
 
 const Utilisateurs = () => {
   const [formOpen, setFormOpen] = useState(false);
@@ -38,6 +39,7 @@ const Utilisateurs = () => {
   const createUser = useCreateUser();
   const updateUser = useUpdateUser();
   const deleteUser = useDeleteUser();
+  const toggleUserStatus = useToggleUserStatus();
 
   const handleEdit = (item: any) => {
     setEditingItem(item);
@@ -66,6 +68,10 @@ const Utilisateurs = () => {
     if (!open) {
       setEditingItem(null);
     }
+  };
+
+  const handleToggleStatus = (userId: string, newStatus: boolean) => {
+    toggleUserStatus.mutate({ userId, actif: newStatus });
   };
 
   const getRoleBadgeColor = (roleName: string) => {
@@ -149,6 +155,7 @@ const Utilisateurs = () => {
               user={user}
               onEdit={handleEdit}
               onDelete={setDeleteId}
+              onToggleStatus={handleToggleStatus}
               getRoleBadgeColor={getRoleBadgeColor}
             />
           ))
@@ -170,6 +177,7 @@ const Utilisateurs = () => {
                 <th className="text-left text-[10px] sm:text-xs font-bold uppercase tracking-wide text-foreground px-4 sm:px-6 py-3 sm:py-4">Utilisateur</th>
                 <th className="text-left text-[10px] sm:text-xs font-bold uppercase tracking-wide text-foreground px-4 sm:px-6 py-3 sm:py-4">Email</th>
                 <th className="text-center text-[10px] sm:text-xs font-bold uppercase tracking-wide text-foreground px-4 sm:px-6 py-3 sm:py-4">Rôle</th>
+                <th className="text-center text-[10px] sm:text-xs font-bold uppercase tracking-wide text-foreground px-4 sm:px-6 py-3 sm:py-4">Statut</th>
                 <th className="text-center text-[10px] sm:text-xs font-bold uppercase tracking-wide text-foreground px-4 sm:px-6 py-3 sm:py-4 hidden sm:table-cell">Permissions</th>
                 <th className="text-center text-[10px] sm:text-xs font-bold uppercase tracking-wide text-foreground px-4 sm:px-6 py-3 sm:py-4">Actions</th>
               </tr>
@@ -177,17 +185,17 @@ const Utilisateurs = () => {
             <tbody className="divide-y divide-border">
               {users.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="px-6 py-12 text-center text-muted-foreground">
+                  <td colSpan={6} className="px-6 py-12 text-center text-muted-foreground">
                     Aucun utilisateur trouvé
                   </td>
                 </tr>
               ) : (
                 users.map((user: any) => (
-                  <tr key={user.id} className="hover:bg-secondary/30 transition-colors">
+                  <tr key={user.id} className={`hover:bg-secondary/30 transition-colors ${user.actif === false ? 'opacity-60' : ''}`}>
                     <td className="px-4 sm:px-6 py-3 sm:py-4">
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                          <UserCircle className="w-6 h-6 text-primary" />
+                        <div className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${user.actif === false ? 'bg-muted' : 'bg-primary/10'}`}>
+                          <UserCircle className={`w-6 h-6 ${user.actif === false ? 'text-muted-foreground' : 'text-primary'}`} />
                         </div>
                         <div>
                           <p className="text-sm font-semibold text-foreground">{user.nom}</p>
@@ -213,6 +221,27 @@ const Utilisateurs = () => {
                         <span className="text-xs text-muted-foreground italic">Aucun rôle</span>
                       )}
                     </td>
+                    <td className="px-4 sm:px-6 py-3 sm:py-4 text-center">
+                      {user.isSuperAdmin ? (
+                        <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-primary/10 text-primary">
+                          <Shield className="w-3 h-3" />
+                          Super Admin
+                        </span>
+                      ) : (
+                        <CanAccess permissions={['users.update']}>
+                          <div className="inline-flex items-center gap-2">
+                            <Switch
+                              checked={user.actif === true}
+                              onCheckedChange={(checked) => handleToggleStatus(user.id, checked)}
+                              disabled={toggleUserStatus.isPending}
+                            />
+                            <span className={`text-xs font-medium ${user.actif === true ? 'text-success' : 'text-muted-foreground'}`}>
+                              {user.actif === true ? 'Actif' : 'Inactif'}
+                            </span>
+                          </div>
+                        </CanAccess>
+                      )}
+                    </td>
                     <td className="px-4 sm:px-6 py-3 sm:py-4 text-center hidden sm:table-cell">
                       <span className="text-sm font-semibold text-foreground">
                         {user.role?.permissions?.length || 0} permissions
@@ -231,6 +260,24 @@ const Utilisateurs = () => {
                               <Edit className="w-4 h-4 mr-2" />
                               Modifier
                             </DropdownMenuItem>
+                            {!user.isSuperAdmin && (
+                              <DropdownMenuItem
+                                onClick={() => handleToggleStatus(user.id, user.actif === false)}
+                                className={user.actif !== false ? 'text-destructive focus:text-destructive' : 'text-success focus:text-success'}
+                              >
+                                {user.actif !== false ? (
+                                  <>
+                                    <UserX className="w-4 h-4 mr-2" />
+                                    Désactiver
+                                  </>
+                                ) : (
+                                  <>
+                                    <UserCheck className="w-4 h-4 mr-2" />
+                                    Activer
+                                  </>
+                                )}
+                              </DropdownMenuItem>
+                            )}
                           </CanAccess>
                           <CanAccess permissions={['users.delete']}>
                             <DropdownMenuSeparator />

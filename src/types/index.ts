@@ -90,12 +90,22 @@ export interface UpdatePlanDto {
   actif?: boolean;
 }
 
+// Enum pour le statut des organisations
+export enum OrganizationStatus {
+  EN_ATTENTE = 'en_attente',
+  APPROUVE = 'approuve',
+  REJETE = 'rejete',
+  SUSPENDU = 'suspendu',
+}
+
 // Types pour les Organizations (Multi-tenant)
 export interface Organization {
   id: string;
   nom: string; // Nom complet de l'organisation
   slug: string; // URL-friendly identifier (ex: walli-industrie)
   actif: boolean;
+  statut: OrganizationStatus; // Statut de l'organisation
+  motifRejet?: string; // Motif de rejet ou suspension
   planId: string;
   plan?: Plan; // Relation optionnelle
   // Limites héritées du plan ou personnalisées
@@ -116,6 +126,34 @@ export interface Organization {
   mentionsLegales?: string;
   createdAt?: string;
   updatedAt?: string;
+}
+
+// DTO pour l'inscription d'une organisation (public)
+export interface OwnerInfo {
+  nom: string;
+  email: string;
+  telephone: string;
+}
+
+export interface RegisterOrganizationDto {
+  nom: string;
+  slug: string;
+  email: string;
+  telephone: string;
+  proprietaire: OwnerInfo;
+  logo?: string;
+  nomCourt?: string;
+  slogan?: string;
+  adresse?: string;
+  siteWeb?: string;
+  rccm?: string;
+  nif?: string;
+  registreCommerce?: string;
+}
+
+export interface RegisterOrganizationResponse {
+  organization: Organization;
+  message: string;
 }
 
 export interface CreateOrganizationDto {

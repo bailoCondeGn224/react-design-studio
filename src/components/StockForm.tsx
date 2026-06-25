@@ -52,7 +52,17 @@ const StockForm = ({ open, onOpenChange, onSubmit, initialData = null, mode = 'c
   const [form, setForm] = useState(getInitialState());
   const [photoFile, setPhotoFile] = useState<File | null>(null);
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
+  const [isCapturingPhoto, setIsCapturingPhoto] = useState(false);
   const isMobile = useIsMobile();
+
+  // Gérer la fermeture du dialog/sheet en bloquant pendant la capture photo
+  const handleOpenChange = (newOpen: boolean) => {
+    // Ne pas fermer si on est en train de capturer une photo
+    if (!newOpen && isCapturingPhoto) {
+      return;
+    }
+    onOpenChange(newOpen);
+  };
 
   // Restaurer l'état depuis sessionStorage au montage (mode create seulement)
   useEffect(() => {
@@ -115,12 +125,16 @@ const StockForm = ({ open, onOpenChange, onSubmit, initialData = null, mode = 'c
   const update = (field: string, value: string) => setForm(prev => ({ ...prev, [field]: value }));
 
   const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    // Désactiver le flag de capture
+    setIsCapturingPhoto(false);
+
     const file = e.target.files?.[0];
     if (!file) return;
 
     // Valider la taille (5MB max)
     if (file.size > 5 * 1024 * 1024) {
       toast.error("Fichier trop volumineux. Taille maximale: 5MB");
+      e.target.value = ''; // Reset input
       return;
     }
 
@@ -128,6 +142,7 @@ const StockForm = ({ open, onOpenChange, onSubmit, initialData = null, mode = 'c
     const validTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/jpg'];
     if (!validTypes.includes(file.type)) {
       toast.error("Format non supporté. Utilisez JPG, PNG ou WEBP");
+      e.target.value = ''; // Reset input
       return;
     }
 
@@ -139,7 +154,39 @@ const StockForm = ({ open, onOpenChange, onSubmit, initialData = null, mode = 'c
       setPhotoPreview(reader.result as string);
     };
     reader.readAsDataURL(file);
+
+    // Reset input pour permettre de re-sélectionner le même fichier
+    e.target.value = '';
   };
+
+  // Déclencher la capture photo (active le flag avant d'ouvrir la caméra)
+  const handleCameraClick = () => {
+    setIsCapturingPhoto(true);
+  };
+
+  // Réinitialiser le flag quand la fenêtre reprend le focus (si l'utilisateur annule la caméra)
+  useEffect(() => {
+    const handleFocus = () => {
+      // Petit délai pour laisser le temps à handlePhotoChange de s'exécuter si une photo a été prise
+      setTimeout(() => {
+        setIsCapturingPhoto(false);
+      }, 500);
+    };
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        handleFocus();
+      }
+    };
+
+    window.addEventListener('focus', handleFocus);
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    return () => {
+      window.removeEventListener('focus', handleFocus);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, []);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -241,6 +288,7 @@ const StockForm = ({ open, onOpenChange, onSubmit, initialData = null, mode = 'c
                   {/* Bouton Prendre une photo */}
                   <label
                     htmlFor="photo-camera-edit-mobile"
+                    onClick={handleCameraClick}
                     className="flex items-center justify-center gap-2 w-full h-14 border-2 border-primary/30 rounded-xl cursor-pointer bg-primary text-primary-foreground active:scale-[0.98] transition-all font-semibold"
                   >
                     <Camera className="w-5 h-5" />
@@ -250,6 +298,7 @@ const StockForm = ({ open, onOpenChange, onSubmit, initialData = null, mode = 'c
                   {/* Bouton Choisir depuis galerie */}
                   <label
                     htmlFor="photo-gallery-edit-mobile"
+                    onClick={handleCameraClick}
                     className="flex items-center justify-center gap-2 w-full h-14 border-2 border-dashed border-primary/30 rounded-xl cursor-pointer bg-primary/5 active:bg-primary/10 active:scale-[0.98] transition-all font-medium"
                   >
                     <Upload className="w-5 h-5 text-primary" />
@@ -295,6 +344,7 @@ const StockForm = ({ open, onOpenChange, onSubmit, initialData = null, mode = 'c
                 />
                 <label
                   htmlFor="photo-upload-edit-desktop"
+                  onClick={handleCameraClick}
                   className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-border bg-card text-sm font-medium cursor-pointer hover:bg-secondary transition-colors"
                 >
                   <Upload className="w-4 h-4" />
@@ -467,7 +517,7 @@ const StockForm = ({ open, onOpenChange, onSubmit, initialData = null, mode = 'c
 
   if (isMobile) {
     return (
-      <Sheet open={open} onOpenChange={onOpenChange}>
+      <Sheet open={open} onOpenChange={handleOpenChange}>
         <SheetContent side="bottom" className="h-[95vh] p-0" onOpenAutoFocus={(e) => e.preventDefault()}>
           {formContent}
         </SheetContent>
@@ -476,7 +526,7 @@ const StockForm = ({ open, onOpenChange, onSubmit, initialData = null, mode = 'c
   }
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="max-w-[95vw] sm:max-w-md h-[90vh] flex flex-col p-0" onOpenAutoFocus={(e) => e.preventDefault()}>
         <DialogHeader className="sr-only">
           <DialogTitle>{mode === 'edit' ? 'Modifier l\'Article' : 'Nouvel Article'}</DialogTitle>

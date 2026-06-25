@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import { Sparkles, Mail, Lock, Eye, EyeOff, ArrowRight } from "lucide-react";
 import { toast } from "sonner";
 import { useLogin } from "@/hooks/useAuth";
@@ -191,9 +192,9 @@ const Login = () => {
           {/* Sign Up Link */}
           <p className="text-center text-sm text-muted-foreground">
             Pas encore de compte ?{" "}
-            <button className="text-primary font-medium hover:underline">
-              Créer un compte
-            </button>
+            <Link to="/register" className="text-primary font-medium hover:underline">
+              Créer une organisation
+            </Link>
           </p>
         </div>
       </div>

@@ -79,3 +79,23 @@ export const useAssignRole = () => {
     },
   });
 };
+
+export const useToggleUserStatus = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ userId, actif }: { userId: string; actif: boolean }) =>
+      usersApi.toggleStatus(userId, actif),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['users'] });
+      toast.success(
+        variables.actif
+          ? 'Utilisateur activé avec succès'
+          : 'Utilisateur désactivé avec succès'
+      );
+    },
+    onError: (error: any) => {
+      toast.error(error.response?.data?.message || 'Erreur lors du changement de statut');
+    },
+  });
+};

@@ -6,6 +6,11 @@ import {
   updateOrganization,
   deleteOrganization,
   toggleOrganizationStatus,
+  getPendingOrganizations,
+  approveOrganization,
+  rejectOrganization,
+  suspendOrganization,
+  reactivateOrganization,
 } from '@/api/organizations';
 import { CreateOrganizationDto, UpdateOrganizationDto } from '@/types';
 import { toast } from 'sonner';
@@ -89,6 +94,79 @@ export const useToggleOrganizationStatus = () => {
     },
     onError: (error: any) => {
       toast.error(error.response?.data?.message || 'Erreur lors de la mise à jour du statut');
+    },
+  });
+};
+
+export const usePendingOrganizations = () => {
+  return useQuery({
+    queryKey: ['organizations', 'pending'],
+    queryFn: getPendingOrganizations,
+  });
+};
+
+export const useApproveOrganization = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (id: string) => approveOrganization(id),
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ['organizations'] });
+      queryClient.invalidateQueries({ queryKey: ['admin-all-organizations'] });
+      toast.success(data.message || 'Organisation approuvée avec succès');
+    },
+    onError: (error: any) => {
+      toast.error(error.response?.data?.message || "Erreur lors de l'approbation");
+    },
+  });
+};
+
+export const useRejectOrganization = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ id, motif }: { id: string; motif: string }) =>
+      rejectOrganization(id, motif),
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ['organizations'] });
+      queryClient.invalidateQueries({ queryKey: ['admin-all-organizations'] });
+      toast.success(data.message || 'Organisation rejetée');
+    },
+    onError: (error: any) => {
+      toast.error(error.response?.data?.message || 'Erreur lors du rejet');
+    },
+  });
+};
+
+export const useSuspendOrganization = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ id, motif }: { id: string; motif: string }) =>
+      suspendOrganization(id, motif),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['organizations'] });
+      queryClient.invalidateQueries({ queryKey: ['admin-all-organizations'] });
+      toast.success('Organisation suspendue');
+    },
+    onError: (error: any) => {
+      toast.error(error.response?.data?.message || 'Erreur lors de la suspension');
+    },
+  });
+};
+
+export const useReactivateOrganization = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (id: string) => reactivateOrganization(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['organizations'] });
+      queryClient.invalidateQueries({ queryKey: ['admin-all-organizations'] });
+      toast.success('Organisation réactivée');
+    },
+    onError: (error: any) => {
+      toast.error(error.response?.data?.message || 'Erreur lors de la réactivation');
     },
   });
 };

@@ -30,4 +30,9 @@ export const usersApi = {
     const response = await apiClient.patch<User>(`/users/${userId}/assign-role`, { roleId });
     return response.data;
   },
+
+  toggleStatus: async (userId: string, actif: boolean): Promise<User> => {
+    const response = await apiClient.patch<User>(`/users/${userId}/toggle-status`, { actif });
+    return response.data;
+  },
 };
