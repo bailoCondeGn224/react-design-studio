@@ -43,6 +43,9 @@ const Organizations = lazy(() => import("./pages/admin/Organizations.tsx"));
 const Plans = lazy(() => import("./pages/admin/Plans.tsx"));
 // Page Admin Dashboard (pour role ADMIN)
 const AdminDashboard = lazy(() => import("./pages/AdminDashboard.tsx"));
+// Pages Zakat
+const Zakat = lazy(() => import("./pages/Zakat.tsx"));
+const ZakatSettings = lazy(() => import("./pages/ZakatSettings.tsx"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -264,6 +267,23 @@ const App = () => (
                 element={
                   <ProtectedRoute roles={['ADMIN']}>
                     <AdminDashboard />
+                  </ProtectedRoute>
+                }
+              />
+              {/* Routes Zakat */}
+              <Route
+                path="/zakat"
+                element={
+                  <ProtectedRoute>
+                    <Zakat />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/zakat/settings"
+                element={
+                  <ProtectedRoute roles={['ADMIN']}>
+                    <ZakatSettings />
                   </ProtectedRoute>
                 }
               />

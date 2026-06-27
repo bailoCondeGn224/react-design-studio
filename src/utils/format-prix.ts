@@ -31,3 +31,17 @@ export const handlePrixChange = (input: string): string => {
   // Enlever tout sauf les chiffres
   return input.replace(/[^\d]/g, '');
 };
+
+/**
+ * Formate un nombre en prix avec séparateur de milliers et devise GNF
+ * Exemple: 1000000 -> "1 000 000 GNF"
+ */
+export const formatPrix = (prix: number): string => {
+  if (!prix && prix !== 0) return '0 GNF';
+  return new Intl.NumberFormat('fr-GN', {
+    style: 'currency',
+    currency: 'GNF',
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  }).format(prix);
+};

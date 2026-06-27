@@ -3,7 +3,7 @@ import {
   LayoutDashboard, Users, UserCheck, Package, FolderTree, MapPin, Truck, ShoppingCart, Wallet,
   ChevronLeft, ChevronRight, Sparkles, ArrowDownRight, ArrowDownLeft, Menu, LogOut, History, BarChart3,
   Shield, UserCog, Settings, Building2, CreditCard, RotateCcw, PackageX, ClipboardList, ClipboardCheck,
-  Receipt
+  Receipt, Calculator
 } from "lucide-react";
 import { useState, useRef, useEffect, memo, useMemo } from "react";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
@@ -30,6 +30,7 @@ const navItems = [
   { to: "/mouvements-stock", icon: History, label: "Historique Mouvements", permissions: ["mouvements.read"] },
   { to: "/inventaires", icon: ClipboardCheck, label: "Inventaires", permissions: ["stock.read"] },
   { to: "/depenses", icon: Receipt, label: "Dépenses", permissions: ["depenses.read"] },
+  { to: "/zakat", icon: Calculator, label: "Zakat", permissions: [] },
   { to: "/utilisateurs", icon: UserCog, label: "Utilisateurs", permissions: ["users.read"] },
   { to: "/roles", icon: Shield, label: "Rôles & Permissions", permissions: ["roles.read"] },
 ];
@@ -60,6 +61,7 @@ const adminNavItems = [
   { to: "/mouvements-stock", icon: History, label: "Historique Mouvements", permissions: ["mouvements.read"] },
   { to: "/inventaires", icon: ClipboardCheck, label: "Inventaires", permissions: ["stock.read"] },
   { to: "/depenses", icon: Receipt, label: "Dépenses", permissions: ["depenses.read"] },
+  { to: "/zakat", icon: Calculator, label: "Zakat" },
   { to: "/utilisateurs", icon: UserCog, label: "Utilisateurs", permissions: ["users.read"] },
   { to: "/roles", icon: Shield, label: "Rôles & Permissions", permissions: ["roles.read"] },
 ];
