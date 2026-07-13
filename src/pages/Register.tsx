@@ -250,7 +250,7 @@ const Register = () => {
                 {/* Nom de l'organisation */}
                 <div className="space-y-2">
                   <label className="text-sm font-medium text-foreground">
-                    Nom de l'organisation *
+                    Nom de l'organisation <span className="text-destructive">*</span>
                   </label>
                   <div className="relative">
                     <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
@@ -287,7 +287,7 @@ const Register = () => {
                 {/* Email organisation */}
                 <div className="space-y-2">
                   <label className="text-sm font-medium text-foreground">
-                    Email de l'organisation *
+                    Email de l'organisation <span className="text-destructive">*</span>
                   </label>
                   <div className="relative">
                     <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
@@ -304,7 +304,7 @@ const Register = () => {
                 {/* Téléphone organisation */}
                 <div className="space-y-2">
                   <label className="text-sm font-medium text-foreground">
-                    Téléphone de l'organisation *
+                    Téléphone de l'organisation <span className="text-destructive">*</span>
                   </label>
                   <div className="relative">
                     <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
@@ -352,7 +352,7 @@ const Register = () => {
                 {/* Nom du propriétaire */}
                 <div className="space-y-2">
                   <label className="text-sm font-medium text-foreground">
-                    Nom complet *
+                    Nom complet <span className="text-destructive">*</span>
                   </label>
                   <div className="relative">
                     <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
@@ -369,7 +369,7 @@ const Register = () => {
                 {/* Email du propriétaire */}
                 <div className="space-y-2">
                   <label className="text-sm font-medium text-foreground">
-                    Email personnel *
+                    Email personnel <span className="text-destructive">*</span>
                   </label>
                   <div className="relative">
                     <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
@@ -389,7 +389,7 @@ const Register = () => {
                 {/* Téléphone du propriétaire */}
                 <div className="space-y-2">
                   <label className="text-sm font-medium text-foreground">
-                    Téléphone personnel *
+                    Téléphone personnel <span className="text-destructive">*</span>
                   </label>
                   <div className="relative">
                     <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />

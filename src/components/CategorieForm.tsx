@@ -110,12 +110,12 @@ const CategorieForm = ({ open, onOpenChange, onSubmit, initialData = null, mode 
               <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
                 <Tag className="w-4 h-4 text-primary" />
               </div>
-              <h3 className="text-sm font-bold text-foreground">Informations principales *</h3>
+              <h3 className="text-sm font-bold text-foreground">Informations principales <span className="text-destructive">*</span></h3>
             </div>
 
             <div>
               <label className="block text-xs font-medium text-muted-foreground mb-1.5">
-                Nom de la catégorie *
+                Nom de la catégorie <span className="text-destructive">*</span>
               </label>
               <input
                 type="text"
@@ -129,7 +129,7 @@ const CategorieForm = ({ open, onOpenChange, onSubmit, initialData = null, mode 
 
             <div>
               <label className="block text-xs font-medium text-muted-foreground mb-1.5">
-                Code *
+                Code <span className="text-destructive">*</span>
               </label>
               <input
                 type="text"

@@ -9,10 +9,21 @@ interface PageHeaderProps {
   action?: ReactNode;
   backButton?: boolean;
   backTo?: string;
+  onBack?: () => void;
 }
 
-const PageHeader = ({ title, description, action, backButton, backTo }: PageHeaderProps) => {
+const PageHeader = ({ title, description, action, backButton, backTo, onBack }: PageHeaderProps) => {
   const navigate = useNavigate();
+
+  const handleBack = () => {
+    if (onBack) {
+      onBack();
+    } else if (backTo) {
+      navigate(backTo);
+    } else {
+      navigate(-1);
+    }
+  };
 
   return (
     <div className="mb-3 sm:mb-6">
@@ -20,7 +31,7 @@ const PageHeader = ({ title, description, action, backButton, backTo }: PageHead
         <Button
           variant="ghost"
           size="sm"
-          onClick={() => backTo ? navigate(backTo) : navigate(-1)}
+          onClick={handleBack}
           className="mb-2 -ml-2 h-9"
         >
           <ArrowLeft className="w-4 h-4 mr-2" />

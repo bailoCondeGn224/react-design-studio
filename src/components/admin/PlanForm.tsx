@@ -81,7 +81,7 @@ const PlanForm = ({ open, onOpenChange, onSubmit, initialData = null, mode = 'cr
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <label className="text-sm font-medium">Code du plan *</label>
+            <label className="text-sm font-medium">Code du plan <span className="text-destructive">*</span></label>
             <select
               value={form.code}
               onChange={e => update("code", e.target.value)}

@@ -38,7 +38,7 @@ const FournisseurVersementSelector = ({
   return (
     <div className="space-y-3">
       <div className="space-y-2">
-        <label className="text-sm font-medium">Fournisseur *</label>
+        <label className="text-sm font-medium">Fournisseur <span className="text-destructive">*</span></label>
         <FournisseurCombobox
           value={value}
           onChange={onChange}

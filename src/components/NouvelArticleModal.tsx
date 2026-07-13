@@ -277,7 +277,7 @@ const NouvelArticleModal = ({ open, onOpenChange, onArticleCreated }: NouvelArti
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label className="block text-sm font-medium text-foreground mb-2">Prix de vente (GNF) *</label>
+              <label className="block text-sm font-medium text-foreground mb-2">Prix de vente (GNF) <span className="text-destructive">*</span></label>
               <input
                 type="text"
                 inputMode="numeric"

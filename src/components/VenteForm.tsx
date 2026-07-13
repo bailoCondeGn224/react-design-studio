@@ -317,7 +317,7 @@ const VenteForm = ({ open, onOpenChange, onSubmit, initialData = null, mode = 'c
 
               <div>
                 <label className="block text-xs sm:text-sm font-medium text-foreground mb-2">
-                  {requiresClient ? "Client enregistré *" : "Client enregistré (optionnel)"}
+                  {requiresClient ? <>Client enregistré <span className="text-destructive">*</span></> : "Client enregistré (optionnel)"}
                 </label>
                 <ClientCombobox
                   value={form.clientId}
@@ -330,7 +330,7 @@ const VenteForm = ({ open, onOpenChange, onSubmit, initialData = null, mode = 'c
                 <div>
                   <label className="block text-xs sm:text-sm font-medium text-foreground mb-2 flex items-center gap-1.5">
                     <User className="w-3.5 h-3.5 text-muted-foreground" />
-                    Nom complet *
+                    Nom complet <span className="text-destructive">*</span>
                   </label>
                   <input
                     type="text"
@@ -345,7 +345,7 @@ const VenteForm = ({ open, onOpenChange, onSubmit, initialData = null, mode = 'c
                 <div>
                   <label className="block text-xs sm:text-sm font-medium text-foreground mb-2 flex items-center gap-1.5">
                     <Phone className="w-3.5 h-3.5 text-muted-foreground" />
-                    Téléphone *
+                    Téléphone <span className="text-destructive">*</span>
                   </label>
                   <input
                     type="tel"
@@ -370,7 +370,7 @@ const VenteForm = ({ open, onOpenChange, onSubmit, initialData = null, mode = 'c
                   <div className="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center">
                     <Package className="w-4 h-4 text-emerald-600" />
                   </div>
-                  <h3 className="text-sm font-bold text-foreground">Articles *</h3>
+                  <h3 className="text-sm font-bold text-foreground">Articles <span className="text-destructive">*</span></h3>
                   {form.lignes.length > 0 && (
                     <span className="px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 text-xs font-bold">
                       {form.lignes.length}

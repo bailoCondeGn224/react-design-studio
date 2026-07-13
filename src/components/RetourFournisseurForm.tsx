@@ -189,7 +189,7 @@ const RetourFournisseurForm = ({ open, onOpenChange, onSubmit }: RetourFournisse
                 <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
                   <TruckIcon className="w-4 h-4 text-primary" />
                 </div>
-                <h3 className="text-sm font-bold text-foreground">Approvisionnement concerné *</h3>
+                <h3 className="text-sm font-bold text-foreground">Approvisionnement concerné <span className="text-destructive">*</span></h3>
               </div>
 
               <ApprovisionnementCombobox
@@ -221,7 +221,7 @@ const RetourFournisseurForm = ({ open, onOpenChange, onSubmit }: RetourFournisse
                   <div className="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center">
                     <Package className="w-4 h-4 text-emerald-600" />
                   </div>
-                  <h3 className="text-sm font-bold text-foreground">Articles à retourner *</h3>
+                  <h3 className="text-sm font-bold text-foreground">Articles à retourner <span className="text-destructive">*</span></h3>
                 </div>
 
                 {/* Version mobile: Cards */}
@@ -392,7 +392,7 @@ const RetourFournisseurForm = ({ open, onOpenChange, onSubmit }: RetourFournisse
               {form.remboursementRecu && (
                 <div className="pt-2">
                   <label className="block text-xs font-medium text-muted-foreground mb-1.5">
-                    Montant remboursé *
+                    Montant remboursé <span className="text-destructive">*</span>
                   </label>
                   <input
                     type="number"

@@ -12,9 +12,16 @@ const textareaClasses = "w-full px-3 py-2.5 rounded-lg border border-border bg-c
 
 const FormField = forwardRef<HTMLInputElement, FormFieldProps>(
   ({ label, error, as = "input", children, className, ...props }, ref) => {
+    // Séparer le label et l'astérisque pour styliser l'astérisque en rouge
+    const hasAsterisk = label.includes('*');
+    const labelText = hasAsterisk ? label.replace(' *', '').replace('*', '') : label;
+
     return (
       <div className="space-y-2">
-        <label className="text-sm font-medium text-foreground">{label}</label>
+        <label className="text-sm font-medium text-foreground">
+          {labelText}
+          {hasAsterisk && <span className="text-destructive ml-1">*</span>}
+        </label>
         {as === "select" ? (
           <select className={inputClasses} {...(props as any)}>
             {children}

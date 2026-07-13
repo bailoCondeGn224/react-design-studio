@@ -173,7 +173,7 @@ const OrganizationForm = ({ open, onOpenChange, onSubmit, initialData = null, mo
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div className="space-y-2">
-                <label className="text-sm font-medium">Plan *</label>
+                <label className="text-sm font-medium">Plan <span className="text-destructive">*</span></label>
                 <select
                   value={form.planId}
                   onChange={e => update("planId", e.target.value)}

@@ -118,12 +118,12 @@ const FournisseurForm = ({ open, onOpenChange, onSubmit, initialData = null, mod
               <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
                 <User className="w-4 h-4 text-primary" />
               </div>
-              <h3 className="text-sm font-bold text-foreground">Identité du fournisseur *</h3>
+              <h3 className="text-sm font-bold text-foreground">Identité du fournisseur <span className="text-destructive">*</span></h3>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
               <div>
-                <label className="block text-xs font-medium text-muted-foreground mb-1.5">Nom *</label>
+                <label className="block text-xs font-medium text-muted-foreground mb-1.5">Nom <span className="text-destructive">*</span></label>
                 <input
                   type="text"
                   placeholder="Ex: Diallo"
@@ -134,7 +134,7 @@ const FournisseurForm = ({ open, onOpenChange, onSubmit, initialData = null, mod
                 />
               </div>
               <div>
-                <label className="block text-xs font-medium text-muted-foreground mb-1.5">Prénom *</label>
+                <label className="block text-xs font-medium text-muted-foreground mb-1.5">Prénom <span className="text-destructive">*</span></label>
                 <input
                   type="text"
                   placeholder="Ex: Mamadou"
@@ -160,7 +160,7 @@ const FournisseurForm = ({ open, onOpenChange, onSubmit, initialData = null, mod
             </div>
 
             <div>
-              <label className="block text-xs font-medium text-muted-foreground mb-1.5">Adresse *</label>
+              <label className="block text-xs font-medium text-muted-foreground mb-1.5">Adresse <span className="text-destructive">*</span></label>
               <input
                 type="text"
                 placeholder="Dubaï"
@@ -172,7 +172,7 @@ const FournisseurForm = ({ open, onOpenChange, onSubmit, initialData = null, mod
             </div>
 
             <div>
-              <label className="block text-xs font-medium text-muted-foreground mb-1.5">Téléphone *</label>
+              <label className="block text-xs font-medium text-muted-foreground mb-1.5">Téléphone <span className="text-destructive">*</span></label>
               <input
                 type="tel"
                 placeholder="+224 6XX XXX XXX"

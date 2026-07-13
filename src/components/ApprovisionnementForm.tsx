@@ -290,7 +290,7 @@ const ApprovisionnementForm = ({ open, onOpenChange, onSubmit, initialData = nul
                 <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
                   <Truck className="w-4 h-4 text-primary" />
                 </div>
-                <h3 className="text-sm font-bold text-foreground">Fournisseur *</h3>
+                <h3 className="text-sm font-bold text-foreground">Fournisseur <span className="text-destructive">*</span></h3>
               </div>
               <FournisseurCombobox
                 value={form.fournisseurId}
@@ -316,7 +316,7 @@ const ApprovisionnementForm = ({ open, onOpenChange, onSubmit, initialData = nul
                 <div className="w-8 h-8 rounded-lg bg-success/10 flex items-center justify-center">
                   <Package className="w-4 h-4 text-success" />
                 </div>
-                <h3 className="text-sm font-bold text-foreground">Articles à approvisionner *</h3>
+                <h3 className="text-sm font-bold text-foreground">Articles à approvisionner <span className="text-destructive">*</span></h3>
               </div>
 
               <Button
@@ -597,7 +597,7 @@ const ApprovisionnementForm = ({ open, onOpenChange, onSubmit, initialData = nul
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                 <div>
                   <label className="block text-xs font-medium text-muted-foreground mb-1.5">
-                    Date de livraison *
+                    Date de livraison <span className="text-destructive">*</span>
                   </label>
                   <input
                     type="date"

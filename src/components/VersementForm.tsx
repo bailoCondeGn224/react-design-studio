@@ -168,7 +168,7 @@ const VersementForm = ({ open, onOpenChange, onSubmit, versement, fournisseurId,
               <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
                 <Truck className="w-4 h-4 text-primary" />
               </div>
-              <h3 className="text-sm font-bold text-foreground">Fournisseur *</h3>
+              <h3 className="text-sm font-bold text-foreground">Fournisseur <span className="text-destructive">*</span></h3>
             </div>
             <FournisseurVersementSelector
               value={form.fournisseurId}
@@ -199,7 +199,7 @@ const VersementForm = ({ open, onOpenChange, onSubmit, versement, fournisseurId,
                 <div className="w-8 h-8 rounded-lg bg-warning/10 flex items-center justify-center">
                   <Package className="w-4 h-4 text-warning" />
                 </div>
-                <h3 className="text-sm font-bold text-foreground">Approvisionnement concerné *</h3>
+                <h3 className="text-sm font-bold text-foreground">Approvisionnement concerné <span className="text-destructive">*</span></h3>
               </div>
               <div className="text-xs text-muted-foreground mb-3 flex items-start gap-2">
                 <AlertCircle className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-warning" />
@@ -248,7 +248,7 @@ const VersementForm = ({ open, onOpenChange, onSubmit, versement, fournisseurId,
               <div className="w-8 h-8 rounded-lg bg-success/10 flex items-center justify-center">
                 <DollarSign className="w-4 h-4 text-success" />
               </div>
-              <h3 className="text-sm font-bold text-foreground">Montant du versement *</h3>
+              <h3 className="text-sm font-bold text-foreground">Montant du versement <span className="text-destructive">*</span></h3>
             </div>
             <div>
               <input
@@ -293,7 +293,7 @@ const VersementForm = ({ open, onOpenChange, onSubmit, versement, fournisseurId,
               <div className="w-8 h-8 rounded-lg bg-secondary/10 flex items-center justify-center">
                 <CreditCard className="w-4 h-4 text-secondary-foreground" />
               </div>
-              <h3 className="text-sm font-bold text-foreground">Mode de paiement *</h3>
+              <h3 className="text-sm font-bold text-foreground">Mode de paiement <span className="text-destructive">*</span></h3>
             </div>
             <div className="grid grid-cols-2 gap-2">
               {["especes", "mobile", "virement", "cheque"].map(mode => (
@@ -343,7 +343,7 @@ const VersementForm = ({ open, onOpenChange, onSubmit, versement, fournisseurId,
 
             <div>
               <label className="block text-xs font-medium text-muted-foreground mb-1.5">
-                Date du versement *
+                Date du versement <span className="text-destructive">*</span>
               </label>
               <input
                 type="date"

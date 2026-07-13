@@ -182,7 +182,7 @@ const RetourClientForm = ({ open, onOpenChange, onSubmit }: RetourClientFormProp
               <div className="w-8 h-8 rounded-lg bg-blue-500/10 flex items-center justify-center">
                 <ShoppingBag className="w-4 h-4 text-blue-600" />
               </div>
-              <h3 className="text-sm font-bold text-foreground">Vente concernée *</h3>
+              <h3 className="text-sm font-bold text-foreground">Vente concernée <span className="text-destructive">*</span></h3>
             </div>
 
             <VenteCombobox
@@ -212,7 +212,7 @@ const RetourClientForm = ({ open, onOpenChange, onSubmit }: RetourClientFormProp
                 <div className="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center">
                   <Package className="w-4 h-4 text-emerald-600" />
                 </div>
-                <h3 className="text-sm font-bold text-foreground">Articles à retourner *</h3>
+                <h3 className="text-sm font-bold text-foreground">Articles à retourner <span className="text-destructive">*</span></h3>
               </div>
 
               {/* Version mobile: Cards */}

@@ -203,7 +203,7 @@ const CommandeForm = ({ open, onOpenChange, onSubmit, initialData = null, mode =
                 <div className="w-8 h-8 rounded-lg bg-blue-500/10 flex items-center justify-center">
                   <User className="w-4 h-4 text-blue-600" />
                 </div>
-                <h3 className="text-sm font-bold text-foreground">Client *</h3>
+                <h3 className="text-sm font-bold text-foreground">Client <span className="text-destructive">*</span></h3>
               </div>
 
               <ClientCombobox
@@ -231,7 +231,7 @@ const CommandeForm = ({ open, onOpenChange, onSubmit, initialData = null, mode =
                   <div className="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center">
                     <Package className="w-4 h-4 text-emerald-600" />
                   </div>
-                  <h3 className="text-sm font-bold text-foreground">Articles *</h3>
+                  <h3 className="text-sm font-bold text-foreground">Articles <span className="text-destructive">*</span></h3>
                   {form.lignes.length > 0 && (
                     <span className="px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 text-xs font-bold">
                       {form.lignes.length}

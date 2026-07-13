@@ -131,12 +131,12 @@ const UserForm = ({ open, onOpenChange, onSubmit, initialData = null, mode = 'cr
               <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
                 <UserIcon className="w-4 h-4 text-primary" />
               </div>
-              <h3 className="text-sm font-bold text-foreground">Informations personnelles *</h3>
+              <h3 className="text-sm font-bold text-foreground">Informations personnelles <span className="text-destructive">*</span></h3>
             </div>
 
             <div>
               <label className="block text-xs font-medium text-muted-foreground mb-1.5">
-                Nom complet *
+                Nom complet <span className="text-destructive">*</span>
               </label>
               <input
                 type="text"
@@ -150,7 +150,7 @@ const UserForm = ({ open, onOpenChange, onSubmit, initialData = null, mode = 'cr
 
             <div>
               <label className="block text-xs font-medium text-muted-foreground mb-1.5">
-                Email *
+                Email <span className="text-destructive">*</span>
               </label>
               <input
                 type="email"
@@ -173,12 +173,12 @@ const UserForm = ({ open, onOpenChange, onSubmit, initialData = null, mode = 'cr
                 <Lock className="w-4 h-4 text-secondary-foreground" />
               </div>
               <h3 className="text-sm font-bold text-foreground">
-                {mode === 'edit' ? 'Sécurité' : 'Sécurité *'}
+                {mode === 'edit' ? 'Sécurité' : <>Sécurité <span className="text-destructive">*</span></>}
               </h3>
             </div>
             <div>
               <label className="block text-xs font-medium text-muted-foreground mb-1.5">
-                {mode === 'edit' ? "Nouveau mot de passe (optionnel)" : "Mot de passe *"}
+                {mode === 'edit' ? "Nouveau mot de passe (optionnel)" : <>Mot de passe <span className="text-destructive">*</span></>}
               </label>
               <div className="relative">
                 <input
@@ -212,11 +212,11 @@ const UserForm = ({ open, onOpenChange, onSubmit, initialData = null, mode = 'cr
               <div className="w-8 h-8 rounded-lg bg-success/10 flex items-center justify-center">
                 <Shield className="w-4 h-4 text-success" />
               </div>
-              <h3 className="text-sm font-bold text-foreground">Rôle et permissions *</h3>
+              <h3 className="text-sm font-bold text-foreground">Rôle et permissions <span className="text-destructive">*</span></h3>
             </div>
             <div>
               <label className="block text-xs font-medium text-muted-foreground mb-1.5">
-                Rôle de l'utilisateur *
+                Rôle de l'utilisateur <span className="text-destructive">*</span>
               </label>
               <select
                 value={form.roleId}

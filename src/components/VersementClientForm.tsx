@@ -186,7 +186,7 @@ const VersementClientForm = ({ open, onOpenChange, onSubmit, versementClient, cl
 
       <form onSubmit={handleSubmit} className="flex-1 min-h-0 overflow-y-auto px-4 sm:px-6 py-4 sm:py-5 space-y-5">
         <div>
-          <label className="block text-sm font-medium text-foreground mb-2">Client *</label>
+          <label className="block text-sm font-medium text-foreground mb-2">Client <span className="text-destructive">*</span></label>
           <select
             value={form.clientId}
             onChange={e => update("clientId", e.target.value)}
@@ -255,7 +255,7 @@ const VersementClientForm = ({ open, onOpenChange, onSubmit, versementClient, cl
         )}
 
         <div>
-          <label className="block text-sm font-medium text-foreground mb-2">Montant versé (GNF) *</label>
+          <label className="block text-sm font-medium text-foreground mb-2">Montant versé (GNF) <span className="text-destructive">*</span></label>
           <input
             type="text"
             inputMode="numeric"
@@ -303,7 +303,7 @@ const VersementClientForm = ({ open, onOpenChange, onSubmit, versementClient, cl
         </div>
 
         <div className="space-y-1.5">
-          <label className="text-sm font-medium text-foreground">Mode de paiement *</label>
+          <label className="text-sm font-medium text-foreground">Mode de paiement <span className="text-destructive">*</span></label>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
             {["especes", "mobile_money", "virement", "cheque", "carte"].map(mode => (
               <button

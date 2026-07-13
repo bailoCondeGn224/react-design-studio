@@ -145,7 +145,7 @@ const CreateOrgAdminForm = ({ open, onOpenChange, onSubmit, organization }: Crea
           />
 
           <div className="space-y-2">
-            <label className="text-sm font-medium">Rôle *</label>
+            <label className="text-sm font-medium">Rôle <span className="text-destructive">*</span></label>
             <select
               value={form.roleId}
               onChange={e => update("roleId", e.target.value)}
@@ -162,7 +162,7 @@ const CreateOrgAdminForm = ({ open, onOpenChange, onSubmit, organization }: Crea
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-medium">Mot de passe *</label>
+            <label className="text-sm font-medium">Mot de passe <span className="text-destructive">*</span></label>
             <div className="relative">
               <input
                 type={showPassword ? "text" : "password"}
@@ -187,7 +187,7 @@ const CreateOrgAdminForm = ({ open, onOpenChange, onSubmit, organization }: Crea
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-medium">Confirmer le mot de passe *</label>
+            <label className="text-sm font-medium">Confirmer le mot de passe <span className="text-destructive">*</span></label>
             <div className="relative">
               <input
                 type={showConfirmPassword ? "text" : "password"}

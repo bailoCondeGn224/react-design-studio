@@ -91,12 +91,12 @@ const ZoneForm = ({ open, onOpenChange, onSubmit, initialData, mode }: ZoneFormP
                 <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
                   <Tag className="w-4 h-4 text-primary" />
                 </div>
-                <h3 className="text-sm font-bold text-foreground">Informations principales *</h3>
+                <h3 className="text-sm font-bold text-foreground">Informations principales <span className="text-destructive">*</span></h3>
               </div>
 
               <div>
                 <label className="block text-xs font-medium text-muted-foreground mb-1.5">
-                  Code de la zone *
+                  Code de la zone <span className="text-destructive">*</span>
                 </label>
                 <input
                   type="text"
@@ -115,7 +115,7 @@ const ZoneForm = ({ open, onOpenChange, onSubmit, initialData, mode }: ZoneFormP
 
               <div>
                 <label className="block text-xs font-medium text-muted-foreground mb-1.5">
-                  Nom de la zone *
+                  Nom de la zone <span className="text-destructive">*</span>
                 </label>
                 <input
                   type="text"
