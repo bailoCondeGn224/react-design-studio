@@ -5,13 +5,14 @@ import StockMobileCard from "@/components/StockMobileCard";
 import ArticleCard from "@/components/ArticleCard";
 import Pagination from "@/components/Pagination";
 import CanAccess from "@/components/CanAccess";
-import { Package, AlertTriangle, Search, Plus, Edit, Trash, MoreVertical, AlertCircle, TrendingDown, History, ArrowUpCircle, ArrowDownCircle, Flame, Zap, Clock, Snail, Snowflake, TrendingUp as TrendUp, RotateCcw, Upload, ShoppingCart } from "lucide-react";
+import { Package, AlertTriangle, Search, Plus, Edit, Trash, MoreVertical, AlertCircle, TrendingDown, History, ArrowUpCircle, ArrowDownCircle, Flame, Zap, Clock, Snail, Snowflake, TrendingUp as TrendUp, RotateCcw, Upload, ShoppingCart, BarChart3 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { getPhotoUrl } from "@/lib/api-client";
 import { toast } from "sonner";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useIsMobile } from "@/hooks/useMediaQuery";
 import { Button } from "@/components/ui/button";
 import { useMouvementsByArticle } from "@/hooks/useMouvements";
@@ -54,6 +55,7 @@ const Stock = () => {
   const [editingItem, setEditingItem] = useState<any>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [historyArticleId, setHistoryArticleId] = useState<string | null>(null);
+  const [rotationDialogOpen, setRotationDialogOpen] = useState(false);
   const [selectedImage, setSelectedImage] = useState<{ url: string; nom: string } | null>(null);
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(20); // Par défaut 20 articles pour meilleure UX
@@ -814,101 +816,330 @@ const Stock = () => {
         </div>
       )}
 
-      {/* Section Analyse de Rotation - Cachée sur mobile */}
+      {/* Bouton Analyse de Rotation */}
       {statsRotation && (statsRotation.topVentes?.length > 0 || statsRotation.stockMort?.length > 0) && (
-        <div className="hidden md:grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4 lg:gap-6 mb-6">
-          {/* Top Produits à Rotation Rapide */}
-          {statsRotation.topVentes && statsRotation.topVentes.length > 0 && (
-            <div className="bg-gradient-to-br from-success/5 via-card to-card border border-success/20 rounded-xl p-3 sm:p-4 lg:p-5 shadow-card">
-              <div className="flex items-center gap-2 mb-3 sm:mb-4">
-                <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-success/20 flex items-center justify-center flex-shrink-0">
-                  <Flame className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-success" />
-                </div>
-                <div>
-                  <h3 className="text-sm sm:text-base font-semibold text-foreground">Top Produits à Forte Rotation</h3>
-                  <p className="text-[10px] sm:text-xs text-muted-foreground">Articles les plus vendus</p>
-                </div>
-              </div>
-
-              <div className="space-y-1.5 sm:space-y-2">
-                {statsRotation.topVentes.slice(0, 5).map((article: any, index: number) => (
-                  <div key={article.articleId} className="flex items-center gap-2 sm:gap-3 p-2 sm:p-3 bg-card border border-border rounded-lg hover:shadow-md transition-shadow">
-                    <div className="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-success/20 flex items-center justify-center flex-shrink-0">
-                      <span className="text-[10px] sm:text-xs font-bold text-success">#{index + 1}</span>
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-xs sm:text-sm font-semibold text-foreground truncate">{article.nom}</p>
-                      <p className="text-[10px] sm:text-xs text-muted-foreground">
-                        {article.totalVendu || 0} vendus (30j) • Stock: {article.stockActuel}
-                      </p>
-                    </div>
-                    <div className="flex items-center gap-0.5 sm:gap-1">
-                      <Flame className="w-3 h-3 sm:w-4 sm:h-4 text-success" />
-                      <span className="text-xs sm:text-sm font-bold text-success whitespace-nowrap">
-                        {article.tauxRotation !== 'N/A' ? parseFloat(article.tauxRotation).toFixed(1) : 'N/A'}×
-                      </span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              {statsRotation.topVentes.length > 5 && (
-                <div className="mt-3 sm:mt-4 pt-3 sm:pt-4 border-t border-border text-center">
-                  <p className="text-[10px] sm:text-xs text-muted-foreground">
-                    Top 5 sur <span className="font-semibold text-foreground">{statsRotation.topVentes.length}</span> articles à forte rotation
-                  </p>
-                </div>
+        <div className="mb-4 sm:mb-6">
+          <Button
+            onClick={() => setRotationDialogOpen(true)}
+            variant="outline"
+            className="w-full sm:w-auto gap-2 h-12 sm:h-10 bg-gradient-to-r from-success/5 via-card to-warning/5 border-2 border-primary/20 hover:border-primary/40 hover:shadow-lg transition-all"
+          >
+            <BarChart3 className="w-5 h-5 text-primary" />
+            <span className="font-semibold">Analyse de Rotation</span>
+            <div className="flex items-center gap-1 ml-2">
+              {statsRotation.topVentes?.length > 0 && (
+                <span className="px-2 py-0.5 rounded-full bg-success/20 text-success text-xs font-bold">
+                  {statsRotation.topVentes.length}
+                </span>
+              )}
+              {statsRotation.stockMort?.length > 0 && (
+                <span className="px-2 py-0.5 rounded-full bg-warning/20 text-warning text-xs font-bold">
+                  {statsRotation.stockMort.length}
+                </span>
               )}
             </div>
-          )}
-
-          {/* Produits Dormants */}
-          {statsRotation.stockMort && statsRotation.stockMort.length > 0 && (
-            <div className="bg-gradient-to-br from-warning/5 via-card to-card border border-warning/20 rounded-xl p-3 sm:p-4 lg:p-5 shadow-card">
-              <div className="flex items-center gap-2 mb-3 sm:mb-4">
-                <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-warning/20 flex items-center justify-center flex-shrink-0">
-                  <Snowflake className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-warning" />
-                </div>
-                <div>
-                  <h3 className="text-sm sm:text-base font-semibold text-foreground">Stock à Rotation Lente</h3>
-                  <p className="text-[10px] sm:text-xs text-muted-foreground">Articles avec faible rotation</p>
-                </div>
-              </div>
-
-              <div className="space-y-1.5 sm:space-y-2">
-                {statsRotation.stockMort.slice(0, 5).map((article: any) => (
-                  <div key={article.articleId} className="flex items-center gap-2 sm:gap-3 p-2 sm:p-3 bg-card border border-border rounded-lg hover:shadow-md transition-shadow">
-                    <Snowflake className="w-4 h-4 sm:w-5 sm:h-5 text-warning flex-shrink-0" />
-                    <div className="flex-1 min-w-0">
-                      <p className="text-xs sm:text-sm font-semibold text-foreground truncate">{article.nom}</p>
-                      <p className="text-[10px] sm:text-xs text-muted-foreground">
-                        {article.joursCouverture || 0} jours couverture • Stock: {article.stockActuel}
-                      </p>
-                    </div>
-                    <span className="text-[10px] sm:text-xs font-semibold text-warning whitespace-nowrap">
-                      {formatPrix(article.valeurStock || 0)}
-                    </span>
-                  </div>
-                ))}
-              </div>
-
-              {statsRotation.stockMort.length > 5 && (
-                <div className="mt-3 sm:mt-4 pt-3 sm:pt-4 border-t border-border text-center">
-                  <p className="text-[10px] sm:text-xs text-muted-foreground">
-                    Top 5 sur <span className="font-semibold text-foreground">{statsRotation.stockMort.length}</span> articles à rotation lente
-                  </p>
-                </div>
-              )}
-
-              {statsRotation.resume?.valeurStockImmobilise > 0 && (
-                <div className="mt-3 sm:mt-4 pt-3 sm:pt-4 border-t border-border">
-                  <p className="text-[10px] sm:text-xs text-muted-foreground mb-1">Valeur immobilisée</p>
-                  <p className="text-base sm:text-lg font-bold text-warning">{formatPrix(statsRotation.resume.valeurStockImmobilise)}</p>
-                </div>
-              )}
-            </div>
-          )}
+          </Button>
         </div>
+      )}
+
+      {/* Modal Analyse de Rotation */}
+      {isMobile ? (
+        <Sheet open={rotationDialogOpen} onOpenChange={setRotationDialogOpen}>
+          <SheetContent side="bottom" className="h-[90vh] p-0 flex flex-col">
+            {/* Header */}
+            <div className="px-4 py-4 border-b bg-gradient-to-r from-primary/10 via-primary/5 to-transparent flex-shrink-0">
+              <div className="flex items-center gap-3 pr-8">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-primary/70 flex items-center justify-center shadow-lg">
+                  <BarChart3 className="w-5 h-5 text-primary-foreground" />
+                </div>
+                <div>
+                  <h2 className="text-base font-bold">Analyse de Rotation</h2>
+                  <p className="text-xs text-muted-foreground mt-0.5">Performance des articles (30 jours)</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Contenu avec Tabs */}
+            <div className="flex-1 overflow-hidden">
+              <Tabs defaultValue="top" className="h-full flex flex-col">
+                <TabsList className="w-full justify-start px-4 pt-3 pb-0 bg-transparent gap-2 flex-shrink-0">
+                  <TabsTrigger
+                    value="top"
+                    className="flex-1 data-[state=active]:bg-success/20 data-[state=active]:text-success data-[state=active]:border-success/50 border-2 border-transparent rounded-xl py-3 gap-2"
+                  >
+                    <Flame className="w-4 h-4" />
+                    <span className="font-semibold">Forte Rotation</span>
+                    {statsRotation?.topVentes?.length > 0 && (
+                      <span className="px-1.5 py-0.5 rounded-full bg-success/30 text-[10px] font-bold">
+                        {statsRotation.topVentes.length}
+                      </span>
+                    )}
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value="slow"
+                    className="flex-1 data-[state=active]:bg-warning/20 data-[state=active]:text-warning data-[state=active]:border-warning/50 border-2 border-transparent rounded-xl py-3 gap-2"
+                  >
+                    <Snowflake className="w-4 h-4" />
+                    <span className="font-semibold">Rotation Lente</span>
+                    {statsRotation?.stockMort?.length > 0 && (
+                      <span className="px-1.5 py-0.5 rounded-full bg-warning/30 text-[10px] font-bold">
+                        {statsRotation.stockMort.length}
+                      </span>
+                    )}
+                  </TabsTrigger>
+                </TabsList>
+
+                {/* Top Ventes */}
+                <TabsContent value="top" className="flex-1 overflow-y-auto px-4 py-4 mt-0">
+                  {statsRotation?.topVentes && statsRotation.topVentes.length > 0 ? (
+                    <div className="space-y-3">
+                      {statsRotation.topVentes.map((article: any, index: number) => (
+                        <div
+                          key={article.articleId}
+                          className="flex items-center gap-3 p-3 bg-gradient-to-r from-success/5 to-transparent border border-success/20 rounded-xl"
+                        >
+                          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-success to-emerald-600 flex items-center justify-center flex-shrink-0 shadow-lg">
+                            <span className="text-sm font-black text-white">#{index + 1}</span>
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-bold text-foreground truncate">{article.nom}</p>
+                            <div className="flex items-center gap-2 mt-1">
+                              <span className="text-xs text-muted-foreground">
+                                <strong className="text-success">{article.totalVendu || 0}</strong> vendus
+                              </span>
+                              <span className="text-muted-foreground">•</span>
+                              <span className="text-xs text-muted-foreground">
+                                Stock: <strong>{article.stockActuel}</strong>
+                              </span>
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <div className="flex items-center gap-1 justify-end">
+                              <Flame className="w-4 h-4 text-success" />
+                              <span className="text-lg font-black text-success">
+                                {article.tauxRotation !== 'N/A' ? parseFloat(article.tauxRotation).toFixed(1) : 'N/A'}×
+                              </span>
+                            </div>
+                            <p className="text-[10px] text-muted-foreground">taux rotation</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="flex flex-col items-center justify-center py-12 text-center">
+                      <Flame className="w-12 h-12 text-muted-foreground/30 mb-3" />
+                      <p className="text-sm text-muted-foreground">Aucun article à forte rotation</p>
+                    </div>
+                  )}
+                </TabsContent>
+
+                {/* Stock Lent */}
+                <TabsContent value="slow" className="flex-1 overflow-y-auto px-4 py-4 mt-0">
+                  {statsRotation?.stockMort && statsRotation.stockMort.length > 0 ? (
+                    <>
+                      {/* Résumé valeur immobilisée */}
+                      {statsRotation.resume?.valeurStockImmobilise > 0 && (
+                        <div className="mb-4 p-4 bg-gradient-to-r from-warning/10 to-orange-500/5 border-2 border-warning/30 rounded-xl">
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <p className="text-xs font-medium text-muted-foreground">Valeur immobilisée</p>
+                              <p className="text-xl font-black text-warning">{formatPrix(statsRotation.resume.valeurStockImmobilise)}</p>
+                            </div>
+                            <div className="w-12 h-12 rounded-full bg-warning/20 flex items-center justify-center">
+                              <Snowflake className="w-6 h-6 text-warning" />
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
+                      <div className="space-y-3">
+                        {statsRotation.stockMort.map((article: any, index: number) => (
+                          <div
+                            key={article.articleId}
+                            className="flex items-center gap-3 p-3 bg-gradient-to-r from-warning/5 to-transparent border border-warning/20 rounded-xl"
+                          >
+                            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-warning to-orange-600 flex items-center justify-center flex-shrink-0 shadow-lg">
+                              <Snowflake className="w-5 h-5 text-white" />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <p className="text-sm font-bold text-foreground truncate">{article.nom}</p>
+                              <div className="flex items-center gap-2 mt-1">
+                                <span className="text-xs text-muted-foreground">
+                                  <strong className="text-warning">{article.joursCouverture || 0}</strong> jours
+                                </span>
+                                <span className="text-muted-foreground">•</span>
+                                <span className="text-xs text-muted-foreground">
+                                  Stock: <strong>{article.stockActuel}</strong>
+                                </span>
+                              </div>
+                            </div>
+                            <div className="text-right">
+                              <p className="text-sm font-bold text-warning">{formatPrix(article.valeurStock || 0)}</p>
+                              <p className="text-[10px] text-muted-foreground">immobilisé</p>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </>
+                  ) : (
+                    <div className="flex flex-col items-center justify-center py-12 text-center">
+                      <Snowflake className="w-12 h-12 text-muted-foreground/30 mb-3" />
+                      <p className="text-sm text-muted-foreground">Aucun article à rotation lente</p>
+                    </div>
+                  )}
+                </TabsContent>
+              </Tabs>
+            </div>
+          </SheetContent>
+        </Sheet>
+      ) : (
+        <Dialog open={rotationDialogOpen} onOpenChange={setRotationDialogOpen}>
+          <DialogContent className="max-w-4xl max-h-[85vh] flex flex-col p-0 gap-0">
+            <DialogHeader className="px-6 py-5 border-b bg-gradient-to-r from-primary/10 via-primary/5 to-transparent flex-shrink-0">
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary to-primary/70 flex items-center justify-center shadow-lg">
+                  <BarChart3 className="w-6 h-6 text-primary-foreground" />
+                </div>
+                <div>
+                  <DialogTitle className="text-lg font-bold">Analyse de Rotation du Stock</DialogTitle>
+                  <DialogDescription className="text-sm text-muted-foreground mt-1">
+                    Performance des articles sur les 30 derniers jours
+                  </DialogDescription>
+                </div>
+              </div>
+            </DialogHeader>
+
+            {/* Contenu avec Tabs */}
+            <div className="flex-1 overflow-hidden">
+              <Tabs defaultValue="top" className="h-full flex flex-col">
+                <TabsList className="w-full justify-start px-6 pt-4 pb-0 bg-transparent gap-3 flex-shrink-0">
+                  <TabsTrigger
+                    value="top"
+                    className="data-[state=active]:bg-success/20 data-[state=active]:text-success data-[state=active]:border-success/50 border-2 border-transparent rounded-xl px-6 py-3 gap-2"
+                  >
+                    <Flame className="w-4 h-4" />
+                    <span className="font-semibold">Forte Rotation</span>
+                    {statsRotation?.topVentes?.length > 0 && (
+                      <span className="px-2 py-0.5 rounded-full bg-success/30 text-xs font-bold">
+                        {statsRotation.topVentes.length}
+                      </span>
+                    )}
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value="slow"
+                    className="data-[state=active]:bg-warning/20 data-[state=active]:text-warning data-[state=active]:border-warning/50 border-2 border-transparent rounded-xl px-6 py-3 gap-2"
+                  >
+                    <Snowflake className="w-4 h-4" />
+                    <span className="font-semibold">Rotation Lente</span>
+                    {statsRotation?.stockMort?.length > 0 && (
+                      <span className="px-2 py-0.5 rounded-full bg-warning/30 text-xs font-bold">
+                        {statsRotation.stockMort.length}
+                      </span>
+                    )}
+                  </TabsTrigger>
+                </TabsList>
+
+                {/* Top Ventes Desktop */}
+                <TabsContent value="top" className="flex-1 overflow-y-auto px-6 py-4 mt-0">
+                  {statsRotation?.topVentes && statsRotation.topVentes.length > 0 ? (
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
+                      {statsRotation.topVentes.map((article: any, index: number) => (
+                        <div
+                          key={article.articleId}
+                          className="flex items-center gap-4 p-4 bg-gradient-to-r from-success/5 to-transparent border border-success/20 rounded-xl hover:shadow-lg hover:border-success/40 transition-all"
+                        >
+                          <div className="w-12 h-12 rounded-full bg-gradient-to-br from-success to-emerald-600 flex items-center justify-center flex-shrink-0 shadow-lg">
+                            <span className="text-lg font-black text-white">#{index + 1}</span>
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-bold text-foreground truncate">{article.nom}</p>
+                            <div className="flex items-center gap-3 mt-1">
+                              <span className="text-xs text-muted-foreground">
+                                <strong className="text-success">{article.totalVendu || 0}</strong> vendus (30j)
+                              </span>
+                              <span className="text-xs text-muted-foreground">
+                                Stock: <strong>{article.stockActuel}</strong>
+                              </span>
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <div className="flex items-center gap-1 justify-end">
+                              <Flame className="w-5 h-5 text-success" />
+                              <span className="text-xl font-black text-success">
+                                {article.tauxRotation !== 'N/A' ? parseFloat(article.tauxRotation).toFixed(1) : 'N/A'}×
+                              </span>
+                            </div>
+                            <p className="text-xs text-muted-foreground">taux rotation</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="flex flex-col items-center justify-center py-16 text-center">
+                      <Flame className="w-16 h-16 text-muted-foreground/30 mb-4" />
+                      <p className="text-muted-foreground">Aucun article à forte rotation</p>
+                    </div>
+                  )}
+                </TabsContent>
+
+                {/* Stock Lent Desktop */}
+                <TabsContent value="slow" className="flex-1 overflow-y-auto px-6 py-4 mt-0">
+                  {statsRotation?.stockMort && statsRotation.stockMort.length > 0 ? (
+                    <>
+                      {/* Résumé valeur immobilisée */}
+                      {statsRotation.resume?.valeurStockImmobilise > 0 && (
+                        <div className="mb-5 p-5 bg-gradient-to-r from-warning/10 to-orange-500/5 border-2 border-warning/30 rounded-xl">
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <p className="text-sm font-medium text-muted-foreground">Valeur totale immobilisée</p>
+                              <p className="text-2xl font-black text-warning mt-1">{formatPrix(statsRotation.resume.valeurStockImmobilise)}</p>
+                            </div>
+                            <div className="w-14 h-14 rounded-full bg-warning/20 flex items-center justify-center">
+                              <Snowflake className="w-7 h-7 text-warning" />
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
+                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
+                        {statsRotation.stockMort.map((article: any) => (
+                          <div
+                            key={article.articleId}
+                            className="flex items-center gap-4 p-4 bg-gradient-to-r from-warning/5 to-transparent border border-warning/20 rounded-xl hover:shadow-lg hover:border-warning/40 transition-all"
+                          >
+                            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-warning to-orange-600 flex items-center justify-center flex-shrink-0 shadow-lg">
+                              <Snowflake className="w-6 h-6 text-white" />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <p className="text-sm font-bold text-foreground truncate">{article.nom}</p>
+                              <div className="flex items-center gap-3 mt-1">
+                                <span className="text-xs text-muted-foreground">
+                                  <strong className="text-warning">{article.joursCouverture || 0}</strong> jours couverture
+                                </span>
+                                <span className="text-xs text-muted-foreground">
+                                  Stock: <strong>{article.stockActuel}</strong>
+                                </span>
+                              </div>
+                            </div>
+                            <div className="text-right">
+                              <p className="text-base font-bold text-warning">{formatPrix(article.valeurStock || 0)}</p>
+                              <p className="text-xs text-muted-foreground">immobilisé</p>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </>
+                  ) : (
+                    <div className="flex flex-col items-center justify-center py-16 text-center">
+                      <Snowflake className="w-16 h-16 text-muted-foreground/30 mb-4" />
+                      <p className="text-muted-foreground">Aucun article à rotation lente</p>
+                    </div>
+                  )}
+                </TabsContent>
+              </Tabs>
+            </div>
+          </DialogContent>
+        </Dialog>
       )}
 
       {/* Statistiques du stock */}
