@@ -98,38 +98,39 @@ const ArticleCard = ({
           {article.nom}
         </h3>
 
-        {/* Prix - Grand et visible comme un "like count" */}
-        <div className="flex items-center justify-between">
-          <div>
-            <span className="text-2xl font-black text-primary">
+        {/* Prix et Stock - Layout adaptatif */}
+        <div className="flex items-stretch gap-2">
+          {/* Prix - Flexible avec taille adaptative */}
+          <div className="flex-1 min-w-0">
+            <span className="text-lg sm:text-xl font-black text-primary block truncate">
               {formatPrix(article.prixVente)}
             </span>
             {article.prixAchat && (
-              <p className="text-xs text-muted-foreground">
+              <p className="text-[10px] sm:text-xs text-muted-foreground truncate">
                 Achat: {formatPrix(article.prixAchat)}
               </p>
             )}
           </div>
 
-          {/* Badge Stock - Simple et élégant */}
-          <div className={`px-4 py-2.5 rounded-xl shadow-sm ${
+          {/* Badge Stock - Compact et adaptatif */}
+          <div className={`flex-shrink-0 px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-xl shadow-sm flex items-center ${
             badgeColor === 'destructive'
               ? 'bg-destructive/10 border-2 border-destructive/30'
               : badgeColor === 'warning'
               ? 'bg-warning/10 border-2 border-warning/30'
               : 'bg-success/10 border-2 border-success/30'
           }`}>
-            <div className="flex items-baseline gap-1.5">
-              <span className={`text-2xl font-black ${
+            <div className="flex items-baseline gap-1">
+              <span className={`text-lg sm:text-xl font-black ${
                 badgeColor === 'destructive'
                   ? 'text-destructive'
                   : badgeColor === 'warning'
                   ? 'text-warning'
                   : 'text-success'
               }`}>
-                {article.stock}
+                {article.stock.toLocaleString('fr-FR')}
               </span>
-              <span className="text-[11px] text-muted-foreground font-medium">unités</span>
+              <span className="text-[9px] sm:text-[10px] text-muted-foreground font-medium">U.</span>
             </div>
           </div>
         </div>
