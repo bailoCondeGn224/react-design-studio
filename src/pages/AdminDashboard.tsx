@@ -18,6 +18,7 @@ import {
   Truck,
   ArrowUpRight,
   ArrowDownRight,
+  Loader2,
 } from 'lucide-react';
 import {
   BarChart,
@@ -43,10 +44,12 @@ import { useStatsFournisseurs } from '@/hooks/useFournisseurs';
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
-  const { data: ventesStats } = useVentesStats();
-  const { data: stockStats } = useStockStats();
-  const { data: clientsStats } = useStatsClients();
-  const { data: fournisseursStats } = useStatsFournisseurs();
+  const { data: ventesStats, isLoading: loadingVentes } = useVentesStats();
+  const { data: stockStats, isLoading: loadingStock } = useStockStats();
+  const { data: clientsStats, isLoading: loadingClients } = useStatsClients();
+  const { data: fournisseursStats, isLoading: loadingFournisseurs } = useStatsFournisseurs();
+
+  const isLoading = loadingVentes || loadingStock || loadingClients || loadingFournisseurs;
 
   // Données pour les graphiques (à remplacer par vraies données de l'API)
   const ventesParJour = [
@@ -95,6 +98,22 @@ const AdminDashboard = () => {
   const caSemaine = ventesStats?.semaine.total || 0;
   const caMois = ventesStats?.mois.total || 0;
   const croissanceSemaine = 12.5; // À calculer depuis l'API
+
+  // Afficher le loader pendant le chargement initial
+  if (isLoading) {
+    return (
+      <AppLayout>
+        <PageHeader
+          title="Dashboard Administrateur"
+          description="Vue d'ensemble complète de votre entreprise"
+        />
+        <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
+          <Loader2 className="w-12 h-12 text-primary animate-spin" />
+          <p className="text-muted-foreground text-sm">Chargement des données...</p>
+        </div>
+      </AppLayout>
+    );
+  }
 
   return (
     <AppLayout>

@@ -10,6 +10,7 @@ import {
   UserPlus,
   Building,
   Activity,
+  Loader2,
 } from 'lucide-react';
 import {
   useGlobalStats,
@@ -41,10 +42,12 @@ const getChartColors = () => {
 
 const SuperAdminDashboard = () => {
   // Charger les statistiques avec les hooks personnalisés
-  const { data: globalStats } = useGlobalStats();
-  const { data: organizationsByPlan } = useOrganizationsByPlan();
-  const { data: growthStats } = useGrowthStats();
-  const { data: recentActivity } = useRecentActivity();
+  const { data: globalStats, isLoading: loadingGlobal } = useGlobalStats();
+  const { data: organizationsByPlan, isLoading: loadingByPlan } = useOrganizationsByPlan();
+  const { data: growthStats, isLoading: loadingGrowth } = useGrowthStats();
+  const { data: recentActivity, isLoading: loadingActivity } = useRecentActivity();
+
+  const isLoading = loadingGlobal || loadingByPlan || loadingGrowth || loadingActivity;
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('fr-FR', {
@@ -60,6 +63,22 @@ const SuperAdminDashboard = () => {
   };
 
   const CHART_COLORS = getChartColors();
+
+  // Afficher le loader pendant le chargement initial
+  if (isLoading) {
+    return (
+      <AppLayout>
+        <PageHeader
+          title="Dashboard Super Admin"
+          description="Vue d'ensemble de la plateforme multi-tenant"
+        />
+        <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
+          <Loader2 className="w-12 h-12 text-primary animate-spin" />
+          <p className="text-muted-foreground text-sm">Chargement des données...</p>
+        </div>
+      </AppLayout>
+    );
+  }
 
   return (
     <AppLayout>

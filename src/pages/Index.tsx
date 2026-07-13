@@ -3,7 +3,7 @@ import PageHeader from "@/components/PageHeader";
 import StatCard from "@/components/StatCard";
 import {
   Package, ShoppingCart, Users, Wallet, TrendingUp,
-  AlertTriangle, ArrowUpRight, UserCheck, Truck, Calendar, Clock
+  AlertTriangle, ArrowUpRight, UserCheck, Truck, Calendar, Clock, Loader2
 } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, AreaChart, Area } from "recharts";
 import { useVentesStats, useVentesRecent } from "@/hooks/useVentes";
@@ -31,15 +31,18 @@ const Dashboard = () => {
     { name: "Mar", montant: 4800 },
     { name: "Avr", montant: 6300 },
   ];
-  const { data: ventesStats } = useVentesStats();
-  const { data: stockStats } = useStockStats();
-  const { data: recentVentes = [] } = useVentesRecent();
-  const { data: stockAlerts = [] } = useStockAlerts();
-  const { data: topClients = [] } = useTopClients(5);
-  const { data: approvisionnementsResponse } = useApprovisionnements({ page: 1, limit: 10 });
+  const { data: ventesStats, isLoading: loadingVentesStats } = useVentesStats();
+  const { data: stockStats, isLoading: loadingStockStats } = useStockStats();
+  const { data: recentVentes = [], isLoading: loadingRecentVentes } = useVentesRecent();
+  const { data: stockAlerts = [], isLoading: loadingStockAlerts } = useStockAlerts();
+  const { data: topClients = [], isLoading: loadingTopClients } = useTopClients(5);
+  const { data: approvisionnementsResponse, isLoading: loadingAppros } = useApprovisionnements({ page: 1, limit: 10 });
   const approvisionnements = approvisionnementsResponse?.data || [];
-  const { data: fournisseursStats } = useStatsFournisseurs();
-  const { data: expirationStats } = useExpirationStats();
+  const { data: fournisseursStats, isLoading: loadingFournisseurs } = useStatsFournisseurs();
+  const { data: expirationStats, isLoading: loadingExpiration } = useExpirationStats();
+
+  // Vérifier si les données principales sont en cours de chargement
+  const isLoading = loadingVentesStats || loadingStockStats || loadingFournisseurs;
 
   const formatPrix = (prix: number) => {
     return new Intl.NumberFormat('fr-GN', {
@@ -61,6 +64,22 @@ const Dashboard = () => {
 
   // Prendre les 3 derniers approvisionnements
   const dernierAppros = approvisionnements.slice(0, 3);
+
+  // Afficher le loader pendant le chargement initial
+  if (isLoading) {
+    return (
+      <AppLayout>
+        <PageHeader
+          title="Tableau de Bord"
+          description="Vue d'ensemble de votre activité"
+        />
+        <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
+          <Loader2 className="w-12 h-12 text-primary animate-spin" />
+          <p className="text-muted-foreground text-sm">Chargement des données...</p>
+        </div>
+      </AppLayout>
+    );
+  }
 
   return (
     <AppLayout>

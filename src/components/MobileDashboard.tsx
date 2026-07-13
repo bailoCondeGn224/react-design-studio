@@ -11,6 +11,7 @@ import {
   Truck,
   Warehouse,
   ChevronRight,
+  Loader2,
 } from 'lucide-react';
 import { useVentesStats } from '@/hooks/useVentes';
 import { useStockStats } from '@/hooks/useStock';
@@ -18,15 +19,32 @@ import { useStatsClients } from '@/hooks/useClients';
 
 const MobileDashboard = () => {
   const navigate = useNavigate();
-  const { data: ventesStats } = useVentesStats();
-  const { data: stockStats } = useStockStats();
-  const { data: clientsStats } = useStatsClients();
+  const { data: ventesStats, isLoading: loadingVentes } = useVentesStats();
+  const { data: stockStats, isLoading: loadingStock } = useStockStats();
+  const { data: clientsStats, isLoading: loadingClients } = useStatsClients();
+
+  const isLoading = loadingVentes || loadingStock || loadingClients;
 
   const formatPrix = (prix: number) => {
     return new Intl.NumberFormat('fr-FR', {
       maximumFractionDigits: 0,
     }).format(prix);
   };
+
+  // Afficher le loader pendant le chargement
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-background pb-24">
+        <div className="sticky top-0 bg-background/95 backdrop-blur-sm border-b border-border z-10 px-4 py-3">
+          <h1 className="text-lg font-semibold">Tableau de bord</h1>
+        </div>
+        <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
+          <Loader2 className="w-10 h-10 text-primary animate-spin" />
+          <p className="text-muted-foreground text-sm">Chargement...</p>
+        </div>
+      </div>
+    );
+  }
 
   const caJour = ventesStats?.jour.total || 0;
   const caSemaine = ventesStats?.semaine.total || 0;
