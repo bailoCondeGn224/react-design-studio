@@ -44,8 +44,12 @@ const Stock = () => {
   const [selectedCategorieId, setSelectedCategorieId] = useState<string>("all");
   const [searchInput, setSearchInput] = useState("");
   const debouncedSearch = useDebounce(searchInput, 800);
+  // Vérifier si on doit rouvrir le formulaire après un rechargement (capture photo mobile)
   const [formOpen, setFormOpen] = useState(false);
-  const [bulkFormOpen, setBulkFormOpen] = useState(false);
+  const [bulkFormOpen, setBulkFormOpen] = useState(() => {
+    // Si on restaure depuis sessionStorage, ouvrir le formulaire bulk (création)
+    return sessionStorage.getItem('bulkArticleFormState') !== null;
+  });
   const [importDialogOpen, setImportDialogOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<any>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);

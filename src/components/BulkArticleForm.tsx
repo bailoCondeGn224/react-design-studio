@@ -49,6 +49,7 @@ const BulkArticleForm = ({ open, onOpenChange, onSubmit }: BulkArticleFormProps)
   };
 
   const [lignes, setLignes] = useState<LigneArticle[]>([{ ...ligneVide }]);
+  const [isCapturingPhoto, setIsCapturingPhoto] = useState(false);
 
   // Restaurer l'état depuis sessionStorage au montage
   useEffect(() => {
@@ -83,16 +84,10 @@ const BulkArticleForm = ({ open, onOpenChange, onSubmit }: BulkArticleFormProps)
       if (!saved) {
         setLignes([{ ...ligneVide }]);
       }
-    } else {
-      // Nettoyer les previews quand on ferme
-      lignes.forEach(ligne => {
-        if (ligne.photoPreview) {
-          URL.revokeObjectURL(ligne.photoPreview);
-        }
-      });
-      // Nettoyer sessionStorage quand on ferme le formulaire
-      sessionStorage.removeItem('bulkArticleFormState');
     }
+    // NE PAS nettoyer sessionStorage automatiquement quand open=false
+    // Car la page peut avoir été rechargée après capture photo mobile
+    // Le nettoyage se fait uniquement lors d'une fermeture intentionnelle (annuler/soumettre)
   }, [open]);
 
   const ajouterLigne = () => {
@@ -161,6 +156,30 @@ const BulkArticleForm = ({ open, onOpenChange, onSubmit }: BulkArticleFormProps)
     });
   };
 
+  // CRITIQUE: Sauvegarder immédiatement AVANT d'ouvrir la caméra
+  // Car l'OS mobile peut décharger l'app web de la mémoire
+  const handleCameraClick = () => {
+    setIsCapturingPhoto(true);
+    const dataToSave = lignes.map(ligne => ({
+      ...ligne,
+      photo: null, // Ne pas sauvegarder l'objet File
+    }));
+    sessionStorage.setItem('bulkArticleFormState', JSON.stringify(dataToSave));
+  };
+
+  // Fonction pour annuler et nettoyer
+  const handleCancel = () => {
+    // Nettoyer les previews
+    lignes.forEach(ligne => {
+      if (ligne.photoPreview && ligne.photoPreview.startsWith('blob:')) {
+        URL.revokeObjectURL(ligne.photoPreview);
+      }
+    });
+    sessionStorage.removeItem('bulkArticleFormState');
+    setLignes([{ ...ligneVide }]);
+    onOpenChange(false);
+  };
+
   const handleSubmit = () => {
     const lignesValides = lignes.filter(ligne => {
       return ligne.code && ligne.nom && ligne.categorieId && ligne.zone;
@@ -193,6 +212,9 @@ const BulkArticleForm = ({ open, onOpenChange, onSubmit }: BulkArticleFormProps)
 
     // Extraire les photos des lignes valides
     const photos = lignesValides.map(ligne => ligne.photo);
+
+    // Nettoyer sessionStorage après soumission réussie
+    sessionStorage.removeItem('bulkArticleFormState');
 
     onSubmit(articles, photos);
     onOpenChange(false);
@@ -377,6 +399,7 @@ const BulkArticleForm = ({ open, onOpenChange, onSubmit }: BulkArticleFormProps)
                           {/* Bouton Prendre une photo */}
                           <label
                             htmlFor={`photo-camera-${index}`}
+                            onClick={handleCameraClick}
                             className="flex items-center justify-center gap-2 w-full h-14 border-2 border-primary/30 rounded-xl cursor-pointer bg-primary text-primary-foreground active:scale-[0.99] transition-all font-semibold"
                           >
                             <Camera className="w-5 h-5" />
@@ -386,6 +409,7 @@ const BulkArticleForm = ({ open, onOpenChange, onSubmit }: BulkArticleFormProps)
                           {/* Bouton Choisir depuis galerie */}
                           <label
                             htmlFor={`photo-gallery-${index}`}
+                            onClick={handleCameraClick}
                             className="flex items-center justify-center gap-2 w-full h-14 border-2 border-dashed border-primary/30 rounded-xl cursor-pointer bg-primary/5 active:bg-primary/10 active:scale-[0.99] transition-all font-medium"
                           >
                             <Upload className="w-5 h-5 text-primary" />
@@ -595,7 +619,7 @@ const BulkArticleForm = ({ open, onOpenChange, onSubmit }: BulkArticleFormProps)
           <Button
             type="button"
             variant="outline"
-            onClick={() => onOpenChange(false)}
+            onClick={handleCancel}
             className="w-full sm:flex-1 h-12 rounded-xl font-semibold text-base active:scale-[0.98] transition-transform"
           >
             Annuler
@@ -770,6 +794,7 @@ const BulkArticleForm = ({ open, onOpenChange, onSubmit }: BulkArticleFormProps)
                           {/* Bouton Prendre une photo */}
                           <label
                             htmlFor={`photo-camera-${index}`}
+                            onClick={handleCameraClick}
                             className="flex items-center justify-center gap-2 w-full h-14 border-2 border-primary/30 rounded-xl cursor-pointer bg-primary text-primary-foreground active:scale-[0.99] transition-all font-semibold"
                           >
                             <Camera className="w-5 h-5" />
@@ -779,6 +804,7 @@ const BulkArticleForm = ({ open, onOpenChange, onSubmit }: BulkArticleFormProps)
                           {/* Bouton Choisir depuis galerie */}
                           <label
                             htmlFor={`photo-gallery-${index}`}
+                            onClick={handleCameraClick}
                             className="flex items-center justify-center gap-2 w-full h-14 border-2 border-dashed border-primary/30 rounded-xl cursor-pointer bg-primary/5 active:bg-primary/10 active:scale-[0.99] transition-all font-medium"
                           >
                             <Upload className="w-5 h-5 text-primary" />
@@ -989,7 +1015,7 @@ const BulkArticleForm = ({ open, onOpenChange, onSubmit }: BulkArticleFormProps)
             <Button
               type="button"
               variant="outline"
-              onClick={() => onOpenChange(false)}
+              onClick={handleCancel}
               className="w-full sm:flex-1 h-12 rounded-xl font-semibold text-base active:scale-[0.98] transition-transform"
             >
               Annuler

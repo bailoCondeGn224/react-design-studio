@@ -116,10 +116,8 @@ const StockForm = ({ open, onOpenChange, onSubmit, initialData = null, mode = 'c
       setPhotoFile(null); // Pas de fichier (juste l'aperçu depuis l'URL)
     }
 
-    // Nettoyer sessionStorage quand on ferme le formulaire
-    if (!open) {
-      sessionStorage.removeItem('stockFormState');
-    }
+    // NE PAS nettoyer sessionStorage ici automatiquement
+    // Le nettoyage se fait uniquement lors d'une fermeture intentionnelle (annuler/soumettre)
   }, [mode, initialData, open]);
 
   const update = (field: string, value: string) => setForm(prev => ({ ...prev, [field]: value }));
@@ -159,9 +157,20 @@ const StockForm = ({ open, onOpenChange, onSubmit, initialData = null, mode = 'c
     e.target.value = '';
   };
 
-  // Déclencher la capture photo (active le flag avant d'ouvrir la caméra)
+  // Déclencher la capture photo (sauvegarde IMMÉDIATE avant d'ouvrir la caméra)
   const handleCameraClick = () => {
     setIsCapturingPhoto(true);
+
+    // CRITIQUE: Sauvegarder immédiatement AVANT d'ouvrir la caméra
+    // Car l'OS mobile peut décharger l'app web de la mémoire
+    if (mode === 'create') {
+      const dataToSave = {
+        form,
+        photoPreview,
+        timestamp: Date.now(), // Pour vérifier la fraîcheur des données
+      };
+      sessionStorage.setItem('stockFormState', JSON.stringify(dataToSave));
+    }
   };
 
   // Réinitialiser le flag quand la fenêtre reprend le focus (si l'utilisateur annule la caméra)
@@ -216,6 +225,18 @@ const StockForm = ({ open, onOpenChange, onSubmit, initialData = null, mode = 'c
 
     onSubmit(submitData);
 
+    // Nettoyer sessionStorage après soumission réussie
+    sessionStorage.removeItem('stockFormState');
+
+    setForm(getInitialState());
+    setPhotoFile(null);
+    setPhotoPreview(null);
+    onOpenChange(false);
+  };
+
+  // Fonction pour annuler et nettoyer
+  const handleCancel = () => {
+    sessionStorage.removeItem('stockFormState');
     setForm(getInitialState());
     setPhotoFile(null);
     setPhotoPreview(null);
@@ -499,7 +520,7 @@ const StockForm = ({ open, onOpenChange, onSubmit, initialData = null, mode = 'c
           <div className="flex flex-col sm:flex-row gap-3 pt-2">
             <button
               type="button"
-              onClick={() => onOpenChange(false)}
+              onClick={handleCancel}
               className="w-full sm:flex-1 h-12 rounded-lg border border-border text-base font-medium text-muted-foreground hover:bg-secondary active:scale-[0.98] transition-all"
             >
               Annuler
