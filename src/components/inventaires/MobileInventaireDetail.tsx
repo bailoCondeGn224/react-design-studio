@@ -19,6 +19,7 @@ import {
   Calendar,
   Target,
   Percent,
+  Loader2,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -52,6 +53,7 @@ export default function MobileInventaireDetail({
   const [filterStatut, setFilterStatut] = useState<string>('all');
   const [editingArticleId, setEditingArticleId] = useState<string | null>(null);
   const [quantiteInput, setQuantiteInput] = useState('');
+  const [isSavingComptage, setIsSavingComptage] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const calculerFinancesMutation = useCalculerFinances();
   const [isCalculating, setIsCalculating] = useState(false);
@@ -134,12 +136,15 @@ export default function MobileInventaireDetail({
     const quantite = parseInt(quantiteInput);
     if (isNaN(quantite) || quantite < 0) return;
 
+    setIsSavingComptage(true);
     try {
       await onAddComptage(articleId, quantite);
       setEditingArticleId(null);
       setQuantiteInput('');
     } catch (error) {
       // Erreur gérée par le hook
+    } finally {
+      setIsSavingComptage(false);
     }
   };
 
@@ -416,17 +421,28 @@ export default function MobileInventaireDetail({
                               e.stopPropagation();
                               handleSaveComptage(article.id);
                             }}
-                            className="flex-1 h-11 rounded-lg bg-success text-white text-sm font-semibold active:scale-95 transition-transform"
+                            disabled={isSavingComptage}
+                            className="flex-1 h-11 rounded-lg bg-success text-white text-sm font-semibold active:scale-95 transition-transform disabled:opacity-70 disabled:active:scale-100 flex items-center justify-center gap-1.5"
                           >
-                            <Check className="w-4 h-4 inline mr-1.5" />
-                            Valider
+                            {isSavingComptage ? (
+                              <>
+                                <Loader2 className="w-4 h-4 animate-spin" />
+                                Validation...
+                              </>
+                            ) : (
+                              <>
+                                <Check className="w-4 h-4" />
+                                Valider
+                              </>
+                            )}
                           </button>
                           <button
                             onClick={(e) => {
                               e.stopPropagation();
                               handleCancelEdit();
                             }}
-                            className="flex-1 h-11 rounded-lg border-2 border-border bg-background text-sm font-semibold active:scale-95 transition-transform"
+                            disabled={isSavingComptage}
+                            className="flex-1 h-11 rounded-lg border-2 border-border bg-background text-sm font-semibold active:scale-95 transition-transform disabled:opacity-50"
                           >
                             <X className="w-4 h-4 inline mr-1.5" />
                             Annuler

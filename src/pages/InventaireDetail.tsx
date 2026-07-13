@@ -11,6 +11,7 @@ import {
   TrendingUp,
   TrendingDown,
   Download,
+  Loader2,
 } from 'lucide-react';
 import AppLayout from '@/components/AppLayout';
 import PageHeader from '@/components/PageHeader';
@@ -623,16 +624,22 @@ export default function InventaireDetail() {
                                     e.stopPropagation();
                                     handleSaveComptage(article);
                                   }}
-                                  className="w-7 h-7 rounded hover:bg-success/20 flex items-center justify-center transition-colors"
+                                  disabled={addComptageMutation.isPending}
+                                  className="w-7 h-7 rounded hover:bg-success/20 flex items-center justify-center transition-colors disabled:opacity-50"
                                 >
-                                  <Check className="w-4 h-4 text-success" />
+                                  {addComptageMutation.isPending ? (
+                                    <Loader2 className="w-4 h-4 text-success animate-spin" />
+                                  ) : (
+                                    <Check className="w-4 h-4 text-success" />
+                                  )}
                                 </button>
                                 <button
                                   onClick={(e) => {
                                     e.stopPropagation();
                                     handleCancelEdit();
                                   }}
-                                  className="w-7 h-7 rounded hover:bg-destructive/20 flex items-center justify-center transition-colors"
+                                  disabled={addComptageMutation.isPending}
+                                  className="w-7 h-7 rounded hover:bg-destructive/20 flex items-center justify-center transition-colors disabled:opacity-50"
                                 >
                                   <X className="w-4 h-4 text-destructive" />
                                 </button>
