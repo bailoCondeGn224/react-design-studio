@@ -48,8 +48,23 @@ const Stock = () => {
   // Vérifier si on doit rouvrir le formulaire après un rechargement (capture photo mobile)
   const [formOpen, setFormOpen] = useState(false);
   const [bulkFormOpen, setBulkFormOpen] = useState(() => {
-    // Si on restaure depuis sessionStorage, ouvrir le formulaire bulk (création)
-    return sessionStorage.getItem('bulkArticleFormState') !== null;
+    // Vérifier si on restaure depuis sessionStorage (capture photo mobile)
+    const saved = sessionStorage.getItem('bulkArticleFormState');
+    if (!saved) return false;
+
+    try {
+      const data = JSON.parse(saved);
+      // Vérifier si les données ont un timestamp et sont récentes (moins de 3 minutes)
+      if (data.timestamp && Date.now() - data.timestamp < 3 * 60 * 1000) {
+        return true;
+      }
+      // Données trop vieilles, les supprimer
+      sessionStorage.removeItem('bulkArticleFormState');
+      return false;
+    } catch {
+      sessionStorage.removeItem('bulkArticleFormState');
+      return false;
+    }
   });
   const [importDialogOpen, setImportDialogOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<any>(null);
@@ -995,8 +1010,8 @@ const Stock = () => {
       ) : (
         <Dialog open={rotationDialogOpen} onOpenChange={setRotationDialogOpen}>
           <DialogContent className="max-w-4xl max-h-[85vh] flex flex-col p-0 gap-0">
-            <DialogHeader className="px-6 py-5 border-b bg-gradient-to-r from-primary/10 via-primary/5 to-transparent flex-shrink-0">
-              <div className="flex items-center gap-3">
+            <DialogHeader className="px-8 py-5 border-b bg-gradient-to-r from-primary/10 via-primary/5 to-transparent flex-shrink-0">
+              <div className="flex items-center gap-3 pr-8">
                 <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary to-primary/70 flex items-center justify-center shadow-lg">
                   <BarChart3 className="w-6 h-6 text-primary-foreground" />
                 </div>

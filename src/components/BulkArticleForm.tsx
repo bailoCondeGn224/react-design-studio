@@ -57,10 +57,15 @@ const BulkArticleForm = ({ open, onOpenChange, onSubmit }: BulkArticleFormProps)
     if (saved) {
       try {
         const parsed = JSON.parse(saved);
-        setLignes(parsed);
+        // Extraire les lignes de l'objet avec timestamp
+        const lignesData = parsed.lignes || parsed;
+        if (Array.isArray(lignesData) && lignesData.length > 0) {
+          setLignes(lignesData);
+        }
         sessionStorage.removeItem('bulkArticleFormState'); // Nettoyer après restauration
       } catch (e) {
         console.error('Erreur restauration formulaire:', e);
+        sessionStorage.removeItem('bulkArticleFormState');
       }
     }
   }, []);
@@ -69,10 +74,13 @@ const BulkArticleForm = ({ open, onOpenChange, onSubmit }: BulkArticleFormProps)
   useEffect(() => {
     if (open && lignes.length > 0) {
       // Sauvegarder uniquement les données (pas les fichiers File, juste les previews)
-      const dataToSave = lignes.map(ligne => ({
-        ...ligne,
-        photo: null, // Ne pas sauvegarder l'objet File
-      }));
+      const dataToSave = {
+        timestamp: Date.now(),
+        lignes: lignes.map(ligne => ({
+          ...ligne,
+          photo: null, // Ne pas sauvegarder l'objet File
+        }))
+      };
       sessionStorage.setItem('bulkArticleFormState', JSON.stringify(dataToSave));
     }
   }, [lignes, open]);
@@ -160,10 +168,13 @@ const BulkArticleForm = ({ open, onOpenChange, onSubmit }: BulkArticleFormProps)
   // Car l'OS mobile peut décharger l'app web de la mémoire
   const handleCameraClick = () => {
     setIsCapturingPhoto(true);
-    const dataToSave = lignes.map(ligne => ({
-      ...ligne,
-      photo: null, // Ne pas sauvegarder l'objet File
-    }));
+    const dataToSave = {
+      timestamp: Date.now(),
+      lignes: lignes.map(ligne => ({
+        ...ligne,
+        photo: null, // Ne pas sauvegarder l'objet File
+      }))
+    };
     sessionStorage.setItem('bulkArticleFormState', JSON.stringify(dataToSave));
   };
 
