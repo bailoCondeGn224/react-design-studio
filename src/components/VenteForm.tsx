@@ -470,45 +470,47 @@ const VenteForm = ({ open, onOpenChange, onSubmit, initialData = null, mode = 'c
                             )}
                           </div>
 
-                          {/* Sélecteur de Mode de Vente */}
-                          {ligne.modesVente && ligne.modesVente.length > 0 && (
+                          {/* Sélecteur de Mode de Vente - Boutons Pill */}
+                          {ligne.modesVente && ligne.modesVente.length > 1 && (
                             <div>
                               <label className="text-xs font-semibold text-foreground mb-2 flex items-center gap-1.5">
                                 <Layers className="w-3.5 h-3.5 text-primary" />
                                 Mode de vente
                               </label>
-                              <select
-                                value={ligne.modeVenteId || ''}
-                                onChange={(e) => {
-                                  const selectedMode = ligne.modesVente.find((m: any) => m.id === e.target.value);
-                                  if (selectedMode) {
-                                    setForm(prev => {
-                                      const newLignes = [...prev.lignes];
-                                      newLignes[index] = {
-                                        ...newLignes[index],
-                                        modeVenteId: selectedMode.id,
-                                        modeVenteNom: selectedMode.nom,
-                                        prixUnitaire: selectedMode.prixVente,
-                                        sousTotal: Number(newLignes[index].quantite || 1) * selectedMode.prixVente
-                                      };
-                                      return { ...prev, lignes: newLignes };
-                                    });
-                                  }
-                                }}
-                                className="w-full px-3 h-11 rounded-lg border-2 border-primary/20 bg-primary/5 text-base sm:text-sm font-medium cursor-pointer focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all"
-                              >
-                                {ligne.modesVente.map((mode: any) => (
-                                  <option key={mode.id} value={mode.id}>
-                                    {mode.nom} • {mode.quantiteStock} {ligne.uniteStock || 'unités'} • {new Intl.NumberFormat('fr-GN', { style: 'currency', currency: 'GNF', minimumFractionDigits: 0 }).format(mode.prixVente).replace('GNF', 'GNF')}
-                                    {mode.parDefaut ? ' ★' : ''}
-                                  </option>
-                                ))}
-                              </select>
-                              {ligne.modesVente.length > 1 && (
-                                <p className="text-xs text-muted-foreground mt-1">
-                                  {ligne.modesVente.length} modes disponibles
-                                </p>
-                              )}
+                              <div className="flex flex-wrap gap-2">
+                                {ligne.modesVente.map((mode: any) => {
+                                  const isSelected = ligne.modeVenteId === mode.id;
+                                  return (
+                                    <button
+                                      key={mode.id}
+                                      type="button"
+                                      onClick={() => {
+                                        setForm(prev => {
+                                          const newLignes = [...prev.lignes];
+                                          newLignes[index] = {
+                                            ...newLignes[index],
+                                            modeVenteId: mode.id,
+                                            modeVenteNom: mode.nom,
+                                            prixUnitaire: mode.prixVente,
+                                            sousTotal: Number(newLignes[index].quantite || 1) * mode.prixVente
+                                          };
+                                          return { ...prev, lignes: newLignes };
+                                        });
+                                      }}
+                                      className={`px-4 py-2 rounded-full text-sm font-semibold transition-all active:scale-95 ${
+                                        isSelected
+                                          ? "bg-primary text-primary-foreground shadow-md"
+                                          : "bg-muted hover:bg-muted/80 text-foreground"
+                                      }`}
+                                    >
+                                      {mode.nom}
+                                      <span className={`ml-1.5 ${isSelected ? "text-primary-foreground/80" : "text-muted-foreground"}`}>
+                                        {new Intl.NumberFormat('fr-GN').format(mode.prixVente)} GNF
+                                      </span>
+                                    </button>
+                                  );
+                                })}
+                              </div>
                             </div>
                           )}
 
