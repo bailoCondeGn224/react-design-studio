@@ -7,8 +7,9 @@ import MobileCombobox from "@/components/MobileCombobox";
 import { toast } from "sonner";
 import { useCategoriesActive } from "@/hooks/useCategories";
 import { formatPrixInput, handlePrixChange } from "@/utils/format-prix";
-import { ImageIcon, Upload, X, Camera } from "lucide-react";
+import { ImageIcon, Upload, X, Camera, Plus, Trash2, Layers, Star, StarOff } from "lucide-react";
 import { getPhotoUrl } from "@/lib/api-client";
+import { ModeVenteInline } from '@/types';
 
 interface StockFormProps {
   open: boolean;
@@ -33,6 +34,14 @@ const StockForm = ({ open, onOpenChange, onSubmit, initialData = null, mode = 'c
         reference: initialData.reference || '',
         dateExpiration: initialData.dateExpiration || '',
         delaiAlerteExpiration: initialData.delaiAlerteExpiration?.toString() || '30',
+        uniteStock: initialData.uniteStock || 'Unité',
+        modesVente: initialData.modesVente?.map((m: any) => ({
+          nom: m.nom,
+          quantiteStock: m.quantiteStock,
+          prixVente: m.prixVente,
+          codeBarre: m.codeBarre,
+          parDefaut: m.parDefaut,
+        })) || [],
       };
     }
     return {
@@ -46,6 +55,8 @@ const StockForm = ({ open, onOpenChange, onSubmit, initialData = null, mode = 'c
       prixAchat: "",
       dateExpiration: "",
       delaiAlerteExpiration: "30",
+      uniteStock: "Unité",
+      modesVente: [] as ModeVenteInline[],
     };
   };
 
@@ -105,6 +116,14 @@ const StockForm = ({ open, onOpenChange, onSubmit, initialData = null, mode = 'c
         reference: initialData.reference || '',
         dateExpiration: initialData.dateExpiration || '',
         delaiAlerteExpiration: initialData.delaiAlerteExpiration?.toString() || '30',
+        uniteStock: initialData.uniteStock || 'Unité',
+        modesVente: initialData.modesVente?.map((m: any) => ({
+          nom: m.nom,
+          quantiteStock: m.quantiteStock,
+          prixVente: m.prixVente,
+          codeBarre: m.codeBarre,
+          parDefaut: m.parDefaut,
+        })) || [],
       });
 
       // Afficher la photo existante si présente
@@ -121,6 +140,42 @@ const StockForm = ({ open, onOpenChange, onSubmit, initialData = null, mode = 'c
   }, [mode, initialData, open]);
 
   const update = (field: string, value: string) => setForm(prev => ({ ...prev, [field]: value }));
+
+  // Gestion des modes de vente
+  const ajouterModeVente = () => {
+    setForm(prev => ({
+      ...prev,
+      modesVente: [
+        ...prev.modesVente,
+        { nom: '', quantiteStock: 1, prixVente: 0, parDefaut: prev.modesVente.length === 0 },
+      ],
+    }));
+  };
+
+  const supprimerModeVente = (index: number) => {
+    setForm(prev => {
+      const newModes = prev.modesVente.filter((_, i) => i !== index);
+      if (prev.modesVente[index].parDefaut && newModes.length > 0) {
+        newModes[0].parDefaut = true;
+      }
+      return { ...prev, modesVente: newModes };
+    });
+  };
+
+  const updateModeVente = (index: number, field: keyof ModeVenteInline, value: any) => {
+    setForm(prev => {
+      const newModes = [...prev.modesVente];
+      newModes[index] = { ...newModes[index], [field]: value };
+      return { ...prev, modesVente: newModes };
+    });
+  };
+
+  const setModeDefaut = (index: number) => {
+    setForm(prev => ({
+      ...prev,
+      modesVente: prev.modesVente.map((m, i) => ({ ...m, parDefaut: i === index })),
+    }));
+  };
 
   const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     // Désactiver le flag de capture
@@ -215,6 +270,8 @@ const StockForm = ({ open, onOpenChange, onSubmit, initialData = null, mode = 'c
       prixAchat: form.prixAchat ? Number(form.prixAchat) : undefined,
       dateExpiration: form.dateExpiration || undefined,
       delaiAlerteExpiration: form.delaiAlerteExpiration ? Number(form.delaiAlerteExpiration) : undefined,
+      uniteStock: form.uniteStock || 'Unité',
+      modesVente: form.modesVente.length > 0 ? form.modesVente : undefined,
     };
 
     // Ne passer photo que si un nouveau fichier a été sélectionné
@@ -256,6 +313,13 @@ const StockForm = ({ open, onOpenChange, onSubmit, initialData = null, mode = 'c
       <form onSubmit={handleSubmit} className="space-y-3 sm:space-y-4 overflow-y-auto flex-1 min-h-0 p-4 sm:p-6">
           <FormField label="Nom de l'article *" placeholder="Ex: Abaya Noire Premium" value={form.nom} onChange={e => update("nom", (e.target as HTMLInputElement).value)} maxLength={100} />
           <FormField label="Référence (SKU)" placeholder="Ex: ABY-001" value={form.reference} onChange={e => update("reference", (e.target as HTMLInputElement).value)} maxLength={50} />
+          <FormField
+            label="Unité de stock"
+            placeholder="Ex: Bouteille, Kilo, Pièce"
+            value={form.uniteStock}
+            onChange={e => update("uniteStock", (e.target as HTMLInputElement).value)}
+            maxLength={50}
+          />
 
           {/* Photo Upload - Optimisé mobile */}
           <div className="space-y-2">
@@ -513,6 +577,150 @@ const StockForm = ({ open, onOpenChange, onSubmit, initialData = null, mode = 'c
                 onChange={e => update("prixAchat", handlePrixChange(e.target.value))}
                 className="w-full px-4 h-11 rounded-lg border border-border bg-card text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring/30 text-base"
               />
+            </div>
+          </div>
+
+          {/* Section Modes de Vente - Charte Graphique Verte */}
+          <div className="relative overflow-hidden rounded-xl bg-gradient-to-br from-primary/5 via-background to-background border-2 border-border p-4 sm:p-5">
+            <div className="absolute top-0 right-0 w-24 h-24 bg-primary/5 rounded-full -mr-12 -mt-12"></div>
+            <div className="relative space-y-4">
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
+                    <Layers className="w-4 h-4 text-primary" />
+                  </div>
+                  <h3 className="text-sm font-bold text-foreground">Modes de Vente</h3>
+                  {form.modesVente.length > 0 && (
+                    <span className="px-2 py-0.5 rounded-full bg-primary/10 text-primary text-xs font-bold">
+                      {form.modesVente.length}
+                    </span>
+                  )}
+                </div>
+                <button
+                  type="button"
+                  onClick={ajouterModeVente}
+                  className="flex items-center gap-1.5 px-3 h-9 rounded-lg bg-primary/10 text-primary hover:bg-primary/20 text-xs sm:text-sm font-semibold active:scale-95 transition-all"
+                >
+                  <Plus className="w-4 h-4" />
+                  <span className="hidden sm:inline">Ajouter</span>
+                </button>
+              </div>
+
+              {form.modesVente.length === 0 ? (
+                <div className="text-center py-6 border-2 border-dashed border-border rounded-xl bg-muted/30">
+                  <Layers className="w-10 h-10 text-muted-foreground mx-auto mb-2 opacity-30" />
+                  <p className="text-sm text-muted-foreground">Aucun mode de vente</p>
+                  <p className="text-xs text-muted-foreground mt-1">L'article sera vendu à l'unité au prix défini</p>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {form.modesVente.map((mode, index) => (
+                    <div
+                      key={index}
+                      className={`relative rounded-xl border-2 transition-all ${
+                        mode.parDefaut
+                          ? 'border-primary/30 bg-gradient-to-br from-primary/5 via-background to-background'
+                          : 'border-border bg-card'
+                      } p-3 sm:p-4`}
+                    >
+                      {/* En-tête mode */}
+                      <div className="flex items-center justify-between mb-3">
+                        <div className="flex items-center gap-2">
+                          <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold ${
+                            mode.parDefaut
+                              ? 'bg-gradient-to-br from-primary to-primary/70 text-primary-foreground shadow-lg'
+                              : 'bg-muted text-muted-foreground'
+                          }`}>
+                            {index + 1}
+                          </div>
+                          {mode.parDefaut && (
+                            <span className="px-2 py-0.5 rounded-full bg-primary/10 text-primary text-xs font-semibold flex items-center gap-1">
+                              <Star className="w-3 h-3 fill-current" />
+                              Par défaut
+                            </span>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-1">
+                          {!mode.parDefaut && (
+                            <button
+                              type="button"
+                              onClick={() => setModeDefaut(index)}
+                              className="p-2 rounded-lg text-muted-foreground hover:text-primary hover:bg-primary/10 active:scale-95 transition-all"
+                              title="Définir par défaut"
+                            >
+                              <StarOff className="w-4 h-4" />
+                            </button>
+                          )}
+                          <button
+                            type="button"
+                            onClick={() => supprimerModeVente(index)}
+                            className="p-2 rounded-lg text-destructive hover:bg-destructive/10 active:scale-95 transition-all"
+                            title="Supprimer"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Champs du mode */}
+                      <div className="space-y-3">
+                        <div className="grid grid-cols-2 gap-3">
+                          <div>
+                            <label className="text-xs font-semibold text-foreground mb-1.5 block">Nom du mode</label>
+                            <input
+                              type="text"
+                              placeholder="Ex: Casier, Sac"
+                              value={mode.nom}
+                              onChange={(e) => updateModeVente(index, 'nom', e.target.value)}
+                              maxLength={50}
+                              className="w-full px-3 h-11 rounded-lg border border-border bg-card text-base sm:text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring/30 transition-colors"
+                            />
+                          </div>
+                          <div>
+                            <label className="text-xs font-semibold text-foreground mb-1.5 block">
+                              Contient ({form.uniteStock || 'unités'})
+                            </label>
+                            <input
+                              type="number"
+                              placeholder="12"
+                              min="0.01"
+                              step="0.01"
+                              value={mode.quantiteStock}
+                              onChange={(e) => updateModeVente(index, 'quantiteStock', parseFloat(e.target.value) || 1)}
+                              className="w-full px-3 h-11 rounded-lg border border-border bg-card text-base sm:text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring/30 transition-colors"
+                            />
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-3">
+                          <div>
+                            <label className="text-xs font-semibold text-foreground mb-1.5 block">Prix de vente (GNF)</label>
+                            <input
+                              type="text"
+                              inputMode="numeric"
+                              placeholder="120 000"
+                              value={formatPrixInput(mode.prixVente)}
+                              onChange={(e) => updateModeVente(index, 'prixVente', handlePrixChange(e.target.value))}
+                              className="w-full px-3 h-11 rounded-lg border border-border bg-card text-base sm:text-sm font-semibold text-foreground focus:outline-none focus:ring-2 focus:ring-ring/30 transition-colors"
+                            />
+                          </div>
+                          <div>
+                            <label className="text-xs font-semibold text-muted-foreground mb-1.5 block">Code-barres</label>
+                            <input
+                              type="text"
+                              placeholder="Optionnel"
+                              value={mode.codeBarre || ''}
+                              onChange={(e) => updateModeVente(index, 'codeBarre', e.target.value)}
+                              maxLength={50}
+                              className="w-full px-3 h-11 rounded-lg border border-border bg-card text-base sm:text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring/30 transition-colors"
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
 
