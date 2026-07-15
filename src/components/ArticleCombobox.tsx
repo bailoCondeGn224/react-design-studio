@@ -31,6 +31,14 @@ interface Article {
   prixVente?: number;
   prixAchat?: number;
   fournisseurPrefereNom?: string;
+  uniteStock?: string;
+  modesVente?: Array<{
+    id: string;
+    nom: string;
+    quantiteStock: number;
+    prixVente: number;
+    parDefaut: boolean;
+  }>;
 }
 
 interface ArticleComboboxProps {
@@ -126,8 +134,13 @@ const ArticleCombobox = ({
               <span className="text-muted-foreground text-xs">
                 {formatPrix(
                   priceType === 'vente'
-                    ? selectedArticle.prixVente || 0
+                    ? (selectedArticle.modesVente?.find(m => m.parDefaut)?.prixVente || selectedArticle.prixVente || 0)
                     : selectedArticle.prixAchat || 0
+                )}
+                {selectedArticle.modesVente && selectedArticle.modesVente.length > 1 && (
+                  <span className="ml-1 px-1.5 py-0.5 rounded bg-primary/10 text-primary font-medium">
+                    +{selectedArticle.modesVente.length - 1}
+                  </span>
                 )}
               </span>
             )}
@@ -237,7 +250,16 @@ const ArticleCombobox = ({
                           </div>
                           <div className="flex flex-col gap-1 text-sm text-muted-foreground">
                             {!checkStock && <span>Stock: {article.stock}</span>}
-                            {showPrice && <span className="font-medium text-primary">{formatPrix(prix)}</span>}
+                            {showPrice && (
+                              <span className="font-medium text-primary">
+                                {formatPrix(article.modesVente?.find(m => m.parDefaut)?.prixVente || prix)}
+                                {article.modesVente && article.modesVente.length > 1 && (
+                                  <span className="ml-1 px-1.5 py-0.5 rounded bg-primary/10 text-primary text-xs font-medium">
+                                    +{article.modesVente.length - 1} modes
+                                  </span>
+                                )}
+                              </span>
+                            )}
                             {article.fournisseurPrefereNom && (
                               <span className="text-xs">Fournisseur: {article.fournisseurPrefereNom}</span>
                             )}
@@ -322,7 +344,16 @@ const ArticleCombobox = ({
                       )}
                     </div>
                     <div className="flex items-center gap-2 text-xs text-muted-foreground mt-0.5">
-                      {showPrice && <span>{formatPrix(prix)}</span>}
+                      {showPrice && (
+                        <span className="flex items-center gap-1">
+                          {formatPrix(article.modesVente?.find(m => m.parDefaut)?.prixVente || prix)}
+                          {article.modesVente && article.modesVente.length > 1 && (
+                            <span className="px-1.5 py-0.5 rounded bg-primary/10 text-primary text-xs">
+                              +{article.modesVente.length - 1}
+                            </span>
+                          )}
+                        </span>
+                      )}
                       {article.fournisseurPrefereNom && (
                         <span className="text-primary">Fournisseur: {article.fournisseurPrefereNom}</span>
                       )}
