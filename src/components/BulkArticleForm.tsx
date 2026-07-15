@@ -225,14 +225,25 @@ const BulkArticleForm = ({ open, onOpenChange, onSubmit }: BulkArticleFormProps)
     const articles = lignesValides.map(ligne => {
       // Générer les modes de vente en fonction du type sélectionné
       const modesVente: any[] = [];
-      const prixVente = Number(ligne.prixVente) || 0;
-      const prixGros = Number(ligne.prixGros) || prixVente * ligne.quantiteGros;
+      const prixGros = Number(ligne.prixGros) || 0;
+      const qteGros = ligne.quantiteGros || 12;
+
+      // Calcul du prix de vente selon le type
+      let prixVenteArticle: number;
+
+      if (ligne.typeVente === "gros") {
+        // Gros uniquement: prix unitaire = prix du lot / quantité
+        prixVenteArticle = prixGros > 0 ? Math.round(prixGros / qteGros) : 0;
+      } else {
+        // Détail ou Les deux: utiliser le prix détail saisi
+        prixVenteArticle = Number(ligne.prixVente) || 0;
+      }
 
       if (ligne.typeVente === "detail" || ligne.typeVente === "gros_et_detail") {
         modesVente.push({
           nom: "Détail",
           quantiteStock: 1,
-          prixVente: prixVente,
+          prixVente: prixVenteArticle,
           parDefaut: ligne.typeVente === "detail",
         });
       }
@@ -240,7 +251,7 @@ const BulkArticleForm = ({ open, onOpenChange, onSubmit }: BulkArticleFormProps)
       if (ligne.typeVente === "gros" || ligne.typeVente === "gros_et_detail") {
         modesVente.push({
           nom: "Gros",
-          quantiteStock: ligne.quantiteGros,
+          quantiteStock: qteGros,
           prixVente: prixGros,
           parDefaut: ligne.typeVente === "gros",
         });
@@ -253,7 +264,7 @@ const BulkArticleForm = ({ open, onOpenChange, onSubmit }: BulkArticleFormProps)
         categorieId: ligne.categorieId,
         zone: ligne.zone,
         prixAchat: Number(ligne.prixAchat) || 0,
-        prixVente: prixVente,
+        prixVente: prixVenteArticle,
         stock: Number(ligne.stock) || 0,
         seuilAlerte: Number(ligne.seuilAlerte) || 10,
         max: Number(ligne.stock) || 0,
@@ -562,10 +573,26 @@ const BulkArticleForm = ({ open, onOpenChange, onSubmit }: BulkArticleFormProps)
                         </select>
                       </div>
 
-                      {/* Prix d'achat */}
+                      {/* Type de vente - EN PREMIER */}
                       <div className="space-y-2">
                         <label className="text-xs sm:text-sm font-semibold text-foreground">
-                          Prix d'achat (GNF)
+                          Type de vente
+                        </label>
+                        <select
+                          value={ligne.typeVente}
+                          onChange={(e) => updateLigne(index, 'typeVente', e.target.value as TypeVente)}
+                          className="w-full px-3 h-11 text-base sm:text-sm border-2 border-primary/30 rounded-xl bg-primary/5 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all cursor-pointer font-medium"
+                        >
+                          <option value="detail">Détail uniquement</option>
+                          <option value="gros">Gros uniquement</option>
+                          <option value="gros_et_detail">Gros et Détail</option>
+                        </select>
+                      </div>
+
+                      {/* Prix d'achat (unitaire) */}
+                      <div className="space-y-2">
+                        <label className="text-xs sm:text-sm font-semibold text-foreground">
+                          Prix d'achat unitaire
                         </label>
                         <input
                           type="text"
@@ -577,28 +604,67 @@ const BulkArticleForm = ({ open, onOpenChange, onSubmit }: BulkArticleFormProps)
                         />
                       </div>
 
-                      {/* Prix de vente */}
-                      <div className="space-y-2">
-                        <label className="text-xs sm:text-sm font-semibold text-foreground">
-                          Prix de vente (GNF)
-                        </label>
-                        <input
-                          type="text"
-                          inputMode="numeric"
-                          value={formatPrixInput(ligne.prixVente)}
-                          onChange={(e) => updateLigne(index, 'prixVente', handlePrixChange(e.target.value))}
-                          placeholder="0"
-                          className="w-full px-3 h-11 text-base sm:text-sm border-2 border-border rounded-xl bg-background/50 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
-                        />
-                        {Number(ligne.prixVente) > 0 && Number(ligne.prixAchat) > 0 && (
-                          <div className="flex items-center gap-1.5 mt-1">
-                            <div className="w-1.5 h-1.5 rounded-full bg-success"></div>
+                      {/* Prix de vente DÉTAIL - visible sauf si gros uniquement */}
+                      {ligne.typeVente !== "gros" && (
+                        <div className="space-y-2">
+                          <label className="text-xs sm:text-sm font-semibold text-foreground">
+                            Prix vente détail
+                          </label>
+                          <input
+                            type="text"
+                            inputMode="numeric"
+                            value={formatPrixInput(ligne.prixVente)}
+                            onChange={(e) => updateLigne(index, 'prixVente', handlePrixChange(e.target.value))}
+                            placeholder="0"
+                            className="w-full px-3 h-11 text-base sm:text-sm border-2 border-border rounded-xl bg-background/50 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                          />
+                          {Number(ligne.prixVente) > 0 && Number(ligne.prixAchat) > 0 && (
                             <p className="text-xs font-semibold text-emerald-600">
-                              Marge: {(((Number(ligne.prixVente) - Number(ligne.prixAchat)) / Number(ligne.prixVente)) * 100).toFixed(1)}%
+                              Marge détail: {(((Number(ligne.prixVente) - Number(ligne.prixAchat)) / Number(ligne.prixVente)) * 100).toFixed(0)}%
                             </p>
-                          </div>
-                        )}
-                      </div>
+                          )}
+                        </div>
+                      )}
+
+                      {/* Quantité par gros - visible si gros */}
+                      {(ligne.typeVente === "gros" || ligne.typeVente === "gros_et_detail") && (
+                        <div className="space-y-2">
+                          <label className="text-xs sm:text-sm font-semibold text-foreground">
+                            Qté par gros
+                          </label>
+                          <input
+                            type="number"
+                            min={2}
+                            value={ligne.quantiteGros}
+                            onChange={(e) => updateLigne(index, 'quantiteGros', e.target.value)}
+                            placeholder="12"
+                            className="w-full px-3 h-11 text-base sm:text-sm border-2 border-border rounded-xl bg-background/50 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                          />
+                        </div>
+                      )}
+
+                      {/* Prix du lot gros - visible si gros */}
+                      {(ligne.typeVente === "gros" || ligne.typeVente === "gros_et_detail") && (
+                        <div className="space-y-2">
+                          <label className="text-xs sm:text-sm font-semibold text-foreground">
+                            Prix du lot ({ligne.quantiteGros} unités)
+                          </label>
+                          <input
+                            type="text"
+                            inputMode="numeric"
+                            value={formatPrixInput(ligne.prixGros)}
+                            onChange={(e) => updateLigne(index, 'prixGros', handlePrixChange(e.target.value))}
+                            placeholder="0"
+                            className="w-full px-3 h-11 text-base sm:text-sm border-2 border-border rounded-xl bg-background/50 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                          />
+                          {Number(ligne.prixGros) > 0 && Number(ligne.prixAchat) > 0 && ligne.quantiteGros > 0 && (
+                            <p className="text-xs font-semibold text-emerald-600">
+                              Marge gros: {(((Number(ligne.prixGros) / ligne.quantiteGros - Number(ligne.prixAchat)) / (Number(ligne.prixGros) / ligne.quantiteGros)) * 100).toFixed(0)}%
+                              {" "}• Unitaire: {Math.round(Number(ligne.prixGros) / ligne.quantiteGros).toLocaleString()} GNF
+                            </p>
+                          )}
+                        </div>
+                      )}
 
                       {/* Stock initial */}
                       <div className="space-y-2">
@@ -631,55 +697,6 @@ const BulkArticleForm = ({ open, onOpenChange, onSubmit }: BulkArticleFormProps)
                           className="w-full px-3 h-11 text-base sm:text-sm border-2 border-border rounded-xl bg-background/50 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
                         />
                       </div>
-
-                      {/* Type de vente - Dropdown simple */}
-                      <div className="space-y-2">
-                        <label className="text-xs sm:text-sm font-semibold text-foreground">
-                          Type de vente
-                        </label>
-                        <select
-                          value={ligne.typeVente}
-                          onChange={(e) => updateLigne(index, 'typeVente', e.target.value as TypeVente)}
-                          className="w-full px-3 h-11 text-base sm:text-sm border-2 border-border rounded-xl bg-background/50 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all cursor-pointer"
-                        >
-                          <option value="detail">Détail uniquement</option>
-                          <option value="gros">Gros uniquement</option>
-                          <option value="gros_et_detail">Gros et Détail</option>
-                        </select>
-                      </div>
-
-                      {/* Quantité gros - visible si gros sélectionné */}
-                      {(ligne.typeVente === "gros" || ligne.typeVente === "gros_et_detail") && (
-                        <div className="space-y-2">
-                          <label className="text-xs sm:text-sm font-semibold text-foreground">
-                            Qté par gros
-                          </label>
-                          <input
-                            type="number"
-                            min={2}
-                            value={ligne.quantiteGros}
-                            onChange={(e) => updateLigne(index, 'quantiteGros', e.target.value)}
-                            className="w-full px-3 h-11 text-base sm:text-sm border-2 border-border rounded-xl bg-background/50 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
-                          />
-                        </div>
-                      )}
-
-                      {/* Prix gros - visible si gros sélectionné */}
-                      {(ligne.typeVente === "gros" || ligne.typeVente === "gros_et_detail") && (
-                        <div className="space-y-2">
-                          <label className="text-xs sm:text-sm font-semibold text-foreground">
-                            Prix gros (GNF)
-                          </label>
-                          <input
-                            type="text"
-                            inputMode="numeric"
-                            value={formatPrixInput(ligne.prixGros)}
-                            onChange={(e) => updateLigne(index, 'prixGros', handlePrixChange(e.target.value))}
-                            placeholder={String(Number(ligne.prixVente) * ligne.quantiteGros)}
-                            className="w-full px-3 h-11 text-base sm:text-sm border-2 border-border rounded-xl bg-background/50 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
-                          />
-                        </div>
-                      )}
 
                       {/* Description */}
                       <div className="sm:col-span-2 space-y-2">
@@ -1006,10 +1023,26 @@ const BulkArticleForm = ({ open, onOpenChange, onSubmit }: BulkArticleFormProps)
                         </select>
                       </div>
 
-                      {/* Prix d'achat */}
+                      {/* Type de vente - EN PREMIER */}
                       <div className="space-y-2">
                         <label className="text-xs sm:text-sm font-semibold text-foreground">
-                          Prix d'achat (GNF)
+                          Type de vente
+                        </label>
+                        <select
+                          value={ligne.typeVente}
+                          onChange={(e) => updateLigne(index, 'typeVente', e.target.value as TypeVente)}
+                          className="w-full px-3 h-11 text-base sm:text-sm border-2 border-primary/30 rounded-xl bg-primary/5 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all cursor-pointer font-medium"
+                        >
+                          <option value="detail">Détail uniquement</option>
+                          <option value="gros">Gros uniquement</option>
+                          <option value="gros_et_detail">Gros et Détail</option>
+                        </select>
+                      </div>
+
+                      {/* Prix d'achat (unitaire) */}
+                      <div className="space-y-2">
+                        <label className="text-xs sm:text-sm font-semibold text-foreground">
+                          Prix d'achat unitaire
                         </label>
                         <input
                           type="text"
@@ -1021,28 +1054,67 @@ const BulkArticleForm = ({ open, onOpenChange, onSubmit }: BulkArticleFormProps)
                         />
                       </div>
 
-                      {/* Prix de vente */}
-                      <div className="space-y-2">
-                        <label className="text-xs sm:text-sm font-semibold text-foreground">
-                          Prix de vente (GNF)
-                        </label>
-                        <input
-                          type="text"
-                          inputMode="numeric"
-                          value={formatPrixInput(ligne.prixVente)}
-                          onChange={(e) => updateLigne(index, 'prixVente', handlePrixChange(e.target.value))}
-                          placeholder="0"
-                          className="w-full px-3 h-11 text-base sm:text-sm border-2 border-border rounded-xl bg-background/50 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
-                        />
-                        {Number(ligne.prixVente) > 0 && Number(ligne.prixAchat) > 0 && (
-                          <div className="flex items-center gap-1.5 mt-1">
-                            <div className="w-1.5 h-1.5 rounded-full bg-success"></div>
+                      {/* Prix de vente DÉTAIL - visible sauf si gros uniquement */}
+                      {ligne.typeVente !== "gros" && (
+                        <div className="space-y-2">
+                          <label className="text-xs sm:text-sm font-semibold text-foreground">
+                            Prix vente détail
+                          </label>
+                          <input
+                            type="text"
+                            inputMode="numeric"
+                            value={formatPrixInput(ligne.prixVente)}
+                            onChange={(e) => updateLigne(index, 'prixVente', handlePrixChange(e.target.value))}
+                            placeholder="0"
+                            className="w-full px-3 h-11 text-base sm:text-sm border-2 border-border rounded-xl bg-background/50 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                          />
+                          {Number(ligne.prixVente) > 0 && Number(ligne.prixAchat) > 0 && (
                             <p className="text-xs font-semibold text-emerald-600">
-                              Marge: {(((Number(ligne.prixVente) - Number(ligne.prixAchat)) / Number(ligne.prixVente)) * 100).toFixed(1)}%
+                              Marge détail: {(((Number(ligne.prixVente) - Number(ligne.prixAchat)) / Number(ligne.prixVente)) * 100).toFixed(0)}%
                             </p>
-                          </div>
-                        )}
-                      </div>
+                          )}
+                        </div>
+                      )}
+
+                      {/* Quantité par gros - visible si gros */}
+                      {(ligne.typeVente === "gros" || ligne.typeVente === "gros_et_detail") && (
+                        <div className="space-y-2">
+                          <label className="text-xs sm:text-sm font-semibold text-foreground">
+                            Qté par gros
+                          </label>
+                          <input
+                            type="number"
+                            min={2}
+                            value={ligne.quantiteGros}
+                            onChange={(e) => updateLigne(index, 'quantiteGros', e.target.value)}
+                            placeholder="12"
+                            className="w-full px-3 h-11 text-base sm:text-sm border-2 border-border rounded-xl bg-background/50 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                          />
+                        </div>
+                      )}
+
+                      {/* Prix du lot gros - visible si gros */}
+                      {(ligne.typeVente === "gros" || ligne.typeVente === "gros_et_detail") && (
+                        <div className="space-y-2">
+                          <label className="text-xs sm:text-sm font-semibold text-foreground">
+                            Prix du lot ({ligne.quantiteGros} unités)
+                          </label>
+                          <input
+                            type="text"
+                            inputMode="numeric"
+                            value={formatPrixInput(ligne.prixGros)}
+                            onChange={(e) => updateLigne(index, 'prixGros', handlePrixChange(e.target.value))}
+                            placeholder="0"
+                            className="w-full px-3 h-11 text-base sm:text-sm border-2 border-border rounded-xl bg-background/50 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                          />
+                          {Number(ligne.prixGros) > 0 && Number(ligne.prixAchat) > 0 && ligne.quantiteGros > 0 && (
+                            <p className="text-xs font-semibold text-emerald-600">
+                              Marge gros: {(((Number(ligne.prixGros) / ligne.quantiteGros - Number(ligne.prixAchat)) / (Number(ligne.prixGros) / ligne.quantiteGros)) * 100).toFixed(0)}%
+                              {" "}• Unitaire: {Math.round(Number(ligne.prixGros) / ligne.quantiteGros).toLocaleString()} GNF
+                            </p>
+                          )}
+                        </div>
+                      )}
 
                       {/* Stock initial */}
                       <div className="space-y-2">
@@ -1075,55 +1147,6 @@ const BulkArticleForm = ({ open, onOpenChange, onSubmit }: BulkArticleFormProps)
                           className="w-full px-3 h-11 text-base sm:text-sm border-2 border-border rounded-xl bg-background/50 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
                         />
                       </div>
-
-                      {/* Type de vente - Dropdown simple */}
-                      <div className="space-y-2">
-                        <label className="text-xs sm:text-sm font-semibold text-foreground">
-                          Type de vente
-                        </label>
-                        <select
-                          value={ligne.typeVente}
-                          onChange={(e) => updateLigne(index, 'typeVente', e.target.value as TypeVente)}
-                          className="w-full px-3 h-11 text-base sm:text-sm border-2 border-border rounded-xl bg-background/50 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all cursor-pointer"
-                        >
-                          <option value="detail">Détail uniquement</option>
-                          <option value="gros">Gros uniquement</option>
-                          <option value="gros_et_detail">Gros et Détail</option>
-                        </select>
-                      </div>
-
-                      {/* Quantité gros - visible si gros sélectionné */}
-                      {(ligne.typeVente === "gros" || ligne.typeVente === "gros_et_detail") && (
-                        <div className="space-y-2">
-                          <label className="text-xs sm:text-sm font-semibold text-foreground">
-                            Qté par gros
-                          </label>
-                          <input
-                            type="number"
-                            min={2}
-                            value={ligne.quantiteGros}
-                            onChange={(e) => updateLigne(index, 'quantiteGros', e.target.value)}
-                            className="w-full px-3 h-11 text-base sm:text-sm border-2 border-border rounded-xl bg-background/50 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
-                          />
-                        </div>
-                      )}
-
-                      {/* Prix gros - visible si gros sélectionné */}
-                      {(ligne.typeVente === "gros" || ligne.typeVente === "gros_et_detail") && (
-                        <div className="space-y-2">
-                          <label className="text-xs sm:text-sm font-semibold text-foreground">
-                            Prix gros (GNF)
-                          </label>
-                          <input
-                            type="text"
-                            inputMode="numeric"
-                            value={formatPrixInput(ligne.prixGros)}
-                            onChange={(e) => updateLigne(index, 'prixGros', handlePrixChange(e.target.value))}
-                            placeholder={String(Number(ligne.prixVente) * ligne.quantiteGros)}
-                            className="w-full px-3 h-11 text-base sm:text-sm border-2 border-border rounded-xl bg-background/50 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
-                          />
-                        </div>
-                      )}
 
                       {/* Description */}
                       <div className="sm:col-span-2 space-y-2">
