@@ -4,10 +4,12 @@ import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { useIsMobile } from "@/hooks/useMediaQuery";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { Plus, Trash2, Package, CheckCircle2, Sparkles, TrendingUp, Layers, Upload, X, Image as ImageIcon, Camera } from "lucide-react";
+import { Plus, Trash2, Package, CheckCircle2, Sparkles, TrendingUp, Layers, Upload, X, Image as ImageIcon, Camera, ShoppingBag } from "lucide-react";
 import { formatPrixInput, handlePrixChange } from "@/utils/format-prix";
 import { useCategoriesActive } from "@/hooks/useCategories";
 import { useZonesActive } from "@/hooks/useZones";
+
+type TypeVente = "detail" | "gros" | "gros_et_detail";
 
 interface LigneArticle {
   code: string;
@@ -21,6 +23,10 @@ interface LigneArticle {
   seuilAlerte: string;
   photo: File | null;
   photoPreview: string | null;
+  uniteStock: string;
+  typeVente: TypeVente;
+  quantiteGros: number;
+  prixGros: string;
 }
 
 interface BulkArticleFormProps {
@@ -45,7 +51,11 @@ const BulkArticleForm = ({ open, onOpenChange, onSubmit }: BulkArticleFormProps)
     stock: "0",
     seuilAlerte: "10",
     photo: null,
-    photoPreview: null
+    photoPreview: null,
+    uniteStock: "Unité",
+    typeVente: "detail",
+    quantiteGros: 12,
+    prixGros: "0"
   };
 
   const [lignes, setLignes] = useState<LigneArticle[]>([{ ...ligneVide }]);
@@ -110,10 +120,14 @@ const BulkArticleForm = ({ open, onOpenChange, onSubmit }: BulkArticleFormProps)
     setLignes(prev => prev.filter((_, i) => i !== index));
   };
 
-  const updateLigne = (index: number, field: keyof LigneArticle, value: string) => {
+  const updateLigne = (index: number, field: keyof LigneArticle, value: string | number | TypeVente) => {
     setLignes(prev => {
       const newLignes = [...prev];
-      newLignes[index] = { ...newLignes[index], [field]: value };
+      if (field === 'quantiteGros') {
+        newLignes[index] = { ...newLignes[index], [field]: Number(value) || 1 };
+      } else {
+        newLignes[index] = { ...newLignes[index], [field]: value };
+      }
       return newLignes;
     });
   };
@@ -208,18 +222,45 @@ const BulkArticleForm = ({ open, onOpenChange, onSubmit }: BulkArticleFormProps)
       return;
     }
 
-    const articles = lignesValides.map(ligne => ({
-      code: ligne.code.trim(),
-      nom: ligne.nom.trim(),
-      description: ligne.description.trim(),
-      categorieId: ligne.categorieId,
-      zone: ligne.zone,
-      prixAchat: Number(ligne.prixAchat) || 0,
-      prixVente: Number(ligne.prixVente) || 0,
-      stock: Number(ligne.stock) || 0,
-      seuilAlerte: Number(ligne.seuilAlerte) || 10,
-      max: Number(ligne.stock) || 0
-    }));
+    const articles = lignesValides.map(ligne => {
+      // Générer les modes de vente en fonction du type sélectionné
+      const modesVente: any[] = [];
+      const prixVente = Number(ligne.prixVente) || 0;
+      const prixGros = Number(ligne.prixGros) || prixVente * ligne.quantiteGros;
+
+      if (ligne.typeVente === "detail" || ligne.typeVente === "gros_et_detail") {
+        modesVente.push({
+          nom: "Détail",
+          quantiteStock: 1,
+          prixVente: prixVente,
+          parDefaut: ligne.typeVente === "detail",
+        });
+      }
+
+      if (ligne.typeVente === "gros" || ligne.typeVente === "gros_et_detail") {
+        modesVente.push({
+          nom: "Gros",
+          quantiteStock: ligne.quantiteGros,
+          prixVente: prixGros,
+          parDefaut: ligne.typeVente === "gros",
+        });
+      }
+
+      return {
+        code: ligne.code.trim(),
+        nom: ligne.nom.trim(),
+        description: ligne.description.trim(),
+        categorieId: ligne.categorieId,
+        zone: ligne.zone,
+        prixAchat: Number(ligne.prixAchat) || 0,
+        prixVente: prixVente,
+        stock: Number(ligne.stock) || 0,
+        seuilAlerte: Number(ligne.seuilAlerte) || 10,
+        max: Number(ligne.stock) || 0,
+        uniteStock: ligne.uniteStock || "Unité",
+        modesVente: modesVente.length > 0 ? modesVente : undefined,
+      };
+    });
 
     // Extraire les photos des lignes valides
     const photos = lignesValides.map(ligne => ligne.photo);
@@ -589,6 +630,90 @@ const BulkArticleForm = ({ open, onOpenChange, onSubmit }: BulkArticleFormProps)
                           placeholder="10"
                           className="w-full px-3 h-11 text-base sm:text-sm border-2 border-border rounded-xl bg-background/50 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
                         />
+                      </div>
+
+                      {/* Unité de stock */}
+                      <div className="space-y-2">
+                        <label className="text-xs sm:text-sm font-semibold text-foreground">
+                          Unité de stock
+                        </label>
+                        <input
+                          type="text"
+                          value={ligne.uniteStock}
+                          onChange={(e) => updateLigne(index, 'uniteStock', e.target.value)}
+                          placeholder="Unité, Bouteille, Kg..."
+                          className="w-full px-3 h-11 text-base sm:text-sm border-2 border-border rounded-xl bg-background/50 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                        />
+                      </div>
+
+                      {/* Type de vente */}
+                      <div className="sm:col-span-2 lg:col-span-4 space-y-3 p-4 rounded-xl bg-gradient-to-br from-primary/5 via-background to-background border-2 border-primary/20">
+                        <label className="text-xs sm:text-sm font-semibold text-foreground flex items-center gap-2">
+                          <Layers className="w-4 h-4 text-primary" />
+                          Type de vente
+                        </label>
+                        <div className="flex flex-wrap gap-2">
+                          {[
+                            { value: "detail" as TypeVente, label: "Détail", icon: ShoppingBag },
+                            { value: "gros" as TypeVente, label: "Gros", icon: Package },
+                            { value: "gros_et_detail" as TypeVente, label: "Les deux", icon: Layers },
+                          ].map((option) => {
+                            const Icon = option.icon;
+                            const isSelected = ligne.typeVente === option.value;
+                            return (
+                              <button
+                                key={option.value}
+                                type="button"
+                                onClick={() => updateLigne(index, 'typeVente', option.value)}
+                                className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all active:scale-95 ${
+                                  isSelected
+                                    ? "bg-primary text-primary-foreground shadow-md"
+                                    : "bg-muted hover:bg-muted/80 text-foreground"
+                                }`}
+                              >
+                                <Icon className="w-4 h-4" />
+                                {option.label}
+                              </button>
+                            );
+                          })}
+                        </div>
+
+                        {/* Options gros - visible si gros sélectionné */}
+                        {(ligne.typeVente === "gros" || ligne.typeVente === "gros_et_detail") && (
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-3 p-3 rounded-lg bg-muted/50">
+                            <div className="space-y-2">
+                              <label className="text-xs font-semibold text-foreground">
+                                Quantité par gros
+                              </label>
+                              <div className="flex items-center gap-2">
+                                <input
+                                  type="number"
+                                  min={2}
+                                  value={ligne.quantiteGros}
+                                  onChange={(e) => updateLigne(index, 'quantiteGros', e.target.value)}
+                                  className="w-20 px-3 h-10 text-base sm:text-sm border-2 border-border rounded-lg bg-card focus:outline-none focus:ring-2 focus:ring-primary/20"
+                                />
+                                <span className="text-sm text-muted-foreground">{ligne.uniteStock || "unités"}</span>
+                              </div>
+                            </div>
+                            <div className="space-y-2">
+                              <label className="text-xs font-semibold text-foreground">
+                                Prix gros (GNF)
+                              </label>
+                              <input
+                                type="text"
+                                inputMode="numeric"
+                                value={formatPrixInput(ligne.prixGros)}
+                                onChange={(e) => updateLigne(index, 'prixGros', handlePrixChange(e.target.value))}
+                                placeholder={String(Number(ligne.prixVente) * ligne.quantiteGros)}
+                                className="w-full px-3 h-10 text-base sm:text-sm border-2 border-border rounded-lg bg-card focus:outline-none focus:ring-2 focus:ring-primary/20"
+                              />
+                              <p className="text-xs text-muted-foreground">
+                                Suggéré: {(Number(ligne.prixVente) * ligne.quantiteGros).toLocaleString()} GNF
+                              </p>
+                            </div>
+                          </div>
+                        )}
                       </div>
 
                       {/* Description */}
@@ -984,6 +1109,90 @@ const BulkArticleForm = ({ open, onOpenChange, onSubmit }: BulkArticleFormProps)
                           placeholder="10"
                           className="w-full px-3 h-11 text-base sm:text-sm border-2 border-border rounded-xl bg-background/50 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
                         />
+                      </div>
+
+                      {/* Unité de stock */}
+                      <div className="space-y-2">
+                        <label className="text-xs sm:text-sm font-semibold text-foreground">
+                          Unité de stock
+                        </label>
+                        <input
+                          type="text"
+                          value={ligne.uniteStock}
+                          onChange={(e) => updateLigne(index, 'uniteStock', e.target.value)}
+                          placeholder="Unité, Bouteille, Kg..."
+                          className="w-full px-3 h-11 text-base sm:text-sm border-2 border-border rounded-xl bg-background/50 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                        />
+                      </div>
+
+                      {/* Type de vente */}
+                      <div className="sm:col-span-2 lg:col-span-4 space-y-3 p-4 rounded-xl bg-gradient-to-br from-primary/5 via-background to-background border-2 border-primary/20">
+                        <label className="text-xs sm:text-sm font-semibold text-foreground flex items-center gap-2">
+                          <Layers className="w-4 h-4 text-primary" />
+                          Type de vente
+                        </label>
+                        <div className="flex flex-wrap gap-2">
+                          {[
+                            { value: "detail" as TypeVente, label: "Détail", icon: ShoppingBag },
+                            { value: "gros" as TypeVente, label: "Gros", icon: Package },
+                            { value: "gros_et_detail" as TypeVente, label: "Les deux", icon: Layers },
+                          ].map((option) => {
+                            const Icon = option.icon;
+                            const isSelected = ligne.typeVente === option.value;
+                            return (
+                              <button
+                                key={option.value}
+                                type="button"
+                                onClick={() => updateLigne(index, 'typeVente', option.value)}
+                                className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all active:scale-95 ${
+                                  isSelected
+                                    ? "bg-primary text-primary-foreground shadow-md"
+                                    : "bg-muted hover:bg-muted/80 text-foreground"
+                                }`}
+                              >
+                                <Icon className="w-4 h-4" />
+                                {option.label}
+                              </button>
+                            );
+                          })}
+                        </div>
+
+                        {/* Options gros - visible si gros sélectionné */}
+                        {(ligne.typeVente === "gros" || ligne.typeVente === "gros_et_detail") && (
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-3 p-3 rounded-lg bg-muted/50">
+                            <div className="space-y-2">
+                              <label className="text-xs font-semibold text-foreground">
+                                Quantité par gros
+                              </label>
+                              <div className="flex items-center gap-2">
+                                <input
+                                  type="number"
+                                  min={2}
+                                  value={ligne.quantiteGros}
+                                  onChange={(e) => updateLigne(index, 'quantiteGros', e.target.value)}
+                                  className="w-20 px-3 h-10 text-base sm:text-sm border-2 border-border rounded-lg bg-card focus:outline-none focus:ring-2 focus:ring-primary/20"
+                                />
+                                <span className="text-sm text-muted-foreground">{ligne.uniteStock || "unités"}</span>
+                              </div>
+                            </div>
+                            <div className="space-y-2">
+                              <label className="text-xs font-semibold text-foreground">
+                                Prix gros (GNF)
+                              </label>
+                              <input
+                                type="text"
+                                inputMode="numeric"
+                                value={formatPrixInput(ligne.prixGros)}
+                                onChange={(e) => updateLigne(index, 'prixGros', handlePrixChange(e.target.value))}
+                                placeholder={String(Number(ligne.prixVente) * ligne.quantiteGros)}
+                                className="w-full px-3 h-10 text-base sm:text-sm border-2 border-border rounded-lg bg-card focus:outline-none focus:ring-2 focus:ring-primary/20"
+                              />
+                              <p className="text-xs text-muted-foreground">
+                                Suggéré: {(Number(ligne.prixVente) * ligne.quantiteGros).toLocaleString()} GNF
+                              </p>
+                            </div>
+                          </div>
+                        )}
                       </div>
 
                       {/* Description */}

@@ -292,27 +292,17 @@ const Stock = () => {
             <Button
               onClick={() => setImportDialogOpen(true)}
               variant="outline"
-              size="icon"
-              className="hidden sm:flex"
-              title="Import Excel"
+              className="gap-2"
             >
               <Upload className="w-4 h-4" />
+              <span className="hidden sm:inline">Import</span>
             </Button>
             <Button
               onClick={() => setBulkFormOpen(true)}
-              variant="outline"
-              className="gap-2"
-            >
-              <Layers className="w-4 h-4" />
-              <span className="hidden sm:inline">En masse</span>
-            </Button>
-            <Button
-              onClick={handleCreate}
               className="gap-2"
             >
               <Plus className="w-4 h-4" />
-              <span className="hidden sm:inline">Nouvel article</span>
-              <span className="sm:hidden">Ajouter</span>
+              Ajouter
             </Button>
           </div>
         </CanAccess>
