@@ -6,7 +6,7 @@ import FormField from "@/components/FormField";
 import ArticleCombobox from "@/components/ArticleCombobox";
 import ClientCombobox from "@/components/ClientCombobox";
 import { toast } from "sonner";
-import { Plus, Trash2, ShoppingCart, User, Phone, DollarSign, CreditCard, AlertTriangle, Package, CheckCircle2 } from "lucide-react";
+import { Plus, Trash2, ShoppingCart, User, Phone, DollarSign, CreditCard, AlertTriangle, Package, CheckCircle2, Layers } from "lucide-react";
 import { formatPrixInput, handlePrixChange } from "@/utils/format-prix";
 
 interface VenteFormProps {
@@ -235,6 +235,7 @@ const VenteForm = ({ open, onOpenChange, onSubmit, initialData = null, mode = 'c
       quantite: Number(ligne.quantite),
       prixUnitaire: Number(ligne.prixUnitaire),
       sousTotal: Number(ligne.sousTotal),
+      modeVenteId: ligne.modeVenteId || undefined,
     }));
 
     // Séparer le nom complet en nom et prénom pour le backend
@@ -429,16 +430,23 @@ const VenteForm = ({ open, onOpenChange, onSubmit, initialData = null, mode = 'c
                               value={ligne.articleId}
                               onChange={(article) => {
                                 if (article) {
+                                  const modeDefaut = article.modesVente?.find(m => m.parDefaut) || article.modesVente?.[0];
+                                  const prixVente = modeDefaut?.prixVente || Number(article.prixVente) || 0;
+
                                   setForm(prev => {
                                     const newLignes = [...prev.lignes];
                                     newLignes[index] = {
                                       ...newLignes[index],
                                       articleId: article.id,
                                       nom: article.nom,
-                                      prixUnitaire: Number(article.prixVente) || 0,
+                                      prixUnitaire: prixVente,
                                       prixAchat: Number(article.prixAchat) || 0,
                                       stockDisponible: article.stock,
-                                      sousTotal: Number(newLignes[index].quantite || 1) * (Number(article.prixVente) || 0)
+                                      uniteStock: article.uniteStock,
+                                      modesVente: article.modesVente || [],
+                                      modeVenteId: modeDefaut?.id,
+                                      modeVenteNom: modeDefaut?.nom,
+                                      sousTotal: Number(newLignes[index].quantite || 1) * prixVente
                                     };
                                     return { ...prev, lignes: newLignes };
                                   });
@@ -461,6 +469,48 @@ const VenteForm = ({ open, onOpenChange, onSubmit, initialData = null, mode = 'c
                               </div>
                             )}
                           </div>
+
+                          {/* Sélecteur de Mode de Vente */}
+                          {ligne.modesVente && ligne.modesVente.length > 0 && (
+                            <div>
+                              <label className="text-xs font-semibold text-foreground mb-2 flex items-center gap-1.5">
+                                <Layers className="w-3.5 h-3.5 text-primary" />
+                                Mode de vente
+                              </label>
+                              <select
+                                value={ligne.modeVenteId || ''}
+                                onChange={(e) => {
+                                  const selectedMode = ligne.modesVente.find((m: any) => m.id === e.target.value);
+                                  if (selectedMode) {
+                                    setForm(prev => {
+                                      const newLignes = [...prev.lignes];
+                                      newLignes[index] = {
+                                        ...newLignes[index],
+                                        modeVenteId: selectedMode.id,
+                                        modeVenteNom: selectedMode.nom,
+                                        prixUnitaire: selectedMode.prixVente,
+                                        sousTotal: Number(newLignes[index].quantite || 1) * selectedMode.prixVente
+                                      };
+                                      return { ...prev, lignes: newLignes };
+                                    });
+                                  }
+                                }}
+                                className="w-full px-3 h-11 rounded-lg border-2 border-primary/20 bg-primary/5 text-base sm:text-sm font-medium cursor-pointer focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all"
+                              >
+                                {ligne.modesVente.map((mode: any) => (
+                                  <option key={mode.id} value={mode.id}>
+                                    {mode.nom} • {mode.quantiteStock} {ligne.uniteStock || 'unités'} • {new Intl.NumberFormat('fr-GN', { style: 'currency', currency: 'GNF', minimumFractionDigits: 0 }).format(mode.prixVente).replace('GNF', 'GNF')}
+                                    {mode.parDefaut ? ' ★' : ''}
+                                  </option>
+                                ))}
+                              </select>
+                              {ligne.modesVente.length > 1 && (
+                                <p className="text-xs text-muted-foreground mt-1">
+                                  {ligne.modesVente.length} modes disponibles
+                                </p>
+                              )}
+                            </div>
+                          )}
 
                           {/* Quantité et Prix - Grid responsive qui stack sur mobile */}
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
