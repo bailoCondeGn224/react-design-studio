@@ -5,7 +5,7 @@ import StockMobileCard from "@/components/StockMobileCard";
 import ArticleCard from "@/components/ArticleCard";
 import Pagination from "@/components/Pagination";
 import CanAccess from "@/components/CanAccess";
-import { Package, AlertTriangle, Search, Plus, Edit, Trash, MoreVertical, AlertCircle, TrendingDown, History, ArrowUpCircle, ArrowDownCircle, Flame, Zap, Clock, Snail, Snowflake, TrendingUp as TrendUp, RotateCcw, Upload, ShoppingCart, BarChart3 } from "lucide-react";
+import { Package, AlertTriangle, Search, Plus, Edit, Trash, MoreVertical, AlertCircle, TrendingDown, History, ArrowUpCircle, ArrowDownCircle, Flame, Zap, Clock, Snail, Snowflake, TrendingUp as TrendUp, RotateCcw, Upload, ShoppingCart, BarChart3, Layers } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { getPhotoUrl } from "@/lib/api-client";
@@ -114,6 +114,11 @@ const Stock = () => {
       setHistoryPage(1);
     }
   }, [historyArticleId]);
+
+  const handleCreate = () => {
+    setEditingItem(null);
+    setFormOpen(true);
+  };
 
   const handleEdit = (item: any) => {
     setEditingItem(item);
@@ -287,17 +292,27 @@ const Stock = () => {
             <Button
               onClick={() => setImportDialogOpen(true)}
               variant="outline"
-              className="gap-2"
+              size="icon"
+              className="hidden sm:flex"
+              title="Import Excel"
             >
               <Upload className="w-4 h-4" />
-              Import
             </Button>
             <Button
               onClick={() => setBulkFormOpen(true)}
+              variant="outline"
+              className="gap-2"
+            >
+              <Layers className="w-4 h-4" />
+              <span className="hidden sm:inline">En masse</span>
+            </Button>
+            <Button
+              onClick={handleCreate}
               className="gap-2"
             >
               <Plus className="w-4 h-4" />
-              Ajouter
+              <span className="hidden sm:inline">Nouvel article</span>
+              <span className="sm:hidden">Ajouter</span>
             </Button>
           </div>
         </CanAccess>
@@ -320,13 +335,13 @@ const Stock = () => {
         }}
       />
 
-      {/* Formulaire de modification (infos article uniquement, pas la quantité) */}
+      {/* Formulaire création/modification article */}
       <StockForm
         open={formOpen}
         onOpenChange={handleFormClose}
         onSubmit={handleSubmit}
         initialData={editingItem}
-        mode="edit"
+        mode={editingItem ? "edit" : "create"}
       />
 
       <AlertDialog open={deleteId !== null} onOpenChange={() => setDeleteId(null)}>
