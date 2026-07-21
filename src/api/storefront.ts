@@ -11,13 +11,13 @@ export interface StorefrontProductParams {
 
 export const storefrontApi = {
   getBySlug: async (slug: string): Promise<StoreFront> => {
-    const response = await apiClient.get<StoreFront>(`/public/storefront/${slug}`);
+    const response = await apiClient.get<StoreFront>(`/public/stores/${slug}`);
     return response.data;
   },
 
   getProducts: async (slug: string, params?: StorefrontProductParams): Promise<PaginatedResponse<StorefrontArticle>> => {
     const response = await apiClient.get<PaginatedResponse<StorefrontArticle>>(
-      `/public/storefront/${slug}/articles`,
+      `/public/stores/${slug}/products`,
       { params }
     );
     return response.data;
@@ -25,13 +25,13 @@ export const storefrontApi = {
 
   getProduct: async (slug: string, articleId: string): Promise<StorefrontArticle> => {
     const response = await apiClient.get<StorefrontArticle>(
-      `/public/storefront/${slug}/articles/${articleId}`
+      `/public/stores/${slug}/products/${articleId}`
     );
     return response.data;
   },
 
   getCategories: async (slug: string): Promise<{ id: string; nom: string; slug: string }[]> => {
-    const response = await apiClient.get(`/public/storefront/${slug}/categories`);
+    const response = await apiClient.get(`/public/stores/${slug}/categories`);
     return response.data;
   },
 };
