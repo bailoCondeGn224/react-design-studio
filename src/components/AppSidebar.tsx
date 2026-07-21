@@ -3,13 +3,14 @@ import {
   LayoutDashboard, Users, UserCheck, Package, FolderTree, MapPin, Truck, ShoppingCart, Wallet,
   ChevronLeft, ChevronRight, Sparkles, ArrowDownRight, ArrowDownLeft, Menu, LogOut, History, BarChart3,
   Shield, UserCog, Settings, Building2, CreditCard, RotateCcw, PackageX, ClipboardList, ClipboardCheck,
-  Receipt, Calculator
+  Receipt, Calculator, Globe
 } from "lucide-react";
 import { useState, useRef, useEffect, memo, useMemo } from "react";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { useLogout, useCurrentUser, useIsSuperAdmin, useUserRole } from "@/hooks/useAuth";
 import CanAccess from "@/components/CanAccess";
 import { useSidebar } from "@/contexts/SidebarContext";
+import { usePendingOrderCount } from "@/hooks/useOnlineOrders";
 
 // Menu pour les utilisateurs normaux (tenant users)
 const navItems = [
@@ -23,6 +24,7 @@ const navItems = [
   { to: "/approvisionnements", icon: Truck, label: "Approvisionnements", permissions: ["approvisionnements.read"] },
   { to: "/ventes", icon: ShoppingCart, label: "Ventes", permissions: ["ventes.read"] },
   { to: "/commandes", icon: ClipboardList, label: "Commandes", permissions: ["commandes.read"] },
+  { to: "/online-orders", icon: Globe, label: "Commandes en ligne", permissions: [], hasBadge: true },
   { to: "/versements", icon: ArrowDownRight, label: "Versements", permissions: ["versements.read"] },
   { to: "/versements-client", icon: ArrowDownLeft, label: "Paiements Clients", permissions: ["versements-client.read"] },
   { to: "/retours-clients", icon: RotateCcw, label: "Retours Clients", permissions: ["retours.create"] },
@@ -54,6 +56,7 @@ const adminNavItems = [
   { to: "/approvisionnements", icon: Truck, label: "Approvisionnements", permissions: ["approvisionnements.read"] },
   { to: "/ventes", icon: ShoppingCart, label: "Ventes", permissions: ["ventes.read"] },
   { to: "/commandes", icon: ClipboardList, label: "Commandes", permissions: ["commandes.read"] },
+  { to: "/online-orders", icon: Globe, label: "Commandes en ligne", hasBadge: true },
   { to: "/versements", icon: ArrowDownRight, label: "Versements", permissions: ["versements.read"] },
   { to: "/versements-client", icon: ArrowDownLeft, label: "Paiements Clients", permissions: ["versements-client.read"] },
   { to: "/retours-clients", icon: RotateCcw, label: "Retours Clients", permissions: ["retours.create"] },
@@ -66,18 +69,28 @@ const adminNavItems = [
   { to: "/roles", icon: Shield, label: "Rôles & Permissions", permissions: ["roles.read"] },
 ];
 
+// Type for nav items with optional hasBadge property
+type NavItem = {
+  to: string;
+  icon: React.ComponentType<{ className?: string }>;
+  label: string;
+  permissions?: string[];
+  hasBadge?: boolean;
+};
+
 // Composant MenuItem mémorisé pour éviter les re-renders inutiles
-const MenuItem = memo(({ item, collapsed, isActive, onItemClick }: {
-  item: typeof navItems[0];
+const MenuItem = memo(({ item, collapsed, isActive, onItemClick, badgeCount }: {
+  item: NavItem;
   collapsed: boolean;
   isActive: boolean;
   onItemClick?: () => void;
+  badgeCount?: number;
 }) => {
   return (
     <NavLink
       to={item.to}
       onClick={onItemClick}
-      className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 group ${
+      className={`relative flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 group ${
         isActive
           ? "bg-sidebar-accent text-sidebar-primary"
           : "text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground"
@@ -88,7 +101,19 @@ const MenuItem = memo(({ item, collapsed, isActive, onItemClick }: {
           isActive ? "text-sidebar-primary" : "text-sidebar-foreground/50 group-hover:text-sidebar-accent-foreground"
         }`}
       />
-      {!collapsed && <span className="animate-fade-in">{item.label}</span>}
+      {!collapsed && (
+        <span className="animate-fade-in flex-1 flex items-center justify-between">
+          <span>{item.label}</span>
+          {item.hasBadge && badgeCount !== undefined && badgeCount > 0 && (
+            <span className="ml-2 px-2 py-0.5 text-xs font-bold rounded-full bg-primary text-primary-foreground min-w-[20px] text-center">
+              {badgeCount > 99 ? '99+' : badgeCount}
+            </span>
+          )}
+        </span>
+      )}
+      {collapsed && item.hasBadge && badgeCount !== undefined && badgeCount > 0 && (
+        <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-primary" />
+      )}
     </NavLink>
   );
 });
@@ -100,6 +125,10 @@ const SidebarContent = ({ collapsed, setCollapsed, onItemClick }: { collapsed: b
   const isSuperAdmin = useIsSuperAdmin();
   const userRole = useUserRole();
   const navRef = useRef<HTMLElement>(null);
+
+  // Get pending online orders count for badge
+  const { data: pendingData } = usePendingOrderCount();
+  const pendingCount = pendingData?.count ?? 0;
 
   // Les paramètres viennent maintenant de l'organization de l'utilisateur
   const organization = user?.organization;
@@ -185,6 +214,7 @@ const SidebarContent = ({ collapsed, setCollapsed, onItemClick }: { collapsed: b
                 collapsed={collapsed}
                 isActive={isActive}
                 onItemClick={onItemClick}
+                badgeCount={item.hasBadge ? pendingCount : undefined}
               />
             );
           }
@@ -197,6 +227,7 @@ const SidebarContent = ({ collapsed, setCollapsed, onItemClick }: { collapsed: b
                 collapsed={collapsed}
                 isActive={isActive}
                 onItemClick={onItemClick}
+                badgeCount={item.hasBadge ? pendingCount : undefined}
               />
             </CanAccess>
           );
