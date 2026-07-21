@@ -7,7 +7,8 @@ import { toast } from "sonner";
 import { useCategoriesActive } from "@/hooks/useCategories";
 import { useCreateArticle } from "@/hooks/useStock";
 import { formatPrixInput, handlePrixChange } from "@/utils/format-prix";
-import { ImageIcon, Upload, X, Calendar, Package } from "lucide-react";
+import { ImageIcon, Upload, X, Calendar, Package, Globe } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
 
 interface NouvelArticleModalProps {
   open: boolean;
@@ -30,12 +31,14 @@ const NouvelArticleModal = ({ open, onOpenChange, onArticleCreated }: NouvelArti
     prixAchat: "",
     dateExpiration: "",
     delaiAlerteExpiration: "30",
+    disponibleEnLigne: false,
+    prixEnLigne: "",
   });
 
   const [photoFile, setPhotoFile] = useState<File | null>(null);
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
 
-  const update = (field: string, value: string) => setForm(prev => ({ ...prev, [field]: value }));
+  const update = (field: string, value: string | boolean) => setForm(prev => ({ ...prev, [field]: value }));
 
   const resetForm = () => {
     setForm({
@@ -48,6 +51,8 @@ const NouvelArticleModal = ({ open, onOpenChange, onArticleCreated }: NouvelArti
       prixAchat: "",
       dateExpiration: "",
       delaiAlerteExpiration: "30",
+      disponibleEnLigne: false,
+      prixEnLigne: "",
     });
     setPhotoFile(null);
     setPhotoPreview(null);
@@ -99,6 +104,8 @@ const NouvelArticleModal = ({ open, onOpenChange, onArticleCreated }: NouvelArti
       prixAchat: form.prixAchat ? Number(form.prixAchat) : undefined,
       dateExpiration: form.dateExpiration || undefined,
       delaiAlerteExpiration: form.delaiAlerteExpiration ? Number(form.delaiAlerteExpiration) : undefined,
+      disponibleEnLigne: form.disponibleEnLigne,
+      prixEnLigne: form.prixEnLigne ? Number(form.prixEnLigne) : undefined,
     };
 
     createArticle.mutate(
@@ -298,6 +305,34 @@ const NouvelArticleModal = ({ open, onOpenChange, onArticleCreated }: NouvelArti
                 className="w-full px-4 py-2.5 rounded-lg border border-border bg-card text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring/30"
               />
             </div>
+          </div>
+
+          {/* Vitrine en ligne */}
+          <div className="p-3 rounded-lg bg-primary/5 border border-primary/20 space-y-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Globe className="w-4 h-4 text-primary" />
+                <span className="text-sm font-medium">Disponible en ligne</span>
+              </div>
+              <Switch
+                checked={form.disponibleEnLigne}
+                onCheckedChange={(checked) => update("disponibleEnLigne", checked)}
+              />
+            </div>
+            {form.disponibleEnLigne && (
+              <div className="space-y-2">
+                <label className="block text-sm font-medium text-foreground">Prix en ligne (GNF)</label>
+                <input
+                  type="text"
+                  inputMode="numeric"
+                  placeholder="Laisser vide = prix de vente"
+                  value={formatPrixInput(form.prixEnLigne)}
+                  onChange={e => update("prixEnLigne", handlePrixChange(e.target.value))}
+                  className="w-full px-4 py-2.5 rounded-lg border border-border bg-card text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring/30"
+                />
+                <p className="text-xs text-muted-foreground">Si vide, le prix de vente sera utilisé</p>
+              </div>
+            )}
           </div>
 
           <div className="bg-muted/50 border border-border rounded-lg p-3">
