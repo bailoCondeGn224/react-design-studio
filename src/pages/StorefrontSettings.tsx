@@ -10,12 +10,15 @@ import { Switch } from '@/components/ui/switch';
 import { Loader2, Save, ExternalLink, QrCode, Copy, Check, Globe, Phone, Clock, MapPin, Truck } from 'lucide-react';
 import { useStorefrontConfig, useUpdateStorefrontConfig } from '@/hooks/useStorefrontConfig';
 import { storefrontConfigApi } from '@/api/storefront-config';
+import { apiClient } from '@/lib/api-client';
 import { toast } from 'sonner';
 
 const StorefrontSettings = () => {
   const { data: config, isLoading } = useStorefrontConfig();
   const updateMutation = useUpdateStorefrontConfig();
   const [copied, setCopied] = useState(false);
+  const [qrCodeUrl, setQrCodeUrl] = useState<string | null>(null);
+  const [qrLoading, setQrLoading] = useState(false);
 
   const [form, setForm] = useState({
     isActive: false,
@@ -39,6 +42,34 @@ const StorefrontSettings = () => {
     }
   }, [config]);
 
+  // Charger le QR code avec authentification
+  useEffect(() => {
+    const fetchQrCode = async () => {
+      if (config?.isActive) {
+        setQrLoading(true);
+        try {
+          const response = await apiClient.get('/storefront/qrcode', {
+            responseType: 'blob',
+          });
+          const url = URL.createObjectURL(response.data);
+          setQrCodeUrl(url);
+        } catch (error) {
+          console.error('Erreur chargement QR code:', error);
+        } finally {
+          setQrLoading(false);
+        }
+      }
+    };
+    fetchQrCode();
+
+    // Cleanup blob URL
+    return () => {
+      if (qrCodeUrl) {
+        URL.revokeObjectURL(qrCodeUrl);
+      }
+    };
+  }, [config?.isActive]);
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     updateMutation.mutate(form);
@@ -54,10 +85,12 @@ const StorefrontSettings = () => {
   };
 
   const handleDownloadQr = () => {
-    const link = document.createElement('a');
-    link.href = storefrontConfigApi.getQrCodeUrl();
-    link.download = 'qrcode-boutique.png';
-    link.click();
+    if (qrCodeUrl) {
+      const link = document.createElement('a');
+      link.href = qrCodeUrl;
+      link.download = 'qrcode-boutique.png';
+      link.click();
+    }
   };
 
   if (isLoading) {
@@ -256,17 +289,24 @@ const StorefrontSettings = () => {
               <CardContent className="flex flex-col items-center">
                 {config?.isActive ? (
                   <>
-                    <div className="bg-white p-4 rounded-lg border">
-                      <img
-                        src={storefrontConfigApi.getQrCodeUrl()}
-                        alt="QR Code"
-                        className="w-48 h-48"
-                      />
+                    <div className="bg-white p-4 rounded-lg border min-h-[200px] flex items-center justify-center">
+                      {qrLoading ? (
+                        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+                      ) : qrCodeUrl ? (
+                        <img
+                          src={qrCodeUrl}
+                          alt="QR Code"
+                          className="w-48 h-48"
+                        />
+                      ) : (
+                        <p className="text-sm text-muted-foreground">Erreur de chargement</p>
+                      )}
                     </div>
                     <Button
                       variant="outline"
                       className="mt-4 w-full"
                       onClick={handleDownloadQr}
+                      disabled={!qrCodeUrl}
                     >
                       <QrCode className="h-4 w-4 mr-2" />
                       Télécharger
