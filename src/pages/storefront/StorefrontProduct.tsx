@@ -78,12 +78,14 @@ const StorefrontProduct = () => {
         <div className="p-4 space-y-4">
           <div>
             <h1 className="text-xl font-bold">{article.nom}</h1>
-            {article.reference && (
-              <p className="text-sm text-muted-foreground">Réf: {article.reference}</p>
+            {article.categorie && (
+              <p className="text-sm text-muted-foreground">{article.categorie}</p>
             )}
           </div>
 
-          <p className="text-2xl font-bold text-primary">{formatPrix(article.prixEnLigne)}</p>
+          <p className="text-2xl font-bold text-primary">
+            {formatPrix(article.prixEnLigne || article.prixOriginal || 0)}
+          </p>
 
           {!isOutOfStock ? (
             <p className="text-sm text-muted-foreground">
