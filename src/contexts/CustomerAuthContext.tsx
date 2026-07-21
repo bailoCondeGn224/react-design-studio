@@ -1,5 +1,6 @@
 // src/contexts/CustomerAuthContext.tsx
 import { createContext, useContext, useState, ReactNode, useEffect } from 'react';
+import { Outlet } from 'react-router-dom';
 import { CustomerAccount, RegisterCustomerDto, LoginCustomerDto, UpdateCustomerDto } from '@/types';
 import { customerAuthApi } from '@/api/customer-auth';
 
@@ -20,10 +21,16 @@ const STORAGE_KEYS = {
   CUSTOMER: 'customer_data',
 };
 
-export const CustomerAuthProvider = ({ children }: { children: ReactNode }) => {
+export const CustomerAuthProvider = ({ children }: { children?: ReactNode }) => {
   const [customer, setCustomer] = useState<CustomerAccount | null>(() => {
-    const stored = localStorage.getItem(STORAGE_KEYS.CUSTOMER);
-    return stored ? JSON.parse(stored) : null;
+    try {
+      const stored = localStorage.getItem(STORAGE_KEYS.CUSTOMER);
+      return stored ? JSON.parse(stored) : null;
+    } catch (error) {
+      console.error('Failed to parse customer data from localStorage:', error);
+      localStorage.removeItem(STORAGE_KEYS.CUSTOMER);
+      return null;
+    }
   });
   const [isLoading, setIsLoading] = useState(false);
 
@@ -74,7 +81,7 @@ export const CustomerAuthProvider = ({ children }: { children: ReactNode }) => {
     <CustomerAuthContext.Provider
       value={{ customer, isAuthenticated, isLoading, login, register, logout, updateProfile }}
     >
-      {children}
+      {children ?? <Outlet />}
     </CustomerAuthContext.Provider>
   );
 };

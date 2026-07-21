@@ -110,9 +110,11 @@ const StorefrontCheckout = () => {
       // Vider le panier
       clear();
 
-      // Ouvrir WhatsApp
-      const whatsappUrl = `https://wa.me/${storefront.whatsappNumber}?text=${encodeURIComponent(message)}`;
-      window.open(whatsappUrl, '_blank');
+      // Ouvrir WhatsApp si numéro configuré
+      if (storefront.whatsappNumber) {
+        const whatsappUrl = `https://wa.me/${storefront.whatsappNumber}?text=${encodeURIComponent(message)}`;
+        window.open(whatsappUrl, '_blank');
+      }
 
       // Rediriger vers confirmation ou historique
       if (isAuthenticated) {

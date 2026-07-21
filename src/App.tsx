@@ -311,44 +311,42 @@ const App = () => (
                   </ProtectedRoute>
                 }
               />
-              {/* Routes Storefront (public) - wrapped with CustomerAuthProvider */}
-              <Route path="/b/:slug" element={<CustomerAuthProvider><StorefrontHome /></CustomerAuthProvider>} />
-              <Route path="/b/:slug/product/:id" element={<CustomerAuthProvider><StorefrontProduct /></CustomerAuthProvider>} />
-              <Route path="/b/:slug/cart" element={<CustomerAuthProvider><StorefrontCart /></CustomerAuthProvider>} />
-              <Route path="/b/:slug/checkout" element={<CustomerAuthProvider><StorefrontCheckout /></CustomerAuthProvider>} />
-              {/* Routes Customer (public + protégées) */}
-              <Route path="/customer/login" element={<CustomerAuthProvider><CustomerLogin /></CustomerAuthProvider>} />
-              <Route path="/customer/register" element={<CustomerAuthProvider><CustomerRegister /></CustomerAuthProvider>} />
-              <Route
-                path="/customer/orders"
-                element={
-                  <CustomerAuthProvider>
+              {/* Routes Storefront et Customer - single CustomerAuthProvider wrapper */}
+              <Route element={<CustomerAuthProvider />}>
+                {/* Storefront (public) */}
+                <Route path="/b/:slug" element={<StorefrontHome />} />
+                <Route path="/b/:slug/product/:id" element={<StorefrontProduct />} />
+                <Route path="/b/:slug/cart" element={<StorefrontCart />} />
+                <Route path="/b/:slug/checkout" element={<StorefrontCheckout />} />
+                {/* Customer auth (public) */}
+                <Route path="/customer/login" element={<CustomerLogin />} />
+                <Route path="/customer/register" element={<CustomerRegister />} />
+                {/* Customer area (protégées) */}
+                <Route
+                  path="/customer/orders"
+                  element={
                     <CustomerProtectedRoute>
                       <CustomerOrders />
                     </CustomerProtectedRoute>
-                  </CustomerAuthProvider>
-                }
-              />
-              <Route
-                path="/customer/orders/:id"
-                element={
-                  <CustomerAuthProvider>
+                  }
+                />
+                <Route
+                  path="/customer/orders/:id"
+                  element={
                     <CustomerProtectedRoute>
                       <CustomerOrderDetail />
                     </CustomerProtectedRoute>
-                  </CustomerAuthProvider>
-                }
-              />
-              <Route
-                path="/customer/profile"
-                element={
-                  <CustomerAuthProvider>
+                  }
+                />
+                <Route
+                  path="/customer/profile"
+                  element={
                     <CustomerProtectedRoute>
                       <CustomerProfile />
                     </CustomerProtectedRoute>
-                  </CustomerAuthProvider>
-                }
-              />
+                  }
+                />
+              </Route>
               <Route path="*" element={<NotFound />} />
             </Routes>
           </Suspense>

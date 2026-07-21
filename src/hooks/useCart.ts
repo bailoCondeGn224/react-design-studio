@@ -7,8 +7,14 @@ const getStorageKey = (slug: string) => `cart_${slug}`;
 export const useCart = (slug: string) => {
   const [items, setItems] = useState<CartItem[]>(() => {
     if (!slug) return [];
-    const stored = localStorage.getItem(getStorageKey(slug));
-    return stored ? JSON.parse(stored) : [];
+    try {
+      const stored = localStorage.getItem(getStorageKey(slug));
+      return stored ? JSON.parse(stored) : [];
+    } catch (error) {
+      console.error('Failed to parse cart data from localStorage:', error);
+      localStorage.removeItem(getStorageKey(slug));
+      return [];
+    }
   });
 
   useEffect(() => {
