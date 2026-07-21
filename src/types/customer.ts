@@ -114,14 +114,13 @@ export interface UpdateCustomerDto {
 export interface StorefrontArticle {
   id: string;
   nom: string;
-  reference?: string;
   description?: string;
   photo?: string;
   prixEnLigne: number;
+  prixOriginal?: number;
   stock: number;
-  categorieId: string;
-  categorieNom?: string;
-  modesVente?: { id: string; nom: string; prix: number; quantiteParUnite: number }[];
+  categorie?: string;
+  modesVente?: { id: string; nom: string; prix: number; quantiteStock: number }[];
 }
 
 export interface OnlineOrderFilterParams {
