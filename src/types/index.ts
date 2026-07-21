@@ -1161,3 +1161,5 @@ export interface DepenseStats {
     pourcentage: number;
   }>;
 }
+
+export * from './customer';
