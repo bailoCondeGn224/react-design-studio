@@ -9,6 +9,8 @@ import DynamicFavicon from "./components/DynamicFavicon.tsx";
 import LoadingFallback from "./components/LoadingFallback.tsx";
 import { SidebarProvider } from "./contexts/SidebarContext";
 import { AuthProvider } from "./contexts/AuthContext";
+import { CustomerAuthProvider } from "./contexts/CustomerAuthContext";
+import { CustomerProtectedRoute } from "./components/customer/CustomerProtectedRoute";
 import { InstallPWA } from "./components/InstallPWA";
 import { PWAUpdateNotification, OfflineIndicator } from "./components/PWAUpdateNotification";
 
@@ -46,6 +48,19 @@ const AdminDashboard = lazy(() => import("./pages/AdminDashboard.tsx"));
 // Pages Zakat
 const Zakat = lazy(() => import("./pages/Zakat.tsx"));
 const ZakatSettings = lazy(() => import("./pages/ZakatSettings.tsx"));
+// Page Online Orders (back-office)
+const OnlineOrders = lazy(() => import("./pages/OnlineOrders.tsx"));
+// Storefront pages (public)
+const StorefrontHome = lazy(() => import("./pages/storefront/StorefrontHome.tsx"));
+const StorefrontProduct = lazy(() => import("./pages/storefront/StorefrontProduct.tsx"));
+const StorefrontCart = lazy(() => import("./pages/storefront/StorefrontCart.tsx"));
+const StorefrontCheckout = lazy(() => import("./pages/storefront/StorefrontCheckout.tsx"));
+// Customer pages
+const CustomerLogin = lazy(() => import("./pages/customer/CustomerLogin.tsx"));
+const CustomerRegister = lazy(() => import("./pages/customer/CustomerRegister.tsx"));
+const CustomerOrders = lazy(() => import("./pages/customer/CustomerOrders.tsx"));
+const CustomerOrderDetail = lazy(() => import("./pages/customer/CustomerOrderDetail.tsx"));
+const CustomerProfile = lazy(() => import("./pages/customer/CustomerProfile.tsx"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -285,6 +300,53 @@ const App = () => (
                   <ProtectedRoute roles={['ADMIN']}>
                     <ZakatSettings />
                   </ProtectedRoute>
+                }
+              />
+              {/* Route Online Orders (back-office) */}
+              <Route
+                path="/online-orders"
+                element={
+                  <ProtectedRoute>
+                    <OnlineOrders />
+                  </ProtectedRoute>
+                }
+              />
+              {/* Routes Storefront (public) - wrapped with CustomerAuthProvider */}
+              <Route path="/b/:slug" element={<CustomerAuthProvider><StorefrontHome /></CustomerAuthProvider>} />
+              <Route path="/b/:slug/product/:id" element={<CustomerAuthProvider><StorefrontProduct /></CustomerAuthProvider>} />
+              <Route path="/b/:slug/cart" element={<CustomerAuthProvider><StorefrontCart /></CustomerAuthProvider>} />
+              <Route path="/b/:slug/checkout" element={<CustomerAuthProvider><StorefrontCheckout /></CustomerAuthProvider>} />
+              {/* Routes Customer (public + protégées) */}
+              <Route path="/customer/login" element={<CustomerAuthProvider><CustomerLogin /></CustomerAuthProvider>} />
+              <Route path="/customer/register" element={<CustomerAuthProvider><CustomerRegister /></CustomerAuthProvider>} />
+              <Route
+                path="/customer/orders"
+                element={
+                  <CustomerAuthProvider>
+                    <CustomerProtectedRoute>
+                      <CustomerOrders />
+                    </CustomerProtectedRoute>
+                  </CustomerAuthProvider>
+                }
+              />
+              <Route
+                path="/customer/orders/:id"
+                element={
+                  <CustomerAuthProvider>
+                    <CustomerProtectedRoute>
+                      <CustomerOrderDetail />
+                    </CustomerProtectedRoute>
+                  </CustomerAuthProvider>
+                }
+              />
+              <Route
+                path="/customer/profile"
+                element={
+                  <CustomerAuthProvider>
+                    <CustomerProtectedRoute>
+                      <CustomerProfile />
+                    </CustomerProtectedRoute>
+                  </CustomerAuthProvider>
                 }
               />
               <Route path="*" element={<NotFound />} />
