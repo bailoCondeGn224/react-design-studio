@@ -50,6 +50,8 @@ const Zakat = lazy(() => import("./pages/Zakat.tsx"));
 const ZakatSettings = lazy(() => import("./pages/ZakatSettings.tsx"));
 // Page Online Orders (back-office)
 const OnlineOrders = lazy(() => import("./pages/OnlineOrders.tsx"));
+// Page Storefront Settings (back-office)
+const StorefrontSettings = lazy(() => import("./pages/StorefrontSettings.tsx"));
 // Storefront pages (public)
 const StorefrontHome = lazy(() => import("./pages/storefront/StorefrontHome.tsx"));
 const StorefrontProduct = lazy(() => import("./pages/storefront/StorefrontProduct.tsx"));
@@ -308,6 +310,15 @@ const App = () => (
                 element={
                   <ProtectedRoute>
                     <OnlineOrders />
+                  </ProtectedRoute>
+                }
+              />
+              {/* Route Storefront Settings (back-office) */}
+              <Route
+                path="/storefront-settings"
+                element={
+                  <ProtectedRoute roles={['ADMIN']}>
+                    <StorefrontSettings />
                   </ProtectedRoute>
                 }
               />

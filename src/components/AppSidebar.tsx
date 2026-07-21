@@ -3,7 +3,7 @@ import {
   LayoutDashboard, Users, UserCheck, Package, FolderTree, MapPin, Truck, ShoppingCart, Wallet,
   ChevronLeft, ChevronRight, Sparkles, ArrowDownRight, ArrowDownLeft, Menu, LogOut, History, BarChart3,
   Shield, UserCog, Settings, Building2, CreditCard, RotateCcw, PackageX, ClipboardList, ClipboardCheck,
-  Receipt, Calculator, Globe
+  Receipt, Calculator, Globe, Store
 } from "lucide-react";
 import { useState, useRef, useEffect, memo, useMemo } from "react";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
@@ -25,6 +25,7 @@ const navItems = [
   { to: "/ventes", icon: ShoppingCart, label: "Ventes", permissions: ["ventes.read"] },
   { to: "/commandes", icon: ClipboardList, label: "Commandes", permissions: ["commandes.read"] },
   { to: "/online-orders", icon: Globe, label: "Commandes en ligne", permissions: [], hasBadge: true },
+  { to: "/storefront-settings", icon: Store, label: "Vitrine en ligne", permissions: [] },
   { to: "/versements", icon: ArrowDownRight, label: "Versements", permissions: ["versements.read"] },
   { to: "/versements-client", icon: ArrowDownLeft, label: "Paiements Clients", permissions: ["versements-client.read"] },
   { to: "/retours-clients", icon: RotateCcw, label: "Retours Clients", permissions: ["retours.create"] },
@@ -57,6 +58,7 @@ const adminNavItems = [
   { to: "/ventes", icon: ShoppingCart, label: "Ventes", permissions: ["ventes.read"] },
   { to: "/commandes", icon: ClipboardList, label: "Commandes", permissions: ["commandes.read"] },
   { to: "/online-orders", icon: Globe, label: "Commandes en ligne", hasBadge: true },
+  { to: "/storefront-settings", icon: Store, label: "Vitrine en ligne" },
   { to: "/versements", icon: ArrowDownRight, label: "Versements", permissions: ["versements.read"] },
   { to: "/versements-client", icon: ArrowDownLeft, label: "Paiements Clients", permissions: ["versements-client.read"] },
   { to: "/retours-clients", icon: RotateCcw, label: "Retours Clients", permissions: ["retours.create"] },
