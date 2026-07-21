@@ -116,9 +116,13 @@ export const useOnlineOrderStats = () => {
 };
 
 export const usePendingOrderCount = () => {
+  // Ne pas appeler si pas de token (page login)
+  const hasToken = !!localStorage.getItem('token');
+
   return useQuery({
     queryKey: ['online-orders-pending-count'],
     queryFn: () => onlineOrdersApi.getPendingCount(),
-    refetchInterval: 30000, // Refresh every 30s
+    refetchInterval: hasToken ? 30000 : false,
+    enabled: hasToken,
   });
 };
