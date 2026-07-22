@@ -1,6 +1,7 @@
 import { ReactNode } from "react";
 import AppSidebar from "./AppSidebar";
 import { useSidebar } from "@/contexts/SidebarContext";
+import { useOrderNotifications } from "@/hooks/useOrderNotifications";
 
 interface AppLayoutProps {
   children: ReactNode;
@@ -8,6 +9,9 @@ interface AppLayoutProps {
 
 const AppLayout = ({ children }: AppLayoutProps) => {
   const { collapsed } = useSidebar();
+
+  // Active les notifications pour les nouvelles commandes
+  useOrderNotifications();
 
   return (
     <div className="min-h-screen bg-background">
