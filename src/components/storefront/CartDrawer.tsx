@@ -67,6 +67,22 @@ ${storeName}
   return encodeURIComponent(message);
 };
 
+const openWhatsApp = (whatsappNumber: string, encodedMessage: string): void => {
+  // Nettoyer le numéro (enlever espaces, +, tirets, parenthèses, etc.)
+  const cleanNumber = whatsappNumber.replace(/[^0-9]/g, '');
+
+  // Construire l'URL wa.me
+  const whatsappUrl = `https://wa.me/${cleanNumber}?text=${encodedMessage}`;
+
+  // Ouvrir dans nouvelle fenêtre
+  try {
+    window.open(whatsappUrl, '_blank');
+  } catch (error) {
+    console.error('Erreur lors de l\'ouverture de WhatsApp:', error);
+    // Ne pas bloquer le flux si l'ouverture échoue
+  }
+};
+
 export const CartDrawer = ({
   open,
   onOpenChange,
