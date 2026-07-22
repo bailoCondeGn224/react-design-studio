@@ -18,6 +18,7 @@ interface CartDrawerProps {
   onRemove: (articleId: string, modeVenteId?: string) => void;
   onUpdateQuantity: (articleId: string, quantity: number, modeVenteId?: string) => void;
   onCheckout: () => void;
+  storefront: { nom: string; whatsappNumber?: string };
 }
 
 export interface OrderData {
@@ -91,6 +92,7 @@ export const CartDrawer = ({
   fraisLivraison,
   onRemove,
   onUpdateQuantity,
+  storefront,
 }: CartDrawerProps) => {
   const { slug } = useParams<{ slug: string }>();
   const { clear } = useCartContext();

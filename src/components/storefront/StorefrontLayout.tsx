@@ -1,23 +1,23 @@
 // src/components/storefront/StorefrontLayout.tsx
-import { ReactNode, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { ReactNode } from 'react';
+import { useParams } from 'react-router-dom';
 import { StorefrontHeader } from './StorefrontHeader';
 import { CartDrawer } from './CartDrawer';
 import { useStorefront } from '@/hooks/useStorefront';
-import { useCart } from '@/hooks/useCart';
+import { CartDrawerProvider, useCartDrawer } from '@/contexts/CartDrawerContext';
+import { CartProvider, useCartContext } from '@/contexts/CartContext';
 import { Loader2 } from 'lucide-react';
 
 interface StorefrontLayoutProps {
   children: ReactNode;
 }
 
-export const StorefrontLayout = ({ children }: StorefrontLayoutProps) => {
+const StorefrontLayoutContent = ({ children }: StorefrontLayoutProps) => {
   const { slug } = useParams<{ slug: string }>();
-  const navigate = useNavigate();
-  const [cartOpen, setCartOpen] = useState(false);
+  const { isOpen, openCart, closeCart } = useCartDrawer();
 
   const { data: storefront, isLoading, error } = useStorefront(slug || '');
-  const { items, itemCount, subtotal, removeItem, updateQuantity } = useCart(slug || '');
+  const { items, itemCount, subtotal, removeItem, updateQuantity } = useCartContext();
 
   if (isLoading) {
     return (
@@ -50,22 +50,30 @@ export const StorefrontLayout = ({ children }: StorefrontLayoutProps) => {
       <StorefrontHeader
         storefront={storefront}
         cartCount={itemCount}
-        onCartClick={() => setCartOpen(true)}
+        onCartClick={openCart}
       />
       <main className="pb-20">{children}</main>
       <CartDrawer
-        open={cartOpen}
-        onOpenChange={setCartOpen}
+        open={isOpen}
+        onOpenChange={(open) => !open && closeCart()}
         items={items}
         subtotal={subtotal}
         fraisLivraison={storefront.fraisLivraison}
         onRemove={removeItem}
         onUpdateQuantity={updateQuantity}
-        onCheckout={() => {
-          setCartOpen(false);
-          navigate(`/b/${slug}/checkout`);
-        }}
+        onCheckout={() => {}}
+        storefront={storefront}
       />
     </div>
+  );
+};
+
+export const StorefrontLayout = ({ children }: StorefrontLayoutProps) => {
+  return (
+    <CartProvider>
+      <CartDrawerProvider>
+        <StorefrontLayoutContent>{children}</StorefrontLayoutContent>
+      </CartDrawerProvider>
+    </CartProvider>
   );
 };
