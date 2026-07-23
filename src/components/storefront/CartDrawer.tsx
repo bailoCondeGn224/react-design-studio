@@ -129,6 +129,10 @@ export const CartDrawer = ({
         const encodedMessage = buildWhatsAppMessage(savedOrderData, storefront.nom);
         openWhatsApp(storefront.whatsappNumber, encodedMessage);
         toast.success('WhatsApp ouvert!');
+        // Fermer le drawer après ouverture WhatsApp
+        setTimeout(() => {
+          handleCloseDrawer();
+        }, 1000);
       } catch (error) {
         console.error('Erreur WhatsApp:', error);
         toast.error('Erreur lors de l\'ouverture de WhatsApp');
@@ -177,11 +181,6 @@ export const CartDrawer = ({
       clear();
 
       setStep('success');
-
-      // Close drawer after 3 seconds
-      setTimeout(() => {
-        handleCloseDrawer();
-      }, 3000);
 
     } catch (error: any) {
       console.error('Error submitting order:', error);
@@ -391,7 +390,7 @@ export const CartDrawer = ({
                 </p>
 
                 {/* WhatsApp CTA */}
-                {storefront?.whatsappNumber && savedOrderData && (
+                {storefront?.whatsappNumber && savedOrderData ? (
                   <div className="w-full max-w-sm space-y-3">
                     <div className="bg-green-50 border border-green-200 rounded-lg p-4">
                       <p className="text-sm text-green-800 text-center mb-3">
@@ -405,12 +404,24 @@ export const CartDrawer = ({
                         <span>Envoyer sur WhatsApp</span>
                       </button>
                     </div>
+
+                    <button
+                      onClick={handleCloseDrawer}
+                      className="w-full h-12 flex items-center justify-center gap-2 bg-gray-100 text-gray-700 font-medium rounded-lg hover:bg-gray-200 active:scale-[0.98] transition-all"
+                    >
+                      <span>Fermer</span>
+                    </button>
+                  </div>
+                ) : (
+                  <div className="w-full max-w-sm">
+                    <button
+                      onClick={handleCloseDrawer}
+                      className="w-full h-12 flex items-center justify-center gap-2 bg-primary text-white font-bold rounded-lg hover:bg-primary/95 active:scale-[0.98] transition-all shadow-md"
+                    >
+                      <span>Fermer</span>
+                    </button>
                   </div>
                 )}
-
-                <div className="mt-8 text-xs text-gray-400">
-                  Fermeture automatique...
-                </div>
               </div>
             )}
           </>
