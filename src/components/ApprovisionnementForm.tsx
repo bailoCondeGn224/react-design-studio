@@ -8,7 +8,7 @@ import ArticleCombobox from "@/components/ArticleCombobox";
 import FournisseurCombobox from "@/components/FournisseurCombobox";
 import NouvelArticleModal from "@/components/NouvelArticleModal";
 import { toast } from "sonner";
-import { Plus, Trash2, TrendingUp, Package, Truck, DollarSign, FileText, Check, Calendar } from "lucide-react";
+import { Plus, Trash2, TrendingUp, Package, Truck, DollarSign, FileText, Check, Calendar, Layers } from "lucide-react";
 import { formatPrixInput, handlePrixChange } from "@/utils/format-prix";
 
 interface ApprovisionnementFormProps {
@@ -101,7 +101,21 @@ const ApprovisionnementForm = ({ open, onOpenChange, onSubmit, initialData = nul
   const ajouterLigne = () => {
     setForm(prev => ({
       ...prev,
-      lignes: [...prev.lignes, { articleId: "", nom: "", quantite: 1, prixUnitaire: 0, sousTotal: 0, dateExpiration: "", delaiAlerteExpiration: 30 }]
+      lignes: [...prev.lignes, {
+        articleId: "",
+        nom: "",
+        quantite: 1,
+        prixUnitaire: 0,
+        sousTotal: 0,
+        dateExpiration: "",
+        delaiAlerteExpiration: 30,
+        // Champs pour mode gros/détail
+        modesVente: [],
+        modeVenteId: null,
+        modeVenteNom: null,
+        modeQuantiteStock: 1, // Multiplicateur pour le stock (1 pour détail, N pour gros)
+        quantiteUnites: 1, // Quantité totale en unités (quantite × modeQuantiteStock)
+      }]
     }));
   };
 
@@ -123,6 +137,37 @@ const ApprovisionnementForm = ({ open, onOpenChange, onSubmit, initialData = nul
       const quantite = Number(newLignes[index].quantite) || 0;
       const prixUnitaire = Number(newLignes[index].prixUnitaire) || 0;
       newLignes[index].sousTotal = quantite * prixUnitaire;
+
+      // Calculer la quantité en unités (pour impact stock)
+      const modeQuantiteStock = Number(newLignes[index].modeQuantiteStock) || 1;
+      newLignes[index].quantiteUnites = quantite * modeQuantiteStock;
+
+      return { ...prev, lignes: newLignes };
+    });
+  };
+
+  // Changer le mode de vente d'une ligne (gros/détail)
+  const changerModeVente = (index: number, modeVente: any) => {
+    setForm(prev => {
+      const newLignes = [...prev.lignes];
+      const ligne = newLignes[index];
+      const quantite = Number(ligne.quantite) || 1;
+
+      // Calculer le nouveau prix unitaire suggéré
+      // En mode gros: prixAchat × quantiteStock du mode
+      // En mode détail: prixAchat de l'article
+      const prixAchatBase = ligne.ancienPMP || 0;
+      const nouveauPrixUnitaire = prixAchatBase * modeVente.quantiteStock;
+
+      newLignes[index] = {
+        ...ligne,
+        modeVenteId: modeVente.id,
+        modeVenteNom: modeVente.nom,
+        modeQuantiteStock: modeVente.quantiteStock,
+        prixUnitaire: nouveauPrixUnitaire,
+        sousTotal: quantite * nouveauPrixUnitaire,
+        quantiteUnites: quantite * modeVente.quantiteStock,
+      };
 
       return { ...prev, lignes: newLignes };
     });
@@ -176,14 +221,16 @@ const ApprovisionnementForm = ({ open, onOpenChange, onSubmit, initialData = nul
   // Calculer l'impact total sur le stock
   const calculerImpactStock = () => {
     let totalArticles = 0;
-    let totalQuantiteAjoutee = 0;
+    let totalQuantiteAjoutee = 0; // En unités
     let valeurAjoutee = 0;
     let articlesModifies = new Set();
 
     form.lignes.forEach((ligne: any) => {
       if (ligne.articleId && ligne.quantite > 0) {
         articlesModifies.add(ligne.articleId);
-        totalQuantiteAjoutee += Number(ligne.quantite);
+        // Calculer la quantité en unités
+        const modeQuantiteStock = Number(ligne.modeQuantiteStock) || 1;
+        totalQuantiteAjoutee += Number(ligne.quantite) * modeQuantiteStock;
         valeurAjoutee += ligne.sousTotal;
       }
     });
@@ -228,15 +275,25 @@ const ApprovisionnementForm = ({ open, onOpenChange, onSubmit, initialData = nul
     }
 
     // Nettoyer les lignes pour ne garder que les champs nécessaires
-    const lignesClean = form.lignes.map(ligne => ({
-      articleId: ligne.articleId,
-      nom: ligne.nom,
-      quantite: Number(ligne.quantite),
-      prixUnitaire: Number(ligne.prixUnitaire),
-      sousTotal: Number(ligne.sousTotal),
-      dateExpiration: ligne.dateExpiration || undefined,
-      delaiAlerteExpiration: ligne.delaiAlerteExpiration ? Number(ligne.delaiAlerteExpiration) : undefined,
-    }));
+    const lignesClean = form.lignes.map(ligne => {
+      const modeQuantiteStock = Number(ligne.modeQuantiteStock) || 1;
+      const quantiteUnites = Number(ligne.quantite) * modeQuantiteStock;
+
+      return {
+        articleId: ligne.articleId,
+        nom: ligne.nom,
+        quantite: Number(ligne.quantite),
+        prixUnitaire: Number(ligne.prixUnitaire),
+        sousTotal: Number(ligne.sousTotal),
+        dateExpiration: ligne.dateExpiration || undefined,
+        delaiAlerteExpiration: ligne.delaiAlerteExpiration ? Number(ligne.delaiAlerteExpiration) : undefined,
+        // Champs mode vente
+        modeVenteId: ligne.modeVenteId || undefined,
+        modeVenteNom: ligne.modeVenteNom || undefined,
+        modeQuantiteStock: modeQuantiteStock,
+        quantiteUnites: quantiteUnites, // Quantité réelle en unités pour le stock
+      };
+    });
 
     const approvisionementData = {
       fournisseurId: form.fournisseurId,
@@ -340,11 +397,16 @@ const ApprovisionnementForm = ({ open, onOpenChange, onSubmit, initialData = nul
                 <div className="space-y-3">
                 {form.lignes.map((ligne: any, index: number) => {
                   const stockActuel = Number(ligne.stockActuel) || 0;
-                  const nouveauStock = stockActuel + Number(ligne.quantite || 0);
-                  const nouveauPMP = ligne.articleId && ligne.quantite > 0 && ligne.prixUnitaire > 0 && stockActuel >= 0
-                    ? (stockActuel * (ligne.ancienPMP || 0) + ligne.quantite * ligne.prixUnitaire) / nouveauStock
-                    : ligne.prixUnitaire || 0;
+                  const modeQuantiteStock = Number(ligne.modeQuantiteStock) || 1;
+                  const quantiteUnites = Number(ligne.quantite || 0) * modeQuantiteStock;
+                  const nouveauStock = stockActuel + quantiteUnites;
+                  // PMP calculé sur la base des unités: (ancienStock × ancienPMP + nouvelleValeur) / nouveauStock
+                  // nouvelleValeur = quantite × prixUnitaire (prixUnitaire est déjà pour le lot/unité selon le mode)
+                  const nouveauPMP = ligne.articleId && ligne.quantite > 0 && ligne.prixUnitaire > 0 && nouveauStock > 0
+                    ? (stockActuel * (ligne.ancienPMP || 0) + Number(ligne.quantite) * Number(ligne.prixUnitaire)) / nouveauStock
+                    : ligne.ancienPMP || 0;
                   const ancienPMP = ligne.ancienPMP || 0;
+                  const modesVente = ligne.modesVente || [];
 
                   return (
                     <div key={index} className="p-3 sm:p-4 bg-card border border-border rounded-lg space-y-3 hover:shadow-md transition-shadow">
@@ -353,22 +415,49 @@ const ApprovisionnementForm = ({ open, onOpenChange, onSubmit, initialData = nul
                           <label className="block text-xs font-medium text-muted-foreground mb-1.5 sm:hidden">Article</label>
                           <ArticleCombobox
                             value={ligne.articleId}
+                            preselectedArticle={ligne.articleId ? {
+                              id: ligne.articleId,
+                              nom: ligne.nom,
+                              stock: ligne.stockActuel || 0,
+                              prixAchat: ligne.ancienPMP || 0,
+                              prixVente: 0,
+                              uniteStock: ligne.uniteStock,
+                              modesVente: ligne.modesVente || [],
+                              fournisseurPrefereNom: ligne.fournisseurPrefereNom,
+                              seuilAlerte: ligne.seuilAlerte,
+                            } : null}
                             onChange={(article) => {
                               if (article) {
+                                const modesVente = article.modesVente || [];
+                                // Prendre le mode par défaut ou le premier mode
+                                const modeDefaut = modesVente.find(m => m.parDefaut) || modesVente[0];
+                                const modeQuantiteStock = modeDefaut?.quantiteStock || 1;
+                                // Prix d'achat: base × quantiteStock du mode
+                                const prixAchatBase = article.prixAchat || 0;
+                                const prixUnitaire = prixAchatBase * modeQuantiteStock;
+                                const quantite = Number(form.lignes[index].quantite) || 1;
+
                                 setForm(prev => {
                                   const newLignes = [...prev.lignes];
                                   newLignes[index] = {
                                     ...newLignes[index],
                                     articleId: article.id,
                                     nom: article.nom,
-                                    prixUnitaire: article.prixAchat || 0,
+                                    prixUnitaire: prixUnitaire,
                                     stockActuel: article.stock,
                                     seuilAlerte: article.seuilAlerte,
-                                    ancienPMP: article.prixAchat || 0,
+                                    ancienPMP: prixAchatBase, // Prix d'achat unitaire de base
                                     fournisseurPrefereNom: article.fournisseurPrefereNom,
                                     dateExpiration: article.dateExpiration || "",
                                     delaiAlerteExpiration: article.delaiAlerteExpiration || 30,
-                                    sousTotal: Number(newLignes[index].quantite || 1) * (Number(article.prixAchat) || 0)
+                                    sousTotal: quantite * prixUnitaire,
+                                    // Champs mode vente
+                                    modesVente: modesVente,
+                                    modeVenteId: modeDefaut?.id || null,
+                                    modeVenteNom: modeDefaut?.nom || null,
+                                    modeQuantiteStock: modeQuantiteStock,
+                                    quantiteUnites: quantite * modeQuantiteStock,
+                                    uniteStock: article.uniteStock,
                                   };
                                   return { ...prev, lignes: newLignes };
                                 });
@@ -385,7 +474,7 @@ const ApprovisionnementForm = ({ open, onOpenChange, onSubmit, initialData = nul
                           {ligne.articleId && (
                             <div className="mt-1 space-y-0.5">
                               <div className="text-[10px] text-muted-foreground flex items-center gap-2">
-                                <span>Stock actuel: <strong>{stockActuel}</strong></span>
+                                <span>Stock actuel: <strong>{stockActuel}</strong> {ligne.uniteStock || 'unités'}</span>
                                 {ligne.seuilAlerte && stockActuel <= ligne.seuilAlerte && (
                                   <span className="text-warning">Faible</span>
                                 )}
@@ -395,6 +484,35 @@ const ApprovisionnementForm = ({ open, onOpenChange, onSubmit, initialData = nul
                                   <span>Fournisseur préféré: {ligne.fournisseurPrefereNom}</span>
                                 </div>
                               )}
+                            </div>
+                          )}
+
+                          {/* Boutons de sélection gros/détail */}
+                          {ligne.articleId && modesVente.length > 1 && (
+                            <div className="mt-2 pt-2 border-t border-border">
+                              <div className="flex items-center gap-1.5 mb-1.5">
+                                <Layers className="w-3 h-3 text-primary" />
+                                <span className="text-[10px] font-medium text-muted-foreground">Mode de réception</span>
+                              </div>
+                              <div className="flex flex-wrap gap-1.5">
+                                {modesVente.map((mode: any) => (
+                                  <button
+                                    key={mode.id}
+                                    type="button"
+                                    onClick={() => changerModeVente(index, mode)}
+                                    className={`px-2.5 py-1.5 text-xs rounded-lg border transition-all ${
+                                      ligne.modeVenteId === mode.id
+                                        ? 'bg-primary text-primary-foreground border-primary shadow-sm'
+                                        : 'bg-muted/50 text-muted-foreground border-border hover:bg-muted hover:border-primary/30'
+                                    }`}
+                                  >
+                                    {mode.nom}
+                                    {mode.quantiteStock > 1 && (
+                                      <span className="ml-1 opacity-75">({mode.quantiteStock} {ligne.uniteStock || 'u'})</span>
+                                    )}
+                                  </button>
+                                ))}
+                              </div>
                             </div>
                           )}
                         </div>
@@ -412,23 +530,27 @@ const ApprovisionnementForm = ({ open, onOpenChange, onSubmit, initialData = nul
                           </Button>
                         </div>
                         <div className="sm:col-span-2">
-                          <label className="block text-xs font-medium text-muted-foreground mb-1.5 sm:hidden">Quantité</label>
+                          <label className="block text-xs font-medium text-muted-foreground mb-1.5 sm:hidden">
+                            {modeQuantiteStock > 1 ? `Qté (${ligne.modeVenteNom || 'lots'})` : 'Quantité'}
+                          </label>
                           <input
                             type="number"
                             className="w-full px-3 h-11 sm:h-10 rounded-lg border border-border bg-background text-foreground focus:ring-2 focus:ring-success/20 focus:border-success"
-                            placeholder="Quantité"
+                            placeholder={modeQuantiteStock > 1 ? `Nb ${ligne.modeVenteNom || 'lots'}` : 'Quantité'}
                             min="1"
                             value={ligne.quantite}
                             onChange={e => updateLigne(index, "quantite", e.target.value)}
                           />
                         </div>
                         <div className="sm:col-span-3">
-                          <label className="block text-xs font-medium text-muted-foreground mb-1.5 sm:hidden">Prix unitaire</label>
+                          <label className="block text-xs font-medium text-muted-foreground mb-1.5 sm:hidden">
+                            {modeQuantiteStock > 1 ? `Prix / ${ligne.modeVenteNom || 'lot'}` : 'Prix unitaire'}
+                          </label>
                           <input
                             type="text"
                             inputMode="numeric"
                             className="w-full px-3 h-11 sm:h-10 rounded-lg border border-border bg-background text-foreground focus:ring-2 focus:ring-success/20 focus:border-success"
-                            placeholder="Prix unitaire"
+                            placeholder={modeQuantiteStock > 1 ? `Prix / ${ligne.modeVenteNom || 'lot'}` : 'Prix unitaire'}
                             value={formatPrixInput(ligne.prixUnitaire)}
                             onChange={e => updateLigne(index, "prixUnitaire", handlePrixChange(e.target.value))}
                           />
@@ -481,15 +603,27 @@ const ApprovisionnementForm = ({ open, onOpenChange, onSubmit, initialData = nul
                       {/* Affichage de l'impact */}
                       {ligne.articleId && ligne.quantite > 0 && ligne.prixUnitaire > 0 && (
                         <div className="space-y-2 pt-2 border-t border-border">
+                          {/* Indication du mode et quantité ajoutée */}
+                          {modeQuantiteStock > 1 && (
+                            <div className="bg-primary/5 rounded p-2 sm:p-3 border border-primary/20">
+                              <p className="text-xs text-muted-foreground mb-1">Quantité à ajouter</p>
+                              <p className="text-sm font-semibold text-primary">
+                                {ligne.quantite} {ligne.modeVenteNom || 'lot(s)'} = <strong>{quantiteUnites}</strong> {ligne.uniteStock || 'unités'}
+                              </p>
+                            </div>
+                          )}
                           <div className="bg-success/10 rounded p-2 sm:p-3">
                             <p className="text-xs text-muted-foreground mb-1">Nouveau stock</p>
                             <p className="text-base sm:text-lg font-bold text-success flex items-center gap-1">
                               <TrendingUp className="w-4 h-4" />
-                              {nouveauStock}
+                              {nouveauStock} {ligne.uniteStock || 'unités'}
+                            </p>
+                            <p className="text-[10px] text-muted-foreground">
+                              ({stockActuel} + {quantiteUnites})
                             </p>
                           </div>
                           <div className="bg-primary/10 rounded p-2 sm:p-3">
-                            <p className="text-xs text-muted-foreground mb-1">Nouveau PMP</p>
+                            <p className="text-xs text-muted-foreground mb-1">Nouveau PMP (par unité)</p>
                             <p className="text-sm sm:text-base font-bold text-primary">
                               {formatPrix(nouveauPMP)}
                             </p>

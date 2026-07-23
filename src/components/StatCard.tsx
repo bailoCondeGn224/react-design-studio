@@ -2,12 +2,13 @@ interface StatCardProps {
   title: string;
   value: string;
   subtitle?: string;
+  subtitleDanger?: boolean; // Pour afficher le subtitle en rouge (dettes, crédits)
   icon: React.ReactNode;
   trend?: { value: string; positive: boolean };
   variant?: "default" | "gold" | "accent";
 }
 
-const StatCard = ({ title, value, subtitle, icon, trend, variant = "default" }: StatCardProps) => {
+const StatCard = ({ title, value, subtitle, subtitleDanger = false, icon, trend, variant = "default" }: StatCardProps) => {
   const variants = {
     default: "bg-card border border-border",
     gold: "gradient-gold text-primary-foreground",
@@ -40,7 +41,13 @@ const StatCard = ({ title, value, subtitle, icon, trend, variant = "default" }: 
         </p>
         <p className="text-xl sm:text-2xl lg:text-3xl font-heading font-bold leading-tight break-words">{value}</p>
         {subtitle && (
-          <p className={`text-[10px] sm:text-xs ${isColored ? "text-primary-foreground/60" : "text-muted-foreground"}`}>
+          <p className={`text-[10px] sm:text-xs font-medium ${
+            subtitleDanger
+              ? "text-destructive"
+              : isColored
+                ? "text-primary-foreground/60"
+                : "text-muted-foreground"
+          }`}>
             {subtitle}
           </p>
         )}

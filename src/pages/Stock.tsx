@@ -134,7 +134,9 @@ const Stock = () => {
           nom: item.nom,
           prixVente: item.prixVente,
           prixAchat: item.prixAchat,
-          stock: item.stock
+          stock: item.stock,
+          uniteStock: item.uniteStock,
+          modesVente: item.modesVente || []
         }
       }
     });
@@ -879,9 +881,9 @@ const Stock = () => {
               </div>
             </div>
 
-            {/* Contenu avec Tabs */}
-            <div className="flex-1 overflow-hidden">
-              <Tabs defaultValue="top" className="h-full flex flex-col">
+            {/* Contenu avec Tabs - scrollable */}
+            <div className="flex-1 min-h-0 flex flex-col overflow-hidden">
+              <Tabs defaultValue="top" className="h-full flex flex-col overflow-hidden">
                 <TabsList className="w-full justify-start px-4 pt-3 pb-0 bg-transparent gap-2 flex-shrink-0">
                   <TabsTrigger
                     value="top"
@@ -910,37 +912,39 @@ const Stock = () => {
                 </TabsList>
 
                 {/* Top Ventes */}
-                <TabsContent value="top" className="flex-1 overflow-y-auto px-4 py-4 mt-0">
+                <TabsContent value="top" className="flex-1 min-h-0 overflow-y-auto px-4 py-4 mt-0">
                   {statsRotation?.topVentes && statsRotation.topVentes.length > 0 ? (
-                    <div className="space-y-3">
+                    <div className="space-y-2">
                       {statsRotation.topVentes.map((article: any, index: number) => (
                         <div
                           key={article.articleId}
-                          className="flex items-center gap-3 p-3 bg-gradient-to-r from-success/5 to-transparent border border-success/20 rounded-xl"
+                          className="p-3 bg-gradient-to-r from-success/5 to-transparent border border-success/20 rounded-xl"
                         >
-                          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-success to-emerald-600 flex items-center justify-center flex-shrink-0 shadow-lg">
-                            <span className="text-sm font-black text-white">#{index + 1}</span>
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <p className="text-sm font-bold text-foreground truncate">{article.nom}</p>
-                            <div className="flex items-center gap-2 mt-1">
-                              <span className="text-xs text-muted-foreground">
-                                <strong className="text-success">{article.totalVendu || 0}</strong> vendus
-                              </span>
-                              <span className="text-muted-foreground">•</span>
-                              <span className="text-xs text-muted-foreground">
-                                Stock: <strong>{article.stockActuel}</strong>
-                              </span>
+                          {/* Ligne unique avec toutes les infos */}
+                          <div className="flex items-center gap-3">
+                            {/* Rang */}
+                            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-success to-emerald-600 flex items-center justify-center flex-shrink-0">
+                              <span className="text-xs font-black text-white">{index + 1}</span>
                             </div>
-                          </div>
-                          <div className="text-right">
-                            <div className="flex items-center gap-1 justify-end">
-                              <Flame className="w-4 h-4 text-success" />
-                              <span className="text-lg font-black text-success">
-                                {article.tauxRotation !== 'N/A' ? parseFloat(article.tauxRotation).toFixed(1) : 'N/A'}×
-                              </span>
+                            {/* Nom */}
+                            <div className="flex-1 min-w-0">
+                              <p className="text-sm font-bold text-foreground truncate">{article.nom}</p>
+                              <p className="text-xs text-muted-foreground">{article.nombreVentes || 0} ventes</p>
                             </div>
-                            <p className="text-[10px] text-muted-foreground">taux rotation</p>
+                            {/* Stats alignées */}
+                            <div className="flex items-center gap-4 flex-shrink-0">
+                              <div className="text-center w-14">
+                                <p className="text-[10px] text-muted-foreground">Vendus</p>
+                                <p className="text-sm font-bold text-success">{article.totalVendu || 0}</p>
+                              </div>
+                              <div className="text-center w-14">
+                                <p className="text-[10px] text-muted-foreground">Stock</p>
+                                <p className="text-sm font-bold text-foreground">{article.stockActuel}</p>
+                              </div>
+                              <div className="text-center w-12 bg-success/20 rounded-lg py-1">
+                                <p className="text-sm font-black text-success">{article.pourcentageVendu || 0}%</p>
+                              </div>
+                            </div>
                           </div>
                         </div>
                       ))}
@@ -954,48 +958,55 @@ const Stock = () => {
                 </TabsContent>
 
                 {/* Stock Lent */}
-                <TabsContent value="slow" className="flex-1 overflow-y-auto px-4 py-4 mt-0">
+                <TabsContent value="slow" className="flex-1 min-h-0 overflow-y-auto px-4 py-4 mt-0">
                   {statsRotation?.stockMort && statsRotation.stockMort.length > 0 ? (
                     <>
                       {/* Résumé valeur immobilisée */}
                       {statsRotation.resume?.valeurStockImmobilise > 0 && (
-                        <div className="mb-4 p-4 bg-gradient-to-r from-warning/10 to-orange-500/5 border-2 border-warning/30 rounded-xl">
+                        <div className="mb-4 p-3 bg-gradient-to-r from-warning/10 to-orange-500/5 border-2 border-warning/30 rounded-xl">
                           <div className="flex items-center justify-between">
                             <div>
-                              <p className="text-xs font-medium text-muted-foreground">Valeur immobilisée</p>
-                              <p className="text-xl font-black text-warning">{formatPrix(statsRotation.resume.valeurStockImmobilise)}</p>
+                              <p className="text-xs font-medium text-muted-foreground">Valeur immobilisée (30j)</p>
+                              <p className="text-lg font-black text-warning">{formatPrix(statsRotation.resume.valeurStockImmobilise)}</p>
                             </div>
-                            <div className="w-12 h-12 rounded-full bg-warning/20 flex items-center justify-center">
-                              <Snowflake className="w-6 h-6 text-warning" />
+                            <div className="w-10 h-10 rounded-full bg-warning/20 flex items-center justify-center">
+                              <Snowflake className="w-5 h-5 text-warning" />
                             </div>
                           </div>
                         </div>
                       )}
 
-                      <div className="space-y-3">
+                      <div className="space-y-2">
                         {statsRotation.stockMort.map((article: any, index: number) => (
                           <div
                             key={article.articleId}
-                            className="flex items-center gap-3 p-3 bg-gradient-to-r from-warning/5 to-transparent border border-warning/20 rounded-xl"
+                            className="p-3 bg-gradient-to-r from-warning/5 to-transparent border border-warning/20 rounded-xl"
                           >
-                            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-warning to-orange-600 flex items-center justify-center flex-shrink-0 shadow-lg">
-                              <Snowflake className="w-5 h-5 text-white" />
-                            </div>
-                            <div className="flex-1 min-w-0">
-                              <p className="text-sm font-bold text-foreground truncate">{article.nom}</p>
-                              <div className="flex items-center gap-2 mt-1">
-                                <span className="text-xs text-muted-foreground">
-                                  <strong className="text-warning">{article.joursCouverture || 0}</strong> jours
-                                </span>
-                                <span className="text-muted-foreground">•</span>
-                                <span className="text-xs text-muted-foreground">
-                                  Stock: <strong>{article.stockActuel}</strong>
-                                </span>
+                            {/* Ligne unique avec toutes les infos */}
+                            <div className="flex items-center gap-3">
+                              {/* Icône */}
+                              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-warning to-orange-600 flex items-center justify-center flex-shrink-0">
+                                <Snowflake className="w-4 h-4 text-white" />
                               </div>
-                            </div>
-                            <div className="text-right">
-                              <p className="text-sm font-bold text-warning">{formatPrix(article.valeurStock || 0)}</p>
-                              <p className="text-[10px] text-muted-foreground">immobilisé</p>
+                              {/* Nom */}
+                              <div className="flex-1 min-w-0">
+                                <p className="text-sm font-bold text-foreground truncate">{article.nom}</p>
+                                <p className="text-xs text-warning font-medium">{formatPrix(article.valeurStock || 0)}</p>
+                              </div>
+                              {/* Stats alignées */}
+                              <div className="flex items-center gap-4 flex-shrink-0">
+                                <div className="text-center w-14">
+                                  <p className="text-[10px] text-muted-foreground">Vendus</p>
+                                  <p className="text-sm font-bold text-warning">{article.totalVendu || 0}</p>
+                                </div>
+                                <div className="text-center w-14">
+                                  <p className="text-[10px] text-muted-foreground">Stock</p>
+                                  <p className="text-sm font-bold text-foreground">{article.stockActuel}</p>
+                                </div>
+                                <div className="text-center w-12 bg-warning/20 rounded-lg py-1">
+                                  <p className="text-sm font-black text-warning">{article.pourcentageVendu || 0}%</p>
+                                </div>
+                              </div>
                             </div>
                           </div>
                         ))}
@@ -1029,9 +1040,9 @@ const Stock = () => {
               </div>
             </DialogHeader>
 
-            {/* Contenu avec Tabs */}
-            <div className="flex-1 overflow-hidden">
-              <Tabs defaultValue="top" className="h-full flex flex-col">
+            {/* Contenu avec Tabs - scrollable */}
+            <div className="flex-1 min-h-0 flex flex-col overflow-hidden">
+              <Tabs defaultValue="top" className="h-full flex flex-col overflow-hidden">
                 <TabsList className="w-full justify-start px-6 pt-4 pb-0 bg-transparent gap-3 flex-shrink-0">
                   <TabsTrigger
                     value="top"
@@ -1060,36 +1071,39 @@ const Stock = () => {
                 </TabsList>
 
                 {/* Top Ventes Desktop */}
-                <TabsContent value="top" className="flex-1 overflow-y-auto px-6 py-4 mt-0">
+                <TabsContent value="top" className="flex-1 min-h-0 overflow-y-auto px-6 py-4 mt-0">
                   {statsRotation?.topVentes && statsRotation.topVentes.length > 0 ? (
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
+                    <div className="space-y-2">
                       {statsRotation.topVentes.map((article: any, index: number) => (
                         <div
                           key={article.articleId}
-                          className="flex items-center gap-4 p-4 bg-gradient-to-r from-success/5 to-transparent border border-success/20 rounded-xl hover:shadow-lg hover:border-success/40 transition-all"
+                          className="p-4 bg-gradient-to-r from-success/5 to-transparent border border-success/20 rounded-xl hover:shadow-md hover:border-success/40 transition-all"
                         >
-                          <div className="w-12 h-12 rounded-full bg-gradient-to-br from-success to-emerald-600 flex items-center justify-center flex-shrink-0 shadow-lg">
-                            <span className="text-lg font-black text-white">#{index + 1}</span>
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <p className="text-sm font-bold text-foreground truncate">{article.nom}</p>
-                            <div className="flex items-center gap-3 mt-1">
-                              <span className="text-xs text-muted-foreground">
-                                <strong className="text-success">{article.totalVendu || 0}</strong> vendus (30j)
-                              </span>
-                              <span className="text-xs text-muted-foreground">
-                                Stock: <strong>{article.stockActuel}</strong>
-                              </span>
+                          {/* Ligne unique avec toutes les infos alignées */}
+                          <div className="flex items-center gap-4">
+                            {/* Rang */}
+                            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-success to-emerald-600 flex items-center justify-center flex-shrink-0 shadow-lg">
+                              <span className="text-sm font-black text-white">{index + 1}</span>
                             </div>
-                          </div>
-                          <div className="text-right">
-                            <div className="flex items-center gap-1 justify-end">
-                              <Flame className="w-5 h-5 text-success" />
-                              <span className="text-xl font-black text-success">
-                                {article.tauxRotation !== 'N/A' ? parseFloat(article.tauxRotation).toFixed(1) : 'N/A'}×
-                              </span>
+                            {/* Nom */}
+                            <div className="flex-1 min-w-0">
+                              <p className="text-sm font-bold text-foreground truncate">{article.nom}</p>
+                              <p className="text-xs text-muted-foreground">{article.nombreVentes || 0} transactions</p>
                             </div>
-                            <p className="text-xs text-muted-foreground">taux rotation</p>
+                            {/* Stats alignées avec largeurs fixes */}
+                            <div className="flex items-center gap-6 flex-shrink-0">
+                              <div className="text-center w-20">
+                                <p className="text-xs text-muted-foreground">Vendus (30j)</p>
+                                <p className="text-lg font-bold text-success">{article.totalVendu || 0}</p>
+                              </div>
+                              <div className="text-center w-20">
+                                <p className="text-xs text-muted-foreground">Stock</p>
+                                <p className="text-lg font-bold text-foreground">{article.stockActuel}</p>
+                              </div>
+                              <div className="text-center w-16 bg-success/20 rounded-lg py-2">
+                                <p className="text-lg font-black text-success">{article.pourcentageVendu || 0}%</p>
+                              </div>
+                            </div>
                           </div>
                         </div>
                       ))}
@@ -1103,47 +1117,55 @@ const Stock = () => {
                 </TabsContent>
 
                 {/* Stock Lent Desktop */}
-                <TabsContent value="slow" className="flex-1 overflow-y-auto px-6 py-4 mt-0">
+                <TabsContent value="slow" className="flex-1 min-h-0 overflow-y-auto px-6 py-4 mt-0">
                   {statsRotation?.stockMort && statsRotation.stockMort.length > 0 ? (
                     <>
                       {/* Résumé valeur immobilisée */}
                       {statsRotation.resume?.valeurStockImmobilise > 0 && (
-                        <div className="mb-5 p-5 bg-gradient-to-r from-warning/10 to-orange-500/5 border-2 border-warning/30 rounded-xl">
+                        <div className="mb-5 p-4 bg-gradient-to-r from-warning/10 to-orange-500/5 border-2 border-warning/30 rounded-xl">
                           <div className="flex items-center justify-between">
                             <div>
-                              <p className="text-sm font-medium text-muted-foreground">Valeur totale immobilisée</p>
+                              <p className="text-sm font-medium text-muted-foreground">Valeur immobilisée (30 derniers jours)</p>
                               <p className="text-2xl font-black text-warning mt-1">{formatPrix(statsRotation.resume.valeurStockImmobilise)}</p>
                             </div>
-                            <div className="w-14 h-14 rounded-full bg-warning/20 flex items-center justify-center">
-                              <Snowflake className="w-7 h-7 text-warning" />
+                            <div className="w-12 h-12 rounded-full bg-warning/20 flex items-center justify-center">
+                              <Snowflake className="w-6 h-6 text-warning" />
                             </div>
                           </div>
                         </div>
                       )}
 
-                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
+                      <div className="space-y-2">
                         {statsRotation.stockMort.map((article: any) => (
                           <div
                             key={article.articleId}
-                            className="flex items-center gap-4 p-4 bg-gradient-to-r from-warning/5 to-transparent border border-warning/20 rounded-xl hover:shadow-lg hover:border-warning/40 transition-all"
+                            className="p-4 bg-gradient-to-r from-warning/5 to-transparent border border-warning/20 rounded-xl hover:shadow-md hover:border-warning/40 transition-all"
                           >
-                            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-warning to-orange-600 flex items-center justify-center flex-shrink-0 shadow-lg">
-                              <Snowflake className="w-6 h-6 text-white" />
-                            </div>
-                            <div className="flex-1 min-w-0">
-                              <p className="text-sm font-bold text-foreground truncate">{article.nom}</p>
-                              <div className="flex items-center gap-3 mt-1">
-                                <span className="text-xs text-muted-foreground">
-                                  <strong className="text-warning">{article.joursCouverture || 0}</strong> jours couverture
-                                </span>
-                                <span className="text-xs text-muted-foreground">
-                                  Stock: <strong>{article.stockActuel}</strong>
-                                </span>
+                            {/* Ligne unique avec toutes les infos alignées */}
+                            <div className="flex items-center gap-4">
+                              {/* Icône */}
+                              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-warning to-orange-600 flex items-center justify-center flex-shrink-0 shadow-lg">
+                                <Snowflake className="w-5 h-5 text-white" />
                               </div>
-                            </div>
-                            <div className="text-right">
-                              <p className="text-base font-bold text-warning">{formatPrix(article.valeurStock || 0)}</p>
-                              <p className="text-xs text-muted-foreground">immobilisé</p>
+                              {/* Nom + Valeur */}
+                              <div className="flex-1 min-w-0">
+                                <p className="text-sm font-bold text-foreground truncate">{article.nom}</p>
+                                <p className="text-xs text-warning font-semibold">{formatPrix(article.valeurStock || 0)} immobilisé</p>
+                              </div>
+                              {/* Stats alignées avec largeurs fixes */}
+                              <div className="flex items-center gap-6 flex-shrink-0">
+                                <div className="text-center w-20">
+                                  <p className="text-xs text-muted-foreground">Vendus (30j)</p>
+                                  <p className="text-lg font-bold text-warning">{article.totalVendu || 0}</p>
+                                </div>
+                                <div className="text-center w-20">
+                                  <p className="text-xs text-muted-foreground">Stock</p>
+                                  <p className="text-lg font-bold text-foreground">{article.stockActuel}</p>
+                                </div>
+                                <div className="text-center w-16 bg-warning/20 rounded-lg py-2">
+                                  <p className="text-lg font-black text-warning">{article.pourcentageVendu || 0}%</p>
+                                </div>
+                              </div>
                             </div>
                           </div>
                         ))}

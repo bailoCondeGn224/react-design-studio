@@ -40,12 +40,27 @@ const RetourClientMobileCard = ({
             <p className="text-sm font-semibold text-foreground">{retour.venteNumero}</p>
           </div>
 
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-1.5">
+          <div>
+            <div className="flex items-center gap-1.5 mb-2">
               <Package className="w-3.5 h-3.5 text-muted-foreground" />
-              <p className="text-xs font-medium text-muted-foreground">Articles retournés</p>
+              <p className="text-xs font-medium text-muted-foreground">Articles retournés ({retour.lignes?.length || 0})</p>
             </div>
-            <p className="text-sm font-bold text-foreground">{retour.lignes?.length || 0}</p>
+            {retour.lignes && retour.lignes.length > 0 && (
+              <div className="space-y-1 pl-5">
+                {retour.lignes.slice(0, 3).map((ligne: any, idx: number) => (
+                  <div key={idx} className="flex items-center gap-2 text-sm">
+                    <span className="truncate">{ligne.nom}</span>
+                    <span className="font-bold text-primary whitespace-nowrap">×{ligne.quantiteBase || ligne.quantite}</span>
+                    {ligne.modeVente && ligne.quantite !== ligne.quantiteBase && (
+                      <span className="text-xs text-muted-foreground whitespace-nowrap">({ligne.quantite} {ligne.modeVente.nom})</span>
+                    )}
+                  </div>
+                ))}
+                {retour.lignes.length > 3 && (
+                  <p className="text-xs text-muted-foreground">+{retour.lignes.length - 3} autre(s)</p>
+                )}
+              </div>
+            )}
           </div>
 
           <div className="flex items-center justify-between">

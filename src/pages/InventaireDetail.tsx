@@ -579,7 +579,7 @@ export default function InventaireDetail() {
                           </td>
                           <td className="px-4 sm:px-6 py-3 sm:py-4 text-right">
                             <span className="text-xs sm:text-sm font-mono font-medium text-foreground">
-                              {article.stock}
+                              {isCompte && comptage ? comptage.quantiteSysteme : article.stock}
                             </span>
                           </td>
                           <td className="px-4 sm:px-6 py-3 sm:py-4 text-right">

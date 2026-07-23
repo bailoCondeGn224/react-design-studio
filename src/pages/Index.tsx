@@ -12,25 +12,13 @@ import { useTopClients } from "@/hooks/useClients";
 import { useApprovisionnements } from "@/hooks/useApprovisionnements";
 import { useStatsFournisseurs } from "@/hooks/useFournisseurs";
 import { useExpirationStats } from "@/hooks/useExpirationStats";
+import { useVentesSemaine, useRevenusMois } from "@/hooks/useAnalytics";
 
 const Dashboard = () => {
-  // Données temporaires pour les graphiques (à remplacer par vraies données quand disponibles)
-  const salesData = [
-    { name: "Lun", ventes: 45 },
-    { name: "Mar", ventes: 62 },
-    { name: "Mer", ventes: 38 },
-    { name: "Jeu", ventes: 71 },
-    { name: "Ven", ventes: 89 },
-    { name: "Sam", ventes: 95 },
-    { name: "Dim", ventes: 30 },
-  ];
+  // Données dynamiques pour les graphiques
+  const { data: ventesSemaine = [], isLoading: loadingVentesSemaine } = useVentesSemaine();
+  const { data: revenusMois = [], isLoading: loadingRevenusMois } = useRevenusMois();
 
-  const revenueData = [
-    { name: "Jan", montant: 4200 },
-    { name: "Fév", montant: 5100 },
-    { name: "Mar", montant: 4800 },
-    { name: "Avr", montant: 6300 },
-  ];
   const { data: ventesStats, isLoading: loadingVentesStats } = useVentesStats();
   const { data: stockStats, isLoading: loadingStockStats } = useStockStats();
   const { data: recentVentes = [], isLoading: loadingRecentVentes } = useVentesRecent();
@@ -42,7 +30,7 @@ const Dashboard = () => {
   const { data: expirationStats, isLoading: loadingExpiration } = useExpirationStats();
 
   // Vérifier si les données principales sont en cours de chargement
-  const isLoading = loadingVentesStats || loadingStockStats || loadingFournisseurs;
+  const isLoading = loadingVentesStats || loadingStockStats || loadingFournisseurs || loadingVentesSemaine || loadingRevenusMois;
 
   const formatPrix = (prix: number) => {
     return new Intl.NumberFormat('fr-GN', {
@@ -167,16 +155,21 @@ const Dashboard = () => {
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-4">
             <div>
               <h3 className="font-heading font-semibold text-sm sm:text-base text-foreground">Ventes de la Semaine</h3>
-              <p className="text-[10px] sm:text-xs text-muted-foreground">Nombre d'articles vendus par jour</p>
+              <p className="text-[10px] sm:text-xs text-muted-foreground">Chiffre d'affaires par jour</p>
             </div>
             <div className="flex items-center gap-1 sm:gap-1.5 text-[10px] sm:text-xs text-success font-semibold">
               <TrendingUp className="w-3 h-3 sm:w-3.5 sm:h-3.5" /> <span>+15%</span> <span className="hidden sm:inline">vs semaine précédente</span>
             </div>
           </div>
           <ResponsiveContainer width="100%" height={200} className="sm:h-[220px]">
-            <BarChart data={salesData}>
+            <BarChart data={ventesSemaine}>
               <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: "hsl(0 0% 30%)" }} />
-              <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: "hsl(0 0% 30%)" }} />
+              <YAxis
+                axisLine={false}
+                tickLine={false}
+                tick={{ fontSize: 10, fill: "hsl(0 0% 30%)" }}
+                tickFormatter={(value) => value >= 1000000 ? `${(value / 1000000).toFixed(1)}M` : value >= 1000 ? `${(value / 1000).toFixed(0)}K` : value}
+              />
               <Tooltip
                 contentStyle={{
                   background: "hsl(120 25% 96%)",
@@ -184,8 +177,13 @@ const Dashboard = () => {
                   borderRadius: "8px",
                   fontSize: "13px",
                 }}
+                formatter={(value: number, name: string) => [
+                  new Intl.NumberFormat('fr-GN').format(value) + ' GNF',
+                  name === 'total' ? 'Chiffre d\'affaires' : 'Nombre de ventes'
+                ]}
+                labelFormatter={(label) => `${label}`}
               />
-              <Bar dataKey="ventes" fill="hsl(119, 80%, 35%)" radius={[6, 6, 0, 0]} />
+              <Bar dataKey="total" fill="hsl(119, 80%, 35%)" radius={[6, 6, 0, 0]} name="total" />
             </BarChart>
           </ResponsiveContainer>
         </div>
@@ -195,7 +193,7 @@ const Dashboard = () => {
           <h3 className="font-heading font-semibold text-sm sm:text-base text-foreground mb-1">Tendance Revenus</h3>
           <p className="text-[10px] sm:text-xs text-muted-foreground mb-3 sm:mb-4">4 derniers mois (en milliers GNF)</p>
           <ResponsiveContainer width="100%" height={180}>
-            <AreaChart data={revenueData}>
+            <AreaChart data={revenusMois}>
               <defs>
                 <linearGradient id="goldGrad" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="0%" stopColor="hsl(119, 80%, 35%)" stopOpacity={0.3} />
@@ -203,6 +201,12 @@ const Dashboard = () => {
                 </linearGradient>
               </defs>
               <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: "hsl(0 0% 30%)" }} />
+              <YAxis
+                axisLine={false}
+                tickLine={false}
+                tick={{ fontSize: 10, fill: "hsl(0 0% 30%)" }}
+                tickFormatter={(value) => `${value}K`}
+              />
               <Tooltip
                 contentStyle={{
                   background: "hsl(120 25% 96%)",
@@ -210,6 +214,10 @@ const Dashboard = () => {
                   borderRadius: "8px",
                   fontSize: "13px",
                 }}
+                formatter={(value: number) => [
+                  new Intl.NumberFormat('fr-GN').format(value * 1000) + ' GNF',
+                  'Chiffre d\'affaires'
+                ]}
               />
               <Area type="monotone" dataKey="montant" stroke="hsl(119, 80%, 35%)" fill="url(#goldGrad)" strokeWidth={2} />
             </AreaChart>

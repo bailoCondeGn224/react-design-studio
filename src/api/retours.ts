@@ -19,6 +19,11 @@ export const retoursClientsApi = {
     return response.data;
   },
 
+  getByVente: async (venteId: string): Promise<RetourClient[]> => {
+    const response = await apiClient.get(`/retours/client/by-vente/${venteId}`);
+    return response.data;
+  },
+
   getStats: async (): Promise<any> => {
     const response = await apiClient.get('/retours/client/stats');
     return response.data;
@@ -33,6 +38,11 @@ export const retoursClientsApi = {
 export const retoursFournisseursApi = {
   getAll: async (params?: PaginationParams): Promise<PaginatedResponse<any>> => {
     const response = await apiClient.get('/retours/fournisseur', { params });
+    return response.data;
+  },
+
+  getByApprovisionnement: async (approvisionnementId: string): Promise<RetourFournisseur[]> => {
+    const response = await apiClient.get(`/retours/fournisseur/approvisionnement/${approvisionnementId}`);
     return response.data;
   },
 

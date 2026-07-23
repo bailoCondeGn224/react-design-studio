@@ -378,7 +378,9 @@ export default function MobileInventaireDetail({
                       <div className="grid grid-cols-3 gap-3 pt-3 border-t border-border">
                         <div>
                           <p className="text-xs text-muted-foreground mb-1.5 font-medium">Système</p>
-                          <p className="text-base font-mono font-bold">{article.stock}</p>
+                          <p className="text-base font-mono font-bold">
+                            {isCompte && comptage ? comptage.quantiteSysteme : article.stock}
+                          </p>
                         </div>
                         <div>
                           <p className="text-xs text-muted-foreground mb-1.5 font-medium">Compté</p>

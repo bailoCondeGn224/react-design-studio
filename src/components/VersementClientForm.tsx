@@ -4,8 +4,7 @@ import { Sheet, SheetContent } from "@/components/ui/sheet";
 import FormField from "@/components/FormField";
 import { toast } from "sonner";
 import { useClients } from "@/hooks/useClients";
-import { useVentes } from "@/hooks/useVentes";
-import { useVente } from "@/hooks/useVentes";
+import { useVentesACredit, useVente } from "@/hooks/useVentes";
 import { VersementClient } from "@/types";
 import { formatPrixInput, handlePrixChange } from "@/utils/format-prix";
 import { useIsMobile } from "@/hooks/useMediaQuery";
@@ -51,20 +50,15 @@ const VersementClientForm = ({ open, onOpenChange, onSubmit, versementClient, cl
   const [selectedClient, setSelectedClient] = useState<any>(null);
   const [selectedVente, setSelectedVente] = useState<any>(null);
 
-  // Récupérer les ventes à crédit du client sélectionné
-  const { data: ventesResponse } = useVentes({
-    clientId: form.clientId,
-    modePaiement: 'credit',
-    page: 1,
-    limit: 50
-  });
+  // Récupérer les ventes à crédit du client sélectionné (montantRestant > 0)
+  const { data: ventesACredit } = useVentesACredit(form.clientId);
 
   // En mode édition, récupérer aussi la vente originale (si elle existe)
   const { data: venteOriginale } = useVente(versementClient?.venteId || '');
 
   // Fusionner les listes: ventes du client + vente originale (si pas déjà dans la liste)
   const ventesClient = (() => {
-    const ventes = ventesResponse?.data || [];
+    const ventes = ventesACredit || [];
 
     // Si vente originale existe et n'est pas déjà dans la liste, l'ajouter
     if (venteOriginale && !ventes.find(v => v.id === venteOriginale.id)) {

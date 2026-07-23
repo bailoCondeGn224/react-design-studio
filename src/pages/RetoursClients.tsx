@@ -173,7 +173,20 @@ const RetoursClients = () => {
                       <td className="px-4 py-3 text-sm text-foreground">{retour.clientNom || '-'}</td>
                       <td className="px-4 py-3 text-sm text-muted-foreground">{retour.venteNumero}</td>
                       <td className="px-4 py-3 text-sm text-foreground">
-                        {retour.lignes?.length || 0} article{(retour.lignes?.length || 0) > 1 ? 's' : ''}
+                        <div className="space-y-0.5">
+                          {retour.lignes && retour.lignes.slice(0, 2).map((ligne: any, idx: number) => (
+                            <div key={idx} className="flex items-center gap-2">
+                              <span className="truncate max-w-[120px]">{ligne.nom}</span>
+                              <span className="font-bold text-primary whitespace-nowrap">×{ligne.quantiteBase || ligne.quantite}</span>
+                              {ligne.modeVente && ligne.quantite !== ligne.quantiteBase && (
+                                <span className="text-xs text-muted-foreground whitespace-nowrap">({ligne.quantite} {ligne.modeVente.nom})</span>
+                              )}
+                            </div>
+                          ))}
+                          {retour.lignes && retour.lignes.length > 2 && (
+                            <span className="text-xs text-muted-foreground">+{retour.lignes.length - 2} autre(s)</span>
+                          )}
+                        </div>
                       </td>
                       <td className="px-4 py-3 text-sm font-semibold text-orange-600 dark:text-orange-400">{formatPrix(retour.total)}</td>
                       <td className="px-4 py-3 text-sm">

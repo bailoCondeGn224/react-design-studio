@@ -41,6 +41,7 @@ import { useVentesStats } from '@/hooks/useVentes';
 import { useStockStats } from '@/hooks/useStock';
 import { useStatsClients } from '@/hooks/useClients';
 import { useStatsFournisseurs } from '@/hooks/useFournisseurs';
+import { useVentesSemaine, useRevenusMois } from '@/hooks/useAnalytics';
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
@@ -48,19 +49,17 @@ const AdminDashboard = () => {
   const { data: stockStats, isLoading: loadingStock } = useStockStats();
   const { data: clientsStats, isLoading: loadingClients } = useStatsClients();
   const { data: fournisseursStats, isLoading: loadingFournisseurs } = useStatsFournisseurs();
+  const { data: ventesSemaine = [], isLoading: loadingVentesSemaine } = useVentesSemaine();
+  const { data: revenusMois = [], isLoading: loadingRevenusMois } = useRevenusMois();
 
-  const isLoading = loadingVentes || loadingStock || loadingClients || loadingFournisseurs;
+  const isLoading = loadingVentes || loadingStock || loadingClients || loadingFournisseurs || loadingVentesSemaine || loadingRevenusMois;
 
-  // Données pour les graphiques (à remplacer par vraies données de l'API)
-  const ventesParJour = [
-    { jour: 'Lun', ventes: 45000, objectif: 50000 },
-    { jour: 'Mar', ventes: 52000, objectif: 50000 },
-    { jour: 'Mer', ventes: 48000, objectif: 50000 },
-    { jour: 'Jeu', ventes: 61000, objectif: 50000 },
-    { jour: 'Ven', ventes: 72000, objectif: 50000 },
-    { jour: 'Sam', ventes: 85000, objectif: 50000 },
-    { jour: 'Dim', ventes: 38000, objectif: 50000 },
-  ];
+  // Transformer les données de ventes semaine pour le graphique avec objectif
+  const ventesParJour = ventesSemaine.map(v => ({
+    jour: v.name,
+    ventes: v.total,
+    objectif: 50000, // Objectif fixe pour l'instant (peut être rendu dynamique)
+  }));
 
   const categoriesVentes = [
     { nom: 'Vêtements', montant: 125000, pourcentage: 35 },
@@ -71,12 +70,12 @@ const AdminDashboard = () => {
 
   const COLORS = ['hsl(var(--primary))', 'hsl(var(--accent))', 'hsl(var(--success))', 'hsl(var(--warning))'];
 
-  const evolutionMensuelle = [
-    { mois: 'Jan', ca: 420000, benefice: 105000 },
-    { mois: 'Fév', ca: 510000, benefice: 127500 },
-    { mois: 'Mar', ca: 480000, benefice: 120000 },
-    { mois: 'Avr', ca: 630000, benefice: 157500 },
-  ];
+  // Transformer les revenus par mois pour le graphique (montant en milliers → valeur réelle)
+  const evolutionMensuelle = revenusMois.map(r => ({
+    mois: r.name,
+    ca: r.montant * 1000, // Convertir de milliers à valeur réelle
+    benefice: Math.round(r.montant * 1000 * 0.25), // Estimation bénéfice 25%
+  }));
 
   const formatPrix = (prix: number) => {
     return new Intl.NumberFormat('fr-GN', {
@@ -208,7 +207,7 @@ const AdminDashboard = () => {
               <div>
                 <p className="text-sm text-muted-foreground">Clients Actifs</p>
                 <p className="text-2xl font-bold text-primary">{clientsStats?.total || 0}</p>
-                <p className="text-xs text-muted-foreground mt-1">
+                <p className={`text-xs font-medium mt-1 ${(clientsStats?.avecCredits || 0) > 0 ? 'text-destructive' : 'text-muted-foreground'}`}>
                   {clientsStats?.avecCredits || 0} avec crédits
                 </p>
               </div>
@@ -223,7 +222,7 @@ const AdminDashboard = () => {
               <div>
                 <p className="text-sm text-muted-foreground">Fournisseurs</p>
                 <p className="text-2xl font-bold text-accent">{fournisseursStats?.actifs || 0}</p>
-                <p className="text-xs text-muted-foreground mt-1">
+                <p className={`text-xs font-medium mt-1 ${(fournisseursStats?.totalDette || 0) > 0 ? 'text-destructive' : 'text-muted-foreground'}`}>
                   Dette: {formatPrix(fournisseursStats?.totalDette || 0)}
                 </p>
               </div>
@@ -245,13 +244,20 @@ const AdminDashboard = () => {
               <BarChart data={ventesParJour}>
                 <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
                 <XAxis dataKey="jour" stroke="hsl(var(--muted-foreground))" />
-                <YAxis stroke="hsl(var(--muted-foreground))" />
+                <YAxis
+                  stroke="hsl(var(--muted-foreground))"
+                  tickFormatter={(value) => value >= 1000000 ? `${(value / 1000000).toFixed(1)}M` : value >= 1000 ? `${Math.round(value / 1000)}K` : value}
+                />
                 <Tooltip
                   contentStyle={{
                     backgroundColor: 'hsl(var(--card))',
                     border: '1px solid hsl(var(--border))',
                     borderRadius: '8px',
                   }}
+                  formatter={(value: number, name: string) => [
+                    new Intl.NumberFormat('fr-GN').format(value) + ' GNF',
+                    name === 'ventes' ? 'Chiffre d\'affaires' : 'Objectif'
+                  ]}
                 />
                 <Legend />
                 <Bar dataKey="ventes" fill="hsl(var(--primary))" name="Ventes" radius={[8, 8, 0, 0]} />
@@ -317,7 +323,10 @@ const AdminDashboard = () => {
               </defs>
               <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
               <XAxis dataKey="mois" stroke="hsl(var(--muted-foreground))" />
-              <YAxis stroke="hsl(var(--muted-foreground))" />
+              <YAxis
+                stroke="hsl(var(--muted-foreground))"
+                tickFormatter={(value) => value >= 1000000 ? `${(value / 1000000).toFixed(1)}M` : value >= 1000 ? `${Math.round(value / 1000)}K` : value}
+              />
               <Tooltip
                 contentStyle={{
                   backgroundColor: 'hsl(var(--card))',

@@ -60,7 +60,15 @@ export const useRetoursFournisseurs = (params?: PaginationParams) => {
   return useQuery({
     queryKey: ['retours-fournisseurs', params],
     queryFn: () => retoursFournisseursApi.getAll(params),
-    placeholderData: (previousData) => previousData, // Garde les données précédentes pendant le chargement
+    placeholderData: (previousData) => previousData,
+  });
+};
+
+export const useRetoursByApprovisionnement = (approvisionnementId: string | null) => {
+  return useQuery({
+    queryKey: ['retours-fournisseurs', 'approvisionnement', approvisionnementId],
+    queryFn: () => retoursFournisseursApi.getByApprovisionnement(approvisionnementId!),
+    enabled: !!approvisionnementId,
   });
 };
 

@@ -6,7 +6,7 @@ import FormField from "@/components/FormField";
 import ArticleCombobox from "@/components/ArticleCombobox";
 import ClientCombobox from "@/components/ClientCombobox";
 import { toast } from "sonner";
-import { Plus, Trash2, ShoppingBag, User, Package, DollarSign, Calendar, CheckCircle2, AlertTriangle } from "lucide-react";
+import { Plus, Trash2, ShoppingBag, User, Package, DollarSign, Calendar, CheckCircle2, AlertTriangle, Layers } from "lucide-react";
 import { formatPrixInput, handlePrixChange } from "@/utils/format-prix";
 
 interface CommandeFormProps {
@@ -167,7 +167,10 @@ const CommandeForm = ({ open, onOpenChange, onSubmit, initialData = null, mode =
       articleId: ligne.articleId,
       nom: ligne.nom,
       quantite: Number(ligne.quantite),
+      quantiteBase: ligne.quantiteUnites || Number(ligne.quantite),
+      modeVenteId: ligne.modeVenteId || undefined,
       prixUnitaire: Number(ligne.prixUnitaire),
+      prixAchat: Number(ligne.prixAchat) || 0,
       sousTotal: Number(ligne.sousTotal),
     }));
 
@@ -288,34 +291,150 @@ const CommandeForm = ({ open, onOpenChange, onSubmit, initialData = null, mode =
                             <label className="text-xs font-semibold text-foreground mb-2 block">Article</label>
                             <ArticleCombobox
                               value={ligne.articleId}
+                              preselectedArticle={ligne.articleId ? {
+                                id: ligne.articleId,
+                                nom: ligne.nom,
+                                stock: ligne.stockDisponible || 0,
+                                prixVente: ligne.prixUnitaire || 0,
+                                prixAchat: 0,
+                                uniteStock: ligne.uniteStock,
+                                modesVente: ligne.modesVente || [],
+                              } : null}
                               onChange={(article: any) => {
                                 if (article) {
-                                  updateLigne(index, "articleId", article.id);
-                                  updateLigne(index, "nom", article.nom);
-                                  updateLigne(index, "prixUnitaire", article.prixVente);
-                                  updateLigne(index, "stockDisponible", article.stock);
+                                  const modeDefaut = article.modesVente?.find((m: any) => m.parDefaut) || article.modesVente?.[0];
+                                  const prixVente = modeDefaut?.prixVente || Number(article.prixVente) || 0;
+                                  const modeQteStock = Number(modeDefaut?.quantiteStock) || 1;
+                                  const quantite = Number(ligne.quantite) || 1;
+
+                                  setForm(prev => {
+                                    const newLignes = [...prev.lignes];
+                                    newLignes[index] = {
+                                      ...newLignes[index],
+                                      articleId: article.id,
+                                      nom: article.nom,
+                                      prixUnitaire: prixVente,
+                                      stockDisponible: article.stock,
+                                      uniteStock: article.uniteStock,
+                                      modesVente: article.modesVente || [],
+                                      modeVenteId: modeDefaut?.id,
+                                      modeVenteNom: modeDefaut?.nom,
+                                      modeQuantiteStock: modeQteStock,
+                                      quantiteUnites: quantite * modeQteStock,
+                                      sousTotal: quantite * prixVente
+                                    };
+                                    return { ...prev, lignes: newLignes };
+                                  });
                                 }
                               }}
                               excludeIds={form.lignes.map((l: any) => l.articleId).filter(Boolean)}
-                              showPrice={false}
+                              showPrice={true}
                               priceType="vente"
                               checkStock={false}
                             />
                           </div>
 
+                          {/* Sélecteur de Mode de Vente */}
+                          {ligne.modesVente && ligne.modesVente.length > 0 && (
+                            <div>
+                              <label className="text-xs font-semibold text-foreground mb-2 flex items-center gap-1.5">
+                                <Layers className="w-3.5 h-3.5 text-primary" />
+                                Mode de vente
+                              </label>
+                              {ligne.modesVente.length === 1 ? (
+                                <div className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-primary/10 border-2 border-primary/20">
+                                  <span className="text-sm font-bold text-primary">{ligne.modesVente[0].nom}</span>
+                                  <span className="text-xs text-muted-foreground">
+                                    {ligne.modesVente[0].quantiteStock > 1
+                                      ? `(${ligne.modesVente[0].quantiteStock} ${ligne.uniteStock || 'unités'}/lot)`
+                                      : `(à l'unité)`}
+                                  </span>
+                                </div>
+                              ) : (
+                                <div className="flex flex-wrap gap-2">
+                                  {ligne.modesVente.map((mode: any) => {
+                                    const isSelected = ligne.modeVenteId === mode.id;
+                                    return (
+                                      <button
+                                        key={mode.id}
+                                        type="button"
+                                        onClick={() => {
+                                          const quantite = Number(ligne.quantite) || 1;
+                                          const quantiteUnites = quantite * Number(mode.quantiteStock);
+                                          setForm(prev => {
+                                            const newLignes = [...prev.lignes];
+                                            newLignes[index] = {
+                                              ...newLignes[index],
+                                              modeVenteId: mode.id,
+                                              modeVenteNom: mode.nom,
+                                              modeQuantiteStock: mode.quantiteStock,
+                                              prixUnitaire: mode.prixVente,
+                                              quantiteUnites: quantiteUnites,
+                                              sousTotal: quantite * mode.prixVente
+                                            };
+                                            return { ...prev, lignes: newLignes };
+                                          });
+                                        }}
+                                        className={`flex flex-col items-center px-4 py-2 rounded-xl text-sm font-semibold transition-all active:scale-95 border-2 ${
+                                          isSelected
+                                            ? "bg-primary text-primary-foreground shadow-md border-primary"
+                                            : "bg-muted hover:bg-muted/80 text-foreground border-transparent hover:border-primary/30"
+                                        }`}
+                                      >
+                                        <span className="font-bold">{mode.nom}</span>
+                                        <span className={`text-xs ${isSelected ? "text-primary-foreground/80" : "text-muted-foreground"}`}>
+                                          {mode.quantiteStock > 1 ? `${mode.quantiteStock} ${ligne.uniteStock || 'unités'}` : 'À l\'unité'}
+                                        </span>
+                                        <span className={`font-semibold mt-1 ${isSelected ? "text-primary-foreground" : "text-primary"}`}>
+                                          {new Intl.NumberFormat('fr-GN').format(mode.prixVente)} GNF
+                                        </span>
+                                      </button>
+                                    );
+                                  })}
+                                </div>
+                              )}
+                            </div>
+                          )}
+
                           {/* Quantité et Prix */}
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                             <div>
-                              <label className="text-xs font-semibold text-foreground mb-2 block">Quantité</label>
+                              <label className="text-xs font-semibold text-foreground mb-2 block">
+                                Quantité {ligne.modeVenteNom && ligne.modeQuantiteStock > 1 && (
+                                  <span className="text-muted-foreground font-normal">({ligne.modeVenteNom})</span>
+                                )}
+                              </label>
                               <input
                                 type="number"
                                 inputMode="numeric"
                                 placeholder="1"
                                 value={ligne.quantite}
-                                onChange={e => updateLigne(index, "quantite", e.target.value)}
+                                onChange={e => {
+                                  const newQty = Number(e.target.value) || 0;
+                                  const modeQteStock = ligne.modeQuantiteStock || 1;
+                                  const quantiteUnites = newQty * modeQteStock;
+                                  const prixUnitaire = Number(ligne.prixUnitaire) || 0;
+
+                                  setForm(prev => {
+                                    const newLignes = [...prev.lignes];
+                                    newLignes[index] = {
+                                      ...newLignes[index],
+                                      quantite: e.target.value,
+                                      quantiteUnites: quantiteUnites,
+                                      sousTotal: newQty * prixUnitaire
+                                    };
+                                    return { ...prev, lignes: newLignes };
+                                  });
+                                }}
                                 min={1}
                                 className="w-full px-4 h-12 rounded-lg border-2 border-border bg-card text-lg font-bold text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
                               />
+                              {/* Afficher la conversion en unités si mode gros */}
+                              {ligne.modeQuantiteStock > 1 && ligne.quantite > 0 && (
+                                <p className="text-xs text-primary mt-1.5 font-semibold">
+                                  = {(Number(ligne.quantite) || 0) * ligne.modeQuantiteStock} {ligne.uniteStock || 'unités'}
+                                </p>
+                              )}
                             </div>
 
                             <div>

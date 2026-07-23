@@ -658,19 +658,35 @@ const Commandes = () => {
                         <h3 className="text-sm font-semibold text-foreground">Articles commandés</h3>
                       </div>
                       <div className="space-y-2">
-                        {lignes.map((ligne: any, idx: number) => (
-                          <div key={idx} className="flex items-center justify-between p-3 bg-card border border-border rounded-lg hover:bg-secondary/30 transition-colors">
-                            <div className="flex-1 min-w-0 mr-3">
-                              <p className="font-semibold text-foreground truncate">{ligne.nom}</p>
-                              <p className="text-xs text-muted-foreground mt-0.5">
-                                {ligne.quantite} × {formatPrix(ligne.prixUnitaire)}
-                              </p>
+                        {lignes.map((ligne: any, idx: number) => {
+                          const quantiteBase = ligne.quantiteBase || ligne.quantite;
+                          const isGros = ligne.modeVente && ligne.modeVente.quantiteStock > 1;
+                          const quantiteLots = isGros ? Math.round(quantiteBase / ligne.modeVente.quantiteStock) : ligne.quantite;
+
+                          return (
+                            <div key={idx} className="flex items-center justify-between p-3 bg-card border border-border rounded-lg hover:bg-secondary/30 transition-colors">
+                              <div className="flex-1 min-w-0 mr-3">
+                                <p className="font-semibold text-foreground truncate">{ligne.nom}</p>
+                                <div className="flex items-center gap-2 mt-0.5 flex-wrap">
+                                  <span className="inline-flex items-center px-2 py-0.5 rounded-md bg-primary/10 text-primary font-bold text-xs">
+                                    {quantiteBase} unités
+                                  </span>
+                                  {isGros && (
+                                    <span className="inline-flex items-center px-2 py-0.5 rounded-md bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 text-xs">
+                                      {quantiteLots} × {ligne.modeVente.nom}
+                                    </span>
+                                  )}
+                                </div>
+                                <p className="text-xs text-muted-foreground mt-0.5">
+                                  Prix: {formatPrix(ligne.prixUnitaire)} / {ligne.modeVente ? ligne.modeVente.nom : 'unité'}
+                                </p>
+                              </div>
+                              <div className="text-right">
+                                <p className="font-bold text-primary">{formatPrix(ligne.sousTotal)}</p>
+                              </div>
                             </div>
-                            <div className="text-right">
-                              <p className="font-bold text-primary">{formatPrix(ligne.sousTotal)}</p>
-                            </div>
-                          </div>
-                        ))}
+                          );
+                        })}
                       </div>
 
                       {/* Pagination */}
@@ -803,8 +819,18 @@ const Commandes = () => {
                       <div key={idx} className="flex items-center justify-between p-4 bg-card border border-border rounded-lg hover:bg-secondary/30 transition-colors">
                         <div className="flex-1 min-w-0 mr-4">
                           <p className="font-semibold text-foreground">{ligne.nom}</p>
+                          <div className="flex items-center gap-2 mt-1">
+                            <span className="inline-flex items-center px-2 py-0.5 rounded-md bg-primary/10 text-primary font-bold text-xs">
+                              {ligne.quantiteBase || ligne.quantite} unités
+                            </span>
+                            {ligne.modeVente && ligne.quantite !== ligne.quantiteBase && (
+                              <span className="text-xs text-muted-foreground">
+                                ({ligne.quantite} × {ligne.modeVente.nom})
+                              </span>
+                            )}
+                          </div>
                           <p className="text-sm text-muted-foreground mt-1">
-                            {ligne.quantite} × {formatPrix(ligne.prixUnitaire)}
+                            Prix: {formatPrix(ligne.prixUnitaire)}{ligne.modeVente ? ` / ${ligne.modeVente.nom}` : ' / unité'}
                           </p>
                         </div>
                         <div className="text-right">
@@ -864,165 +890,249 @@ const Commandes = () => {
       {isMobile ? (
         <Sheet open={!!livrerCommande} onOpenChange={() => setLivrerCommande(null)}>
           <SheetContent side="bottom" className="h-[95vh] p-0">
-            <div className="h-full flex flex-col">
-              <div className="p-4 sm:p-6 border-b sticky top-0 bg-background z-10">
-                <h2 className="font-semibold text-lg">Livrer la commande {livrerCommande?.numero}</h2>
-                <p className="text-sm text-muted-foreground mt-1">
-                  Enregistrez le paiement final et marquez la commande comme livrée
-                </p>
-              </div>
-              <div className="flex-1 overflow-y-auto p-4 sm:p-6">
-          {livrerCommande && (
-            <div className="space-y-4">
-              <div className="bg-muted p-4 rounded-lg space-y-2 text-sm">
-                <div className="flex justify-between">
-                  <span>Total commande</span>
-                  <span className="font-bold">{formatPrix(livrerCommande.total)}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Acompte déjà versé</span>
-                  <span>{formatPrix(livrerCommande.acompte)}</span>
-                </div>
-                <div className="flex justify-between border-t pt-2">
-                  <span className="font-medium">Restant à payer</span>
-                  <span className="font-bold text-lg">{formatPrix(livrerCommande.montantRestant)}</span>
+            <div className="h-full flex flex-col bg-gradient-to-br from-background via-background to-primary/5">
+              {/* Header */}
+              <div className="px-4 py-4 border-b bg-gradient-to-r from-green-500/10 via-green-500/5 to-transparent flex-shrink-0">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-green-500 to-green-600 flex items-center justify-center shadow-lg">
+                    <Package className="w-5 h-5 text-white" />
+                  </div>
+                  <div>
+                    <h2 className="text-base font-bold">Livrer la commande {livrerCommande?.numero}</h2>
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      Enregistrez le paiement final
+                    </p>
+                  </div>
                 </div>
               </div>
 
-              <FormField
-                label="Montant payé à la livraison *"
-                type="number"
-                value={livrerData.montantPaye}
-                onChange={(e) => setLivrerData({ ...livrerData, montantPaye: Number((e.target as HTMLInputElement).value) })}
-                min={0}
-              />
+              {/* Contenu scrollable */}
+              {livrerCommande && (
+                <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4">
+                  {/* Récapitulatif commande */}
+                  <div className="relative overflow-hidden rounded-xl bg-gradient-to-br from-primary/5 via-background to-background border-2 border-primary/20 p-4">
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-2 mb-2">
+                        <div className="w-7 h-7 rounded-lg bg-primary/10 flex items-center justify-center">
+                          <DollarSign className="w-3.5 h-3.5 text-primary" />
+                        </div>
+                        <h3 className="text-sm font-bold text-foreground">Récapitulatif</h3>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm text-muted-foreground">Total commande</span>
+                        <span className="font-bold">{formatPrix(livrerCommande.total)}</span>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm text-muted-foreground">Acompte versé</span>
+                        <span className="font-semibold text-green-600">{formatPrix(livrerCommande.acompte)}</span>
+                      </div>
+                      <div className="flex justify-between items-center pt-2 border-t border-primary/20">
+                        <span className="font-medium">Restant à payer</span>
+                        <span className="font-bold text-lg text-primary">{formatPrix(livrerCommande.montantRestant)}</span>
+                      </div>
+                    </div>
+                  </div>
 
-              <FormField
-                label="Mode de paiement *"
-                as="select"
-                value={livrerData.modePaiement}
-                onChange={(e) => setLivrerData({ ...livrerData, modePaiement: (e.target as HTMLSelectElement).value })}
-              >
-                <option value="especes">Espèces</option>
-                <option value="mobile_money">Mobile Money</option>
-                <option value="virement">Virement</option>
-                <option value="credit">Crédit</option>
-              </FormField>
+                  {/* Formulaire paiement */}
+                  <div className="relative overflow-hidden rounded-xl bg-gradient-to-br from-green-500/5 via-background to-background border-2 border-border p-4">
+                    <div className="space-y-4">
+                      <div className="flex items-center gap-2 mb-2">
+                        <div className="w-7 h-7 rounded-lg bg-green-500/10 flex items-center justify-center">
+                          <CheckCircle className="w-3.5 h-3.5 text-green-600" />
+                        </div>
+                        <h3 className="text-sm font-bold text-foreground">Paiement à la livraison</h3>
+                      </div>
 
-              <FormField
-                label="Note (optionnel)"
-                as="textarea"
-                value={livrerData.note}
-                onChange={(e) => setLivrerData({ ...livrerData, note: (e.target as HTMLTextAreaElement).value })}
-                rows={3}
-              />
+                      <FormField
+                        label="Montant payé"
+                        type="number"
+                        value={livrerData.montantPaye}
+                        onChange={(e) => setLivrerData({ ...livrerData, montantPaye: Number((e.target as HTMLInputElement).value) })}
+                        min={0}
+                      />
 
-              <div className="bg-primary/5 p-4 rounded-lg space-y-2 text-sm">
-                <div className="flex justify-between">
-                  <span>Total payé</span>
-                  <span className="font-bold">{formatPrix(calculateTotalPaye())}</span>
+                      <FormField
+                        label="Mode de paiement"
+                        as="select"
+                        value={livrerData.modePaiement}
+                        onChange={(e) => setLivrerData({ ...livrerData, modePaiement: (e.target as HTMLSelectElement).value })}
+                      >
+                        <option value="especes">Espèces</option>
+                        <option value="mobile_money">Mobile Money</option>
+                        <option value="virement">Virement</option>
+                        <option value="credit">Crédit</option>
+                      </FormField>
+
+                      <FormField
+                        label="Note (optionnel)"
+                        as="textarea"
+                        value={livrerData.note}
+                        onChange={(e) => setLivrerData({ ...livrerData, note: (e.target as HTMLTextAreaElement).value })}
+                        rows={3}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Résumé final */}
+                  <div className={`rounded-xl p-4 border-2 ${
+                    calculateRestant() > 0
+                      ? 'bg-gradient-to-br from-amber-500/10 to-amber-500/5 border-amber-500/20'
+                      : 'bg-gradient-to-br from-green-500/10 to-green-500/5 border-green-500/20'
+                  }`}>
+                    <div className="space-y-2">
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm text-muted-foreground">Total payé</span>
+                        <span className="font-bold">{formatPrix(calculateTotalPaye())}</span>
+                      </div>
+                      <div className="flex justify-between items-center pt-2 border-t border-current/10">
+                        <span className="font-medium">Restant (dette)</span>
+                        <span className={`font-bold text-lg ${calculateRestant() > 0 ? 'text-amber-600' : 'text-green-600'}`}>
+                          {formatPrix(calculateRestant())}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
                 </div>
-                <div className="flex justify-between">
-                  <span>Montant restant (dette)</span>
-                  <span className={calculateRestant() > 0 ? "font-bold text-destructive" : "font-bold text-green-600"}>
-                    {formatPrix(calculateRestant())}
-                  </span>
-                </div>
-              </div>
+              )}
 
-              <div className="flex gap-2 justify-end">
-                <Button variant="outline" onClick={() => setLivrerCommande(null)}>
-                  Annuler
-                </Button>
-                <Button onClick={handleLivrer}>
-                  <CheckCircle className="mr-2 h-4 w-4" />
-                  Confirmer la livraison
-                </Button>
-              </div>
-            </div>
-          )}
+              {/* Footer */}
+              <div className="px-4 py-4 border-t bg-muted/30 flex-shrink-0">
+                <div className="flex gap-3">
+                  <Button variant="outline" onClick={() => setLivrerCommande(null)} className="flex-1 h-12">
+                    Annuler
+                  </Button>
+                  <Button onClick={handleLivrer} className="flex-1 h-12 bg-green-600 hover:bg-green-700">
+                    <CheckCircle className="mr-2 h-4 w-4" />
+                    Confirmer
+                  </Button>
+                </div>
               </div>
             </div>
           </SheetContent>
         </Sheet>
       ) : (
         <Dialog open={!!livrerCommande} onOpenChange={() => setLivrerCommande(null)}>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Livrer la commande {livrerCommande?.numero}</DialogTitle>
-              <DialogDescription>
-                Enregistrez le paiement final et marquez la commande comme livrée
-              </DialogDescription>
+          <DialogContent className="max-w-lg h-[85vh] flex flex-col p-0 bg-gradient-to-br from-background via-background to-primary/5">
+            {/* Header */}
+            <DialogHeader className="px-6 py-5 border-b bg-gradient-to-r from-green-500/10 via-green-500/5 to-transparent flex-shrink-0">
+              <div className="flex items-center gap-3 pr-8">
+                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-green-500 to-green-600 flex items-center justify-center shadow-lg">
+                  <Package className="w-6 h-6 text-white" />
+                </div>
+                <div>
+                  <DialogTitle className="text-lg font-bold">
+                    Livrer la commande {livrerCommande?.numero}
+                  </DialogTitle>
+                  <DialogDescription className="text-sm text-muted-foreground mt-0.5">
+                    Enregistrez le paiement final et marquez comme livrée
+                  </DialogDescription>
+                </div>
+              </div>
             </DialogHeader>
+
+            {/* Contenu scrollable */}
             {livrerCommande && (
-              <div className="space-y-4">
-                <div className="bg-muted p-4 rounded-lg space-y-2 text-sm">
-                  <div className="flex justify-between">
-                    <span>Total commande</span>
-                    <span className="font-bold">{formatPrix(livrerCommande.total)}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>Acompte déjà versé</span>
-                    <span>{formatPrix(livrerCommande.acompte)}</span>
-                  </div>
-                  <div className="flex justify-between border-t pt-2">
-                    <span className="font-medium">Restant à payer</span>
-                    <span className="font-bold text-lg">{formatPrix(livrerCommande.montantRestant)}</span>
-                  </div>
-                </div>
-
-                <FormField
-                  label="Montant payé à la livraison *"
-                  type="number"
-                  value={livrerData.montantPaye}
-                  onChange={(e) => setLivrerData({ ...livrerData, montantPaye: Number((e.target as HTMLInputElement).value) })}
-                  min={0}
-                />
-
-                <FormField
-                  label="Mode de paiement *"
-                  as="select"
-                  value={livrerData.modePaiement}
-                  onChange={(e) => setLivrerData({ ...livrerData, modePaiement: (e.target as HTMLSelectElement).value })}
-                >
-                  <option value="especes">Espèces</option>
-                  <option value="mobile_money">Mobile Money</option>
-                  <option value="virement">Virement</option>
-                  <option value="credit">Crédit</option>
-                </FormField>
-
-                <FormField
-                  label="Note (optionnel)"
-                  as="textarea"
-                  value={livrerData.note}
-                  onChange={(e) => setLivrerData({ ...livrerData, note: (e.target as HTMLTextAreaElement).value })}
-                  rows={3}
-                />
-
-                <div className="bg-primary/5 p-4 rounded-lg space-y-2 text-sm">
-                  <div className="flex justify-between">
-                    <span>Total payé</span>
-                    <span className="font-bold">{formatPrix(calculateTotalPaye())}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>Montant restant (dette)</span>
-                    <span className={calculateRestant() > 0 ? "font-bold text-destructive" : "font-bold text-green-600"}>
-                      {formatPrix(calculateRestant())}
-                    </span>
+              <div className="flex-1 overflow-y-auto px-6 py-5 space-y-5">
+                {/* Récapitulatif commande */}
+                <div className="relative overflow-hidden rounded-xl bg-gradient-to-br from-primary/5 via-background to-background border-2 border-primary/20 p-4">
+                  <div className="absolute top-0 right-0 w-20 h-20 bg-primary/10 rounded-full -mr-10 -mt-10"></div>
+                  <div className="relative space-y-3">
+                    <div className="flex items-center gap-2 mb-3">
+                      <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
+                        <DollarSign className="w-4 h-4 text-primary" />
+                      </div>
+                      <h3 className="text-sm font-bold text-foreground">Récapitulatif</h3>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-muted-foreground">Total commande</span>
+                      <span className="font-bold text-lg">{formatPrix(livrerCommande.total)}</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-muted-foreground">Acompte déjà versé</span>
+                      <span className="font-semibold text-green-600">{formatPrix(livrerCommande.acompte)}</span>
+                    </div>
+                    <div className="flex justify-between items-center pt-3 border-t border-primary/20">
+                      <span className="font-medium text-foreground">Restant à payer</span>
+                      <span className="font-bold text-xl text-primary">{formatPrix(livrerCommande.montantRestant)}</span>
+                    </div>
                   </div>
                 </div>
 
-                <div className="flex gap-2 justify-end">
-                  <Button variant="outline" onClick={() => setLivrerCommande(null)}>
-                    Annuler
-                  </Button>
-                  <Button onClick={handleLivrer}>
-                    <CheckCircle className="mr-2 h-4 w-4" />
-                    Confirmer la livraison
-                  </Button>
+                {/* Formulaire paiement */}
+                <div className="relative overflow-hidden rounded-xl bg-gradient-to-br from-green-500/5 via-background to-background border-2 border-border p-4">
+                  <div className="absolute top-0 right-0 w-20 h-20 bg-green-500/10 rounded-full -mr-10 -mt-10"></div>
+                  <div className="relative space-y-4">
+                    <div className="flex items-center gap-2 mb-3">
+                      <div className="w-8 h-8 rounded-lg bg-green-500/10 flex items-center justify-center">
+                        <CheckCircle className="w-4 h-4 text-green-600" />
+                      </div>
+                      <h3 className="text-sm font-bold text-foreground">Paiement à la livraison</h3>
+                    </div>
+
+                    <FormField
+                      label="Montant payé"
+                      type="number"
+                      value={livrerData.montantPaye}
+                      onChange={(e) => setLivrerData({ ...livrerData, montantPaye: Number((e.target as HTMLInputElement).value) })}
+                      min={0}
+                    />
+
+                    <FormField
+                      label="Mode de paiement"
+                      as="select"
+                      value={livrerData.modePaiement}
+                      onChange={(e) => setLivrerData({ ...livrerData, modePaiement: (e.target as HTMLSelectElement).value })}
+                    >
+                      <option value="especes">Espèces</option>
+                      <option value="mobile_money">Mobile Money</option>
+                      <option value="virement">Virement</option>
+                      <option value="credit">Crédit</option>
+                    </FormField>
+
+                    <FormField
+                      label="Note (optionnel)"
+                      as="textarea"
+                      value={livrerData.note}
+                      onChange={(e) => setLivrerData({ ...livrerData, note: (e.target as HTMLTextAreaElement).value })}
+                      rows={3}
+                    />
+                  </div>
+                </div>
+
+                {/* Résumé final */}
+                <div className={`rounded-xl p-4 border-2 ${
+                  calculateRestant() > 0
+                    ? 'bg-gradient-to-br from-amber-500/10 to-amber-500/5 border-amber-500/20'
+                    : 'bg-gradient-to-br from-green-500/10 to-green-500/5 border-green-500/20'
+                }`}>
+                  <div className="space-y-3">
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-muted-foreground">Total payé (acompte + livraison)</span>
+                      <span className="font-bold text-lg">{formatPrix(calculateTotalPaye())}</span>
+                    </div>
+                    <div className="flex justify-between items-center pt-3 border-t border-current/10">
+                      <span className="font-medium">Montant restant (dette)</span>
+                      <span className={`font-bold text-xl ${calculateRestant() > 0 ? 'text-amber-600' : 'text-green-600'}`}>
+                        {formatPrix(calculateRestant())}
+                      </span>
+                    </div>
+                  </div>
                 </div>
               </div>
             )}
+
+            {/* Footer */}
+            <div className="px-6 py-4 border-t bg-muted/30 flex-shrink-0">
+              <div className="flex gap-3 justify-end">
+                <Button variant="outline" onClick={() => setLivrerCommande(null)} className="h-11">
+                  Annuler
+                </Button>
+                <Button onClick={handleLivrer} className="h-11 bg-green-600 hover:bg-green-700">
+                  <CheckCircle className="mr-2 h-4 w-4" />
+                  Confirmer la livraison
+                </Button>
+              </div>
+            </div>
           </DialogContent>
         </Dialog>
       )}

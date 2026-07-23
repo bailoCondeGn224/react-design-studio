@@ -47,4 +47,9 @@ export const ventesApi = {
     const response = await apiClient.get<{ annee: number; mois: number }[]>('/ventes/mois-disponibles');
     return response.data;
   },
+
+  getVentesACredit: async (clientId: string): Promise<Vente[]> => {
+    const response = await apiClient.get<Vente[]>(`/ventes/client/${clientId}/credits`);
+    return response.data;
+  },
 };

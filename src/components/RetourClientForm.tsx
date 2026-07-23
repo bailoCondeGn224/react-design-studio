@@ -30,12 +30,15 @@ const RetourClientForm = ({ open, onOpenChange, onSubmit }: RetourClientFormProp
   const handleVenteChange = (vente: any) => {
     if (vente) {
       setSelectedVente(vente);
-      // Initialiser les lignes avec toutes les lignes de la vente
+      // Initialiser les lignes avec toutes les lignes de la vente (avec infos mode vente)
       const lignes = vente.lignes.map((ligne: any) => ({
         articleId: ligne.articleId,
         nom: ligne.nom,
         quantite: ligne.quantite,
-        quantiteMax: ligne.quantite, // Pour validation
+        quantiteBase: ligne.quantiteBase || ligne.quantite,
+        quantiteMax: ligne.quantite, // Pour validation (en packs/modes)
+        modeVenteId: ligne.modeVenteId || null,
+        modeVente: ligne.modeVente || null,
         prixUnitaire: ligne.prixUnitaire,
         sousTotal: ligne.quantite * ligne.prixUnitaire,
         selected: false,
@@ -73,12 +76,18 @@ const RetourClientForm = ({ open, onOpenChange, onSubmit }: RetourClientFormProp
       const newLignes = [...prev.lignes];
       newLignes[index] = { ...newLignes[index], [field]: value };
 
-      // Recalculer sous-total si quantité ou prix change
+      // Recalculer sous-total et quantiteBase si quantité change
       if (field === 'quantite') {
         const quantite = Number(value) || 0;
         if (quantite > newLignes[index].quantiteMax) {
           toast.warning(`Quantité maximum: ${newLignes[index].quantiteMax}`);
           newLignes[index].quantite = newLignes[index].quantiteMax;
+        }
+        // Recalculer quantiteBase en fonction du mode de vente
+        if (newLignes[index].modeVente) {
+          newLignes[index].quantiteBase = newLignes[index].quantite * Number(newLignes[index].modeVente.quantiteStock);
+        } else {
+          newLignes[index].quantiteBase = newLignes[index].quantite;
         }
         newLignes[index].sousTotal = newLignes[index].quantite * newLignes[index].prixUnitaire;
       }
@@ -125,7 +134,11 @@ const RetourClientForm = ({ open, onOpenChange, onSubmit }: RetourClientFormProp
 
     const data = {
       venteId: form.venteId,
-      lignes: lignesSelectionnees.map(({ selected, quantiteMax, ...ligne }) => ligne),
+      lignes: lignesSelectionnees.map(({ selected, quantiteMax, modeVente, ...ligne }) => ({
+        ...ligne,
+        quantiteBase: ligne.quantiteBase || ligne.quantite,
+        modeVenteId: ligne.modeVenteId || undefined,
+      })),
       total: calculerTotal(),
       modeRemboursement: form.modeRemboursement,
       note: form.note,
@@ -227,8 +240,14 @@ const RetourClientForm = ({ open, onOpenChange, onSubmit }: RetourClientFormProp
                         className="mt-1 w-5 h-5 rounded border-border"
                       />
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-semibold text-foreground">{ligne.nom}</p>
-                        <p className="text-xs text-muted-foreground mt-0.5">Max: {ligne.quantiteMax} • Prix: {formatPrix(ligne.prixUnitaire)}</p>
+                        <div className="flex items-center gap-2">
+                          <p className="text-sm font-semibold text-foreground">{ligne.nom}</p>
+                          <span className="text-sm font-bold text-primary">×{ligne.quantiteBase || ligne.quantite}</span>
+                          {ligne.modeVente && ligne.quantite !== ligne.quantiteBase && (
+                            <span className="text-xs text-muted-foreground">({ligne.quantite} {ligne.modeVente.nom})</span>
+                          )}
+                        </div>
+                        <p className="text-xs text-muted-foreground mt-0.5">Max: {ligne.quantiteMax} {ligne.modeVente ? ligne.modeVente.nom : 'unités'} • Prix: {formatPrix(ligne.prixUnitaire)}</p>
                       </div>
                     </div>
 
@@ -301,8 +320,16 @@ const RetourClientForm = ({ open, onOpenChange, onSubmit }: RetourClientFormProp
                             className="w-4 h-4"
                           />
                         </td>
-                        <td className="p-2">{ligne.nom}</td>
-                        <td className="p-2">{ligne.quantiteMax}</td>
+                        <td className="p-2">
+                          <div className="flex items-center gap-2">
+                            <span>{ligne.nom}</span>
+                            <span className="text-sm font-bold text-primary">×{ligne.quantiteBase || ligne.quantite}</span>
+                            {ligne.modeVente && ligne.quantite !== ligne.quantiteBase && (
+                              <span className="text-xs text-muted-foreground">({ligne.quantite} {ligne.modeVente.nom})</span>
+                            )}
+                          </div>
+                        </td>
+                        <td className="p-2">{ligne.quantiteMax} {ligne.modeVente ? ligne.modeVente.nom : ''}</td>
                         <td className="p-2">
                           <input
                             type="number"
@@ -408,9 +435,11 @@ const RetourClientForm = ({ open, onOpenChange, onSubmit }: RetourClientFormProp
               const detteClient = selectedVente.montantRestant || 0;
               const montantPaye = selectedVente.montantPaye || 0;
 
-              // Logique Q2:C
+              // Logique Q2:C - Calcul correct du remboursement
               const isRetourSuperDette = montantRetour > detteClient;
-              const remboursementCash = isRetourSuperDette ? montantPaye : 0;
+              // Si retour > dette: rembourser (montantRetour - dette), sinon 0
+              const remboursementCash = isRetourSuperDette ? (montantRetour - detteClient) : 0;
+              // Si retour > dette: annuler toute la dette, sinon réduire de montantRetour
               const reductionDette = isRetourSuperDette ? detteClient : montantRetour;
 
               return (

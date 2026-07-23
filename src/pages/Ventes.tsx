@@ -4,7 +4,8 @@ import VenteForm from "@/components/VenteForm";
 import VenteMobileCard from "@/components/VenteMobileCard";
 import Pagination from "@/components/Pagination";
 import CanAccess from "@/components/CanAccess";
-import { Plus, Receipt, CreditCard, Banknote, Smartphone, Edit, Trash, MoreVertical, AlertCircle, Printer, Eye, TrendingUp, DollarSign, MessageCircle } from "lucide-react";
+import { Plus, Receipt, CreditCard, Banknote, Smartphone, Edit, Trash, MoreVertical, AlertCircle, Printer, Eye, TrendingUp, DollarSign, MessageCircle, RotateCcw, XCircle } from "lucide-react";
+import { retoursClientsApi } from "@/api/retours";
 import { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import {
@@ -61,6 +62,7 @@ const Ventes = () => {
   const [limit] = useState(15);
   const [versementPage, setVersementPage] = useState(1);
   const [versementLimit] = useState(10);
+  const [retoursVente, setRetoursVente] = useState<any[]>([]);
 
   // État pour le filtre de mois
   const now = new Date();
@@ -85,10 +87,16 @@ const Ventes = () => {
   const { data: moisDisponibles } = useMoisDisponibles();
   const isMobile = useIsMobile();
 
-  // Reset pagination versements quand on ouvre le dialog
+  // Reset pagination versements et charger les retours quand on ouvre le dialog
   useEffect(() => {
     if (detailsId) {
       setVersementPage(1);
+      // Charger les retours de cette vente
+      retoursClientsApi.getByVente(detailsId)
+        .then(setRetoursVente)
+        .catch(() => setRetoursVente([]));
+    } else {
+      setRetoursVente([]);
     }
   }, [detailsId]);
   const user = useCurrentUser();
@@ -318,14 +326,24 @@ const Ventes = () => {
                 <div className="space-y-2">
                   {venteDetails.lignes && venteDetails.lignes.length > 0 ? (
                     venteDetails.lignes.map((ligne: any, index: number) => (
-                      <div key={index} className="flex justify-between items-center p-3 bg-secondary/30 rounded-lg text-sm">
-                        <div>
+                      <div key={index} className="flex justify-between items-start p-3 bg-secondary/30 rounded-lg text-sm">
+                        <div className="flex-1">
                           <p className="font-semibold">{ligne.nom}</p>
-                          <p className="text-xs text-muted-foreground">
-                            {ligne.quantite} × {formatPrix(ligne.prixUnitaire)}
+                          <div className="flex items-center gap-2 mt-1">
+                            <span className="inline-flex items-center px-2 py-0.5 rounded-md bg-primary/10 text-primary font-bold text-xs">
+                              {ligne.quantiteBase || ligne.quantite} unités
+                            </span>
+                            {ligne.modeVente && ligne.quantite !== ligne.quantiteBase && (
+                              <span className="text-xs text-muted-foreground">
+                                ({ligne.quantite} × {ligne.modeVente.nom})
+                              </span>
+                            )}
+                          </div>
+                          <p className="text-xs text-muted-foreground mt-1">
+                            Prix: {formatPrix(ligne.prixUnitaire)}{ligne.modeVente ? ` / ${ligne.modeVente.nom}` : ' / unité'}
                           </p>
                         </div>
-                        <p className="font-bold">{formatPrix(ligne.sousTotal)}</p>
+                        <p className="font-bold text-primary">{formatPrix(ligne.sousTotal)}</p>
                       </div>
                     ))
                   ) : (
@@ -454,14 +472,24 @@ const Ventes = () => {
                   <div className="space-y-2">
                     {venteDetails.lignes && venteDetails.lignes.length > 0 ? (
                       venteDetails.lignes.map((ligne: any, index: number) => (
-                        <div key={index} className="flex justify-between items-center p-3 bg-secondary/30 rounded-lg text-sm">
-                          <div>
+                        <div key={index} className="flex justify-between items-start p-3 bg-secondary/30 rounded-lg text-sm">
+                          <div className="flex-1">
                             <p className="font-semibold">{ligne.nom}</p>
-                            <p className="text-xs text-muted-foreground">
-                              {ligne.quantite} × {formatPrix(ligne.prixUnitaire)}
+                            <div className="flex items-center gap-2 mt-1">
+                              <span className="inline-flex items-center px-2 py-0.5 rounded-md bg-primary/10 text-primary font-bold text-xs">
+                                {ligne.quantiteBase || ligne.quantite} unités
+                              </span>
+                              {ligne.modeVente && ligne.quantite !== ligne.quantiteBase && (
+                                <span className="text-xs text-muted-foreground">
+                                  ({ligne.quantite} × {ligne.modeVente.nom})
+                                </span>
+                              )}
+                            </div>
+                            <p className="text-xs text-muted-foreground mt-1">
+                              Prix: {formatPrix(ligne.prixUnitaire)}{ligne.modeVente ? ` / ${ligne.modeVente.nom}` : ' / unité'}
                             </p>
                           </div>
-                          <p className="font-bold">{formatPrix(ligne.sousTotal)}</p>
+                          <p className="font-bold text-primary">{formatPrix(ligne.sousTotal)}</p>
                         </div>
                       ))
                     ) : (
@@ -527,6 +555,65 @@ const Ventes = () => {
                           onPageChange={setVersementPage}
                         />
                       </div>
+                    )}
+                  </div>
+                )}
+
+                {/* Historique des retours */}
+                {retoursVente && retoursVente.length > 0 && (
+                  <div>
+                    <p className="text-sm font-semibold text-foreground mb-2 flex items-center gap-2">
+                      <RotateCcw className="w-4 h-4 text-warning" />
+                      Retours ({retoursVente.length})
+                    </p>
+                    <div className="space-y-2">
+                      {retoursVente.map((retour: any, index: number) => (
+                        <div key={index} className="p-3 bg-warning/10 border border-warning/20 rounded-lg text-sm">
+                          <div className="flex justify-between items-start mb-2">
+                            <div>
+                              <p className="font-semibold text-warning flex items-center gap-1.5">
+                                <RotateCcw className="w-3.5 h-3.5" />
+                                Retour #{retour.numero}
+                              </p>
+                              <p className="text-xs text-muted-foreground">
+                                {formatDate(retour.date)} • {retour.motif || 'Non spécifié'}
+                              </p>
+                            </div>
+                            <span className="font-bold text-warning">{formatPrix(retour.total)}</span>
+                          </div>
+                          {retour.lignes && retour.lignes.length > 0 && (
+                            <div className="mt-2 pt-2 border-t border-warning/20 space-y-1">
+                              {retour.lignes.map((ligne: any, i: number) => (
+                                <div key={i} className="flex justify-between text-xs">
+                                  <span>{ligne.articleNom} × {ligne.quantite}</span>
+                                  <span className="text-muted-foreground">{formatPrix(ligne.sousTotal)}</span>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                          <p className="text-xs text-muted-foreground mt-2">
+                            Mode: {retour.modeRemboursement === 'especes' ? 'Espèces' :
+                                   retour.modeRemboursement === 'mobile_money' ? 'Mobile Money' :
+                                   retour.modeRemboursement === 'credit' ? 'Crédit compte' : retour.modeRemboursement}
+                            {retour.userNom && ` • Par: ${retour.userNom}`}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Indicateur vente annulée */}
+                {venteDetails.statut === 'annulee' && (
+                  <div className="p-4 bg-destructive/10 border-2 border-destructive/30 rounded-lg">
+                    <div className="flex items-center gap-2 text-destructive">
+                      <XCircle className="w-5 h-5" />
+                      <span className="font-bold">Vente annulée</span>
+                    </div>
+                    {venteDetails.motifAnnulation && (
+                      <p className="text-sm text-muted-foreground mt-1">
+                        Motif: {venteDetails.motifAnnulation}
+                      </p>
                     )}
                   </div>
                 )}
@@ -744,9 +831,14 @@ const Ventes = () => {
                         {item.lignes && item.lignes.length > 0 ? (
                           <div className="text-sm text-foreground">
                             {item.lignes.slice(0, 3).map((ligne: any, idx: number) => (
-                              <div key={idx} className="flex items-center justify-between gap-2 py-0.5">
-                                <span className="truncate">{ligne.nom}</span>
-                                <span className="text-xs text-muted-foreground whitespace-nowrap">×{ligne.quantite}</span>
+                              <div key={idx} className="flex items-center gap-2 py-0.5">
+                                <span className="truncate font-medium">{ligne.nom}</span>
+                                <span className="text-sm font-bold text-primary whitespace-nowrap">×{ligne.quantiteBase || ligne.quantite}</span>
+                                {ligne.modeVente && ligne.quantite !== ligne.quantiteBase && (
+                                  <span className="text-xs text-muted-foreground whitespace-nowrap">
+                                    ({ligne.quantite} {ligne.modeVente.nom})
+                                  </span>
+                                )}
                               </div>
                             ))}
                             {item.lignes.length > 3 && (
@@ -763,7 +855,7 @@ const Ventes = () => {
                         <div className="inline-flex items-center justify-center w-10 h-10 rounded-lg bg-primary/10 text-primary">
                           <span className="text-sm font-bold">
                             {item.lignes && item.lignes.length > 0
-                              ? item.lignes.reduce((sum: number, ligne: any) => sum + (ligne.quantite || 0), 0)
+                              ? item.lignes.reduce((sum: number, ligne: any) => sum + (ligne.quantiteBase || ligne.quantite || 0), 0)
                               : 0}
                           </span>
                         </div>

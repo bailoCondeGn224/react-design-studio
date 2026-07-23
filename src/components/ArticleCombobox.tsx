@@ -4,10 +4,8 @@ import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import {
   Command,
-  CommandEmpty,
   CommandGroup,
   CommandInput,
-  CommandItem,
 } from '@/components/ui/command';
 import {
   Popover,
@@ -50,6 +48,8 @@ interface ArticleComboboxProps {
   priceType?: 'vente' | 'achat';
   excludeIds?: string[];
   checkStock?: boolean;
+  // Article pré-sélectionné (pour afficher même si pas dans la liste)
+  preselectedArticle?: Article | null;
 }
 
 const ArticleCombobox = ({
@@ -61,6 +61,7 @@ const ArticleCombobox = ({
   priceType = 'vente',
   excludeIds = [],
   checkStock = false,
+  preselectedArticle = null,
 }: ArticleComboboxProps) => {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState('');
@@ -103,8 +104,10 @@ const ArticleCombobox = ({
       .replace('GNF', 'GNF');
   };
 
-  // Trouver l'article sélectionné (peut ne pas être dans la liste actuelle si recherche active)
-  const selectedArticle = articles.find((a) => a.id === value);
+  // Trouver l'article sélectionné - utiliser preselectedArticle si fourni, sinon chercher dans la liste
+  const selectedArticle = preselectedArticle && preselectedArticle.id === value
+    ? preselectedArticle
+    : articles.find((a) => a.id === value);
 
   // Filtrer les articles déjà sélectionnés
   const filteredArticles = articles.filter((article) => !excludeIds.includes(article.id));
@@ -294,74 +297,79 @@ const ArticleCombobox = ({
             <div className="flex items-center justify-center py-6">
               <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
             </div>
+          ) : filteredArticles.length === 0 ? (
+            <div className="py-6 text-center text-sm text-muted-foreground">
+              Aucun article trouvé.
+            </div>
           ) : (
             <>
-              <CommandEmpty>Aucun article trouvé.</CommandEmpty>
               <CommandGroup className="max-h-[300px] overflow-y-auto">
                 {filteredArticles.map((article) => {
-              const enRupture = checkStock && article.stock === 0;
-              const stockFaible =
-                checkStock &&
-                article.stock > 0 &&
-                article.seuilAlerte &&
-                article.stock <= article.seuilAlerte;
-              const prix =
-                priceType === 'vente' ? article.prixVente || 0 : article.prixAchat || 0;
+                  const enRupture = checkStock && article.stock === 0;
+                  const stockFaible =
+                    checkStock &&
+                    article.stock > 0 &&
+                    article.seuilAlerte &&
+                    article.stock <= article.seuilAlerte;
+                  const prix =
+                    priceType === 'vente' ? article.prixVente || 0 : article.prixAchat || 0;
 
-              return (
-                <CommandItem
-                  key={article.id}
-                  value={article.nom}
-                  disabled={enRupture}
-                  onSelect={() => handleSelectArticle(article)}
-                  className={cn('cursor-pointer', enRupture && 'opacity-50 cursor-not-allowed')}
-                >
-                  <Check
-                    className={cn(
-                      'mr-2 h-4 w-4 shrink-0',
-                      value === article.id ? 'opacity-100' : 'opacity-0'
-                    )}
-                  />
-                  <div className="flex flex-col flex-1 min-w-0">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <span className="font-medium">{article.nom}</span>
-                      {checkStock && (
-                        <span
-                          className={cn(
-                            'text-xs px-1.5 py-0.5 rounded',
-                            enRupture
-                              ? 'bg-destructive/10 text-destructive'
-                              : stockFaible
-                              ? 'bg-warning/10 text-warning'
-                              : 'bg-success/10 text-success'
-                          )}
-                        >
-                          {enRupture ? 'RUPTURE' : `Stock: ${article.stock}`}
-                        </span>
+                  return (
+                    <div
+                      key={article.id}
+                      onClick={() => !enRupture && handleSelectArticle(article)}
+                      className={cn(
+                        'relative flex cursor-pointer select-none items-center rounded-sm px-2 py-2 text-sm outline-none hover:bg-accent hover:text-accent-foreground',
+                        enRupture && 'opacity-50 cursor-not-allowed pointer-events-none',
+                        value === article.id && 'bg-accent'
                       )}
-                      {!checkStock && (
-                        <span className="text-xs text-muted-foreground">Stock: {article.stock}</span>
-                      )}
-                    </div>
-                    <div className="flex items-center gap-2 text-xs text-muted-foreground mt-0.5">
-                      {showPrice && (
-                        <span className="flex items-center gap-1">
-                          {formatPrix(article.modesVente?.find(m => m.parDefaut)?.prixVente || prix)}
-                          {article.modesVente && article.modesVente.length > 1 && (
-                            <span className="px-1.5 py-0.5 rounded bg-primary/10 text-primary text-xs">
-                              +{article.modesVente.length - 1}
+                    >
+                      <Check
+                        className={cn(
+                          'mr-2 h-4 w-4 shrink-0',
+                          value === article.id ? 'opacity-100' : 'opacity-0'
+                        )}
+                      />
+                      <div className="flex flex-col flex-1 min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="font-medium">{article.nom}</span>
+                          {checkStock && (
+                            <span
+                              className={cn(
+                                'text-xs px-1.5 py-0.5 rounded',
+                                enRupture
+                                  ? 'bg-destructive/10 text-destructive'
+                                  : stockFaible
+                                  ? 'bg-warning/10 text-warning'
+                                  : 'bg-success/10 text-success'
+                              )}
+                            >
+                              {enRupture ? 'RUPTURE' : `Stock: ${article.stock}`}
                             </span>
                           )}
-                        </span>
-                      )}
-                      {article.fournisseurPrefereNom && (
-                        <span className="text-primary">Fournisseur: {article.fournisseurPrefereNom}</span>
-                      )}
+                          {!checkStock && (
+                            <span className="text-xs text-muted-foreground">Stock: {article.stock}</span>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-2 text-xs text-muted-foreground mt-0.5">
+                          {showPrice && (
+                            <span className="flex items-center gap-1">
+                              {formatPrix(article.modesVente?.find(m => m.parDefaut)?.prixVente || prix)}
+                              {article.modesVente && article.modesVente.length > 1 && (
+                                <span className="px-1.5 py-0.5 rounded bg-primary/10 text-primary text-xs">
+                                  +{article.modesVente.length - 1}
+                                </span>
+                              )}
+                            </span>
+                          )}
+                          {article.fournisseurPrefereNom && (
+                            <span className="text-primary">Fournisseur: {article.fournisseurPrefereNom}</span>
+                          )}
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                </CommandItem>
-              );
-            })}
+                  );
+                })}
               </CommandGroup>
             </>
           )}

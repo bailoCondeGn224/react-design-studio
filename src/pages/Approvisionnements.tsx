@@ -27,6 +27,7 @@ import {
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { useApprovisionnements, useApprovisionnement, useApproLignes, useCreateApprovisionnement, useUpdateApprovisionnement, useDeleteApprovisionnement } from "@/hooks/useApprovisionnements";
+import { useRetoursByApprovisionnement } from "@/hooks/useRetours";
 import { useIsMobile } from "@/hooks/useMediaQuery";
 import { useStockAlerts } from "@/hooks/useStock";
 import { approvisionnementsApi } from "@/api/approvisionnements";
@@ -58,6 +59,7 @@ const Approvisionnements = () => {
   const { data: lignesResponse } = useApproLignes(detailsId, lignesPage, lignesLimit);
   const lignes = lignesResponse?.data || [];
   const lignesMeta = lignesResponse?.meta;
+  const { data: retoursAppro = [] } = useRetoursByApprovisionnement(detailsId);
   const { data: articlesAlerts = [] } = useStockAlerts();
   const isMobile = useIsMobile();
 
@@ -309,6 +311,39 @@ const Approvisionnements = () => {
                   <p className="text-xs sm:text-sm p-2 sm:p-3 bg-secondary/30 rounded-lg">{approvisionnementDetails.note}</p>
                 </div>
               )}
+
+              {/* Section Retours */}
+              {retoursAppro.length > 0 && (
+                <div className="border-t pt-3 sm:pt-4">
+                  <p className="text-xs sm:text-sm text-muted-foreground mb-1.5 sm:mb-2 flex items-center gap-2">
+                    <span className="text-orange-500">↩</span> Retours ({retoursAppro.length})
+                  </p>
+                  <div className="space-y-1.5 sm:space-y-2">
+                    {retoursAppro.map((retour: any) => (
+                      <div key={retour.id} className="p-2 sm:p-3 bg-orange-500/10 border border-orange-500/20 rounded-lg text-xs sm:text-sm">
+                        <div className="flex justify-between items-start mb-1">
+                          <span className="font-semibold text-orange-600">{retour.numero}</span>
+                          <span className="text-muted-foreground text-[10px] sm:text-xs">
+                            {new Date(retour.date).toLocaleDateString('fr-FR')}
+                          </span>
+                        </div>
+                        <div className="space-y-0.5">
+                          {retour.lignes?.map((ligne: any, idx: number) => (
+                            <div key={idx} className="flex justify-between text-[10px] sm:text-xs text-muted-foreground">
+                              <span>{ligne.nom} ×{ligne.quantite}</span>
+                              <span>{formatPrix(ligne.sousTotal)}</span>
+                            </div>
+                          ))}
+                        </div>
+                        <div className="flex justify-between mt-1 pt-1 border-t border-orange-500/20">
+                          <span className="font-medium">Total retour</span>
+                          <span className="font-bold text-orange-600">{formatPrix(retour.total)}</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           )}
         </div>
@@ -388,6 +423,39 @@ const Approvisionnements = () => {
             <div>
               <p className="text-xs sm:text-sm text-muted-foreground mb-1">Note</p>
               <p className="text-xs sm:text-sm p-2 sm:p-3 bg-secondary/30 rounded-lg">{approvisionnementDetails.note}</p>
+            </div>
+          )}
+
+          {/* Section Retours */}
+          {retoursAppro.length > 0 && (
+            <div className="border-t pt-3 sm:pt-4">
+              <p className="text-xs sm:text-sm text-muted-foreground mb-1.5 sm:mb-2 flex items-center gap-2">
+                <span className="text-orange-500">↩</span> Retours ({retoursAppro.length})
+              </p>
+              <div className="space-y-1.5 sm:space-y-2">
+                {retoursAppro.map((retour: any) => (
+                  <div key={retour.id} className="p-2 sm:p-3 bg-orange-500/10 border border-orange-500/20 rounded-lg text-xs sm:text-sm">
+                    <div className="flex justify-between items-start mb-1">
+                      <span className="font-semibold text-orange-600">{retour.numero}</span>
+                      <span className="text-muted-foreground text-[10px] sm:text-xs">
+                        {new Date(retour.date).toLocaleDateString('fr-FR')}
+                      </span>
+                    </div>
+                    <div className="space-y-0.5">
+                      {retour.lignes?.map((ligne: any, idx: number) => (
+                        <div key={idx} className="flex justify-between text-[10px] sm:text-xs text-muted-foreground">
+                          <span>{ligne.nom} ×{ligne.quantite}</span>
+                          <span>{formatPrix(ligne.sousTotal)}</span>
+                        </div>
+                      ))}
+                    </div>
+                    <div className="flex justify-between mt-1 pt-1 border-t border-orange-500/20">
+                      <span className="font-medium">Total retour</span>
+                      <span className="font-bold text-orange-600">{formatPrix(retour.total)}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
           )}
         </div>

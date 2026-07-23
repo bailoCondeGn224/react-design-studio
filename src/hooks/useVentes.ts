@@ -19,6 +19,14 @@ export const useVente = (id: string) => {
   });
 };
 
+export const useVentesACredit = (clientId: string) => {
+  return useQuery({
+    queryKey: ['ventes', 'credits', clientId],
+    queryFn: () => ventesApi.getVentesACredit(clientId),
+    enabled: !!clientId,
+  });
+};
+
 export const useVenteVersements = (venteId: string | null, page: number = 1, limit: number = 10) => {
   return useQuery({
     queryKey: ['ventes', venteId, 'versements', page, limit],

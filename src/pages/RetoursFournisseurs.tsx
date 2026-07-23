@@ -156,11 +156,11 @@ const RetoursFournisseurs = () => {
                 <thead className="bg-secondary/50">
                   <tr>
                     <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Date</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Article</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Quantité</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Prix Unit.</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">N° Retour</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Fournisseur</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Articles</th>
                     <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Montant</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Référence</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Remboursé</th>
                     <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Utilisateur</th>
                   </tr>
                 </thead>
@@ -168,12 +168,22 @@ const RetoursFournisseurs = () => {
                   {retoursData.data.map((retour: any) => (
                     <tr key={retour.id} className="hover:bg-secondary/30 transition-colors">
                       <td className="px-4 py-3 text-sm text-foreground whitespace-nowrap">{formatDate(retour.date)}</td>
-                      <td className="px-4 py-3 text-sm font-medium text-foreground">{retour.articleNom}</td>
-                      <td className="px-4 py-3 text-sm text-foreground">{retour.quantite}</td>
-                      <td className="px-4 py-3 text-sm text-foreground">{formatPrix(retour.prixUnitaire)}</td>
-                      <td className="px-4 py-3 text-sm font-semibold text-orange-600 dark:text-orange-400">{formatPrix(retour.valeurTotal)}</td>
-                      <td className="px-4 py-3 text-sm text-muted-foreground">{retour.reference}</td>
-                      <td className="px-4 py-3 text-sm text-muted-foreground">{retour.userNom}</td>
+                      <td className="px-4 py-3 text-sm font-medium text-foreground">{retour.numero}</td>
+                      <td className="px-4 py-3 text-sm text-foreground">{retour.fournisseurNom || 'N/A'}</td>
+                      <td className="px-4 py-3 text-sm text-foreground">
+                        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-secondary">
+                          {retour.lignes?.length || 0} article{(retour.lignes?.length || 0) > 1 ? 's' : ''}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3 text-sm font-semibold text-orange-600 dark:text-orange-400">{formatPrix(retour.total)}</td>
+                      <td className="px-4 py-3 text-sm">
+                        {retour.remboursementRecu ? (
+                          <span className="text-green-600 font-medium">{formatPrix(retour.montantRembourse)}</span>
+                        ) : (
+                          <span className="text-muted-foreground">Non</span>
+                        )}
+                      </td>
+                      <td className="px-4 py-3 text-sm text-muted-foreground">{retour.userNom || 'N/A'}</td>
                     </tr>
                   ))}
                 </tbody>

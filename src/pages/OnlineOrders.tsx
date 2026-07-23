@@ -245,8 +245,8 @@ const OnlineOrders = () => {
                       <TableCell className="font-medium">{order.numero}</TableCell>
                       <TableCell>
                         <div>
-                          <p>{order.clientNom || 'Anonyme'}</p>
-                          <p className="text-xs text-muted-foreground">{order.telephoneLivraison}</p>
+                          <p>{order.customerNom || 'Anonyme'}</p>
+                          <p className="text-xs text-muted-foreground">{order.customerTelephone || order.telephoneLivraison}</p>
                         </div>
                       </TableCell>
                       <TableCell>{formatDate(order.createdAt)}</TableCell>
@@ -358,11 +358,11 @@ const OnlineOrders = () => {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <p className="text-sm text-muted-foreground">Client</p>
-                  <p className="font-medium">{selectedOrder.clientNom || 'Anonyme'}</p>
+                  <p className="font-medium">{selectedOrder.customerNom || 'Anonyme'}</p>
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Téléphone</p>
-                  <p className="font-medium">{selectedOrder.telephoneLivraison}</p>
+                  <p className="font-medium">{selectedOrder.customerTelephone || selectedOrder.telephoneLivraison}</p>
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Mode de livraison</p>

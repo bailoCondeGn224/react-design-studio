@@ -32,17 +32,26 @@ const RetourFournisseurForm = ({ open, onOpenChange, onSubmit }: RetourFournisse
     if (appro) {
       setSelectedAppro(appro);
       // Initialiser les lignes avec toutes les lignes de l'approvisionnement
-      const lignes = appro.lignes.map((ligne: any) => ({
-        articleId: ligne.articleId,
-        nom: ligne.nom,
-        quantite: ligne.quantite,
-        quantiteMax: ligne.quantite,
-        prixUnitaire: ligne.prixUnitaire,
-        sousTotal: ligne.quantite * ligne.prixUnitaire,
-        selected: false,
-        raison: undefined,
-        noteArticle: "",
-      }));
+      // Calculer la quantité disponible = quantité totale - quantité déjà retournée
+      const lignes = appro.lignes
+        .map((ligne: any) => {
+          const quantiteTotale = ligne.quantiteUnites || ligne.quantite;
+          const quantiteRetournee = ligne.quantiteRetournee || 0;
+          const quantiteDisponible = quantiteTotale - quantiteRetournee;
+          return {
+            articleId: ligne.articleId,
+            nom: ligne.nom,
+            quantite: quantiteDisponible > 0 ? quantiteDisponible : 0,
+            quantiteMax: quantiteDisponible,
+            quantiteRetournee: quantiteRetournee,
+            prixUnitaire: ligne.prixUnitaire,
+            sousTotal: quantiteDisponible * ligne.prixUnitaire,
+            selected: false,
+            raison: undefined,
+            noteArticle: "",
+          };
+        })
+        .filter((ligne: any) => ligne.quantiteMax > 0); // Ne pas afficher les articles déjà entièrement retournés
       setForm(prev => ({
         ...prev,
         approvisionnementId: appro.id,
