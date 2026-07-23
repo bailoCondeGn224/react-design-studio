@@ -12,7 +12,7 @@ export interface StoreFront {
   id: string;
   slug: string;
   organizationId: string;
-  organizationName: string;
+  organizationNom: string;
   description?: string;
   logoUrl?: string;
   whatsappNumber?: string;
@@ -20,6 +20,7 @@ export interface StoreFront {
   fraisLivraison: number;
   adresse?: string;
   isActive: boolean;
+  fullUrl?: string;
 }
 
 export interface CartItem {
