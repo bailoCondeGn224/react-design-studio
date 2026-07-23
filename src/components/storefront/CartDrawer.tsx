@@ -38,7 +38,7 @@ const formatPrix = (prix: number) => {
 export const buildWhatsAppMessage = (orderData: OrderData, storeName: string): string => {
   // Construction de la liste des articles
   const articlesText = orderData.items
-    .map(item => `• ${item.nom} x${item.quantity} - ${formatPrix(item.prixUnitaire)}`)
+    .map(item => `• ${item.articleNom} x${item.quantity} - ${formatPrix(item.prixUnitaire)}`)
     .join('\n');
 
   // Construction du message complet
