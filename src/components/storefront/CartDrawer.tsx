@@ -4,7 +4,7 @@ import { useParams } from 'react-router-dom';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { CartMobileItem } from './CartMobileItem';
 import { CartItem } from '@/types';
-import { ShoppingBag, ChevronLeft, Loader2, CheckCircle, ArrowRight } from 'lucide-react';
+import { ShoppingBag, ChevronLeft, Loader2, CheckCircle, ArrowRight, MessageCircle } from 'lucide-react';
 import { apiClient } from '@/lib/api-client';
 import { toast } from 'sonner';
 import { useCartContext } from '@/contexts/CartContext';
@@ -104,6 +104,7 @@ export const CartDrawer = ({
     adresseLivraison: '',
     notes: ''
   });
+  const [savedOrderData, setSavedOrderData] = useState<OrderData | null>(null);
 
   const total = subtotal + fraisLivraison;
 
@@ -118,7 +119,21 @@ export const CartDrawer = ({
         adresseLivraison: '',
         notes: ''
       });
+      setSavedOrderData(null);
     }, 300);
+  };
+
+  const handleSendToWhatsApp = () => {
+    if (storefront?.whatsappNumber && savedOrderData) {
+      try {
+        const encodedMessage = buildWhatsAppMessage(savedOrderData, storefront.nom);
+        openWhatsApp(storefront.whatsappNumber, encodedMessage);
+        toast.success('WhatsApp ouvert!');
+      } catch (error) {
+        console.error('Erreur WhatsApp:', error);
+        toast.error('Erreur lors de l\'ouverture de WhatsApp');
+      }
+    }
   };
 
   const handleSubmitOrder = async (e: React.FormEvent) => {
@@ -150,27 +165,16 @@ export const CartDrawer = ({
       // Vider le panier après succès
       clear();
 
-      // Intégration WhatsApp
-      if (storefront?.whatsappNumber) {
-        try {
-          // Construire le message WhatsApp
-          const encodedMessage = buildWhatsAppMessage({
-            nomClient: formData.nomClient,
-            items: items,
-            subtotal: subtotal,
-            fraisLivraison: fraisLivraison,
-            total: total,
-            adresseLivraison: formData.adresseLivraison,
-            telephone: formData.telephone
-          }, storefront.nom);
-
-          // Ouvrir WhatsApp avec le message
-          openWhatsApp(storefront.whatsappNumber, encodedMessage);
-        } catch (whatsappError) {
-          // Logger l'erreur mais ne pas bloquer le flux
-          console.error('Erreur WhatsApp:', whatsappError);
-        }
-      }
+      // Sauvegarder les données de commande pour WhatsApp optionnel
+      setSavedOrderData({
+        nomClient: formData.nomClient,
+        items: items,
+        subtotal: subtotal,
+        fraisLivraison: fraisLivraison,
+        total: total,
+        adresseLivraison: formData.adresseLivraison,
+        telephone: formData.telephone
+      });
 
       setStep('success');
 
@@ -382,9 +386,28 @@ export const CartDrawer = ({
                   <CheckCircle className="h-14 w-14 text-green-500" />
                 </div>
                 <h3 className="text-2xl font-bold text-gray-900 mb-3">Commande envoyée!</h3>
-                <p className="text-sm text-gray-600 text-center max-w-sm leading-relaxed">
+                <p className="text-sm text-gray-600 text-center max-w-sm leading-relaxed mb-6">
                   Votre commande a été enregistrée avec succès. Nous vous contacterons bientôt au <strong>{formData.telephone}</strong>.
                 </p>
+
+                {/* WhatsApp CTA */}
+                {storefront?.whatsappNumber && savedOrderData && (
+                  <div className="w-full max-w-sm space-y-3">
+                    <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                      <p className="text-sm text-green-800 text-center mb-3">
+                        💡 <strong>Traitement rapide:</strong> Envoyez aussi votre commande sur WhatsApp pour un traitement prioritaire!
+                      </p>
+                      <button
+                        onClick={handleSendToWhatsApp}
+                        className="w-full h-12 flex items-center justify-center gap-2 bg-green-600 text-white font-bold rounded-lg hover:bg-green-700 active:scale-[0.98] transition-all shadow-md"
+                      >
+                        <MessageCircle className="h-5 w-5" />
+                        <span>Envoyer sur WhatsApp</span>
+                      </button>
+                    </div>
+                  </div>
+                )}
+
                 <div className="mt-8 text-xs text-gray-400">
                   Fermeture automatique...
                 </div>
