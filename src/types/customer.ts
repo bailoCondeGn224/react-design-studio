@@ -28,8 +28,9 @@ export interface CartItem {
   articlePhoto?: string;
   modeVenteId?: string;
   modeVenteNom?: string;
+  quantiteStock?: number; // Nombre d'articles par lot (pour mode gros)
   prixUnitaire: number;
-  quantity: number;
+  quantity: number; // Nombre de lots
 }
 
 export enum OnlineOrderStatut {

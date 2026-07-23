@@ -38,7 +38,19 @@ const formatPrix = (prix: number) => {
 export const buildWhatsAppMessage = (orderData: OrderData, storeName: string): string => {
   // Construction de la liste des articles
   const articlesText = orderData.items
-    .map(item => `• ${item.articleNom} x${item.quantity} - ${formatPrix(item.prixUnitaire)}`)
+    .map(item => {
+      // Calculer la quantité réelle d'articles
+      const quantiteReelle = item.quantiteStock && item.quantiteStock > 1
+        ? item.quantity * item.quantiteStock
+        : item.quantity;
+
+      // Affichage avec quantité réelle
+      const quantiteText = item.quantiteStock && item.quantiteStock > 1
+        ? `x${item.quantity} lot(s) = ${quantiteReelle} pcs`
+        : `x${item.quantity}`;
+
+      return `• ${item.articleNom} ${quantiteText} - ${formatPrix(item.prixUnitaire)}`;
+    })
     .join('\n');
 
   // Construction du message complet

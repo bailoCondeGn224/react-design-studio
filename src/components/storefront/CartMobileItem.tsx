@@ -2,6 +2,7 @@
 import { Minus, Plus, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { CartItem } from '@/types';
+import { getPhotoUrl } from '@/lib/api-client';
 
 interface CartMobileItemProps {
   item: CartItem;
@@ -11,12 +12,19 @@ interface CartMobileItemProps {
 }
 
 export const CartMobileItem = ({ item, onRemove, onUpdateQuantity, formatPrix }: CartMobileItemProps) => {
+  const photoUrl = getPhotoUrl(item.articlePhoto);
+
+  // Calculer la quantité réelle d'articles
+  const quantiteReelle = item.quantiteStock && item.quantiteStock > 1
+    ? item.quantity * item.quantiteStock
+    : item.quantity;
+
   return (
     <div className="flex gap-3 py-3 border-b last:border-0">
       {/* Image */}
-      <div className="w-16 h-16 rounded-lg bg-muted flex-shrink-0 overflow-hidden">
-        {item.articlePhoto ? (
-          <img src={item.articlePhoto} alt={item.articleNom} className="w-full h-full object-cover" />
+      <div className="w-16 h-16 rounded-lg bg-gradient-to-br from-gray-100 to-gray-50 flex-shrink-0 overflow-hidden">
+        {photoUrl ? (
+          <img src={photoUrl} alt={item.articleNom} className="w-full h-full object-cover" />
         ) : (
           <div className="w-full h-full flex items-center justify-center text-muted-foreground text-xs">
             Photo
@@ -44,7 +52,16 @@ export const CartMobileItem = ({ item, onRemove, onUpdateQuantity, formatPrix }:
           >
             <Minus className="h-3 w-3" />
           </Button>
-          <span className="w-8 text-center font-medium">{item.quantity}</span>
+          <span className="min-w-12 text-center font-medium text-sm">
+            {item.quantiteStock && item.quantiteStock > 1 ? (
+              <span className="flex flex-col leading-tight">
+                <span>{item.quantity} lot{item.quantity > 1 ? 's' : ''}</span>
+                <span className="text-xs text-muted-foreground">({quantiteReelle})</span>
+              </span>
+            ) : (
+              <span>{item.quantity}</span>
+            )}
+          </span>
           <Button
             variant="outline"
             size="icon"

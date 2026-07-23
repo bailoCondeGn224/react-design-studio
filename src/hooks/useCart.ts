@@ -26,7 +26,7 @@ export const useCart = (slug: string) => {
     }
   }, [items, slug]);
 
-  const addItem = useCallback((article: StorefrontArticle, quantity = 1, modeVente?: { id: string; nom: string; prix: number }) => {
+  const addItem = useCallback((article: StorefrontArticle, quantity = 1, modeVente?: { id: string; nom: string; prix: number; quantiteStock: number }) => {
     setItems((prev) => {
       const existing = prev.find((item) =>
         modeVente ? item.articleId === article.id && item.modeVenteId === modeVente.id
@@ -50,6 +50,7 @@ export const useCart = (slug: string) => {
           articlePhoto: article.photo,
           modeVenteId: modeVente?.id,
           modeVenteNom: modeVente?.nom,
+          quantiteStock: modeVente?.quantiteStock,
           prixUnitaire: modeVente?.prix ?? article.prixEnLigne,
           quantity,
         },
