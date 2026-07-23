@@ -273,7 +273,7 @@ const AppSidebar = () => {
       {/* Mobile Menu Button */}
       <button
         onClick={() => setMobileOpen(true)}
-        className="fixed top-4 right-4 z-50 md:hidden w-10 h-10 rounded-lg bg-card border border-border flex items-center justify-center text-foreground hover:bg-secondary transition-colors shadow-lg"
+        className="fixed top-16 right-4 z-50 md:hidden w-10 h-10 rounded-lg bg-card border border-border flex items-center justify-center text-foreground hover:bg-secondary transition-colors shadow-lg"
       >
         <Menu className="w-5 h-5" />
       </button>
