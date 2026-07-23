@@ -162,10 +162,7 @@ export const CartDrawer = ({
 
       await apiClient.post(`/public/stores/${slug}/orders`, orderData);
 
-      // Vider le panier après succès
-      clear();
-
-      // Sauvegarder les données de commande pour WhatsApp optionnel
+      // Sauvegarder les données de commande pour WhatsApp optionnel (AVANT de vider le panier)
       setSavedOrderData({
         nomClient: formData.nomClient,
         items: items,
@@ -175,6 +172,9 @@ export const CartDrawer = ({
         adresseLivraison: formData.adresseLivraison,
         telephone: formData.telephone
       });
+
+      // Vider le panier après succès
+      clear();
 
       setStep('success');
 
