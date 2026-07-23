@@ -2,7 +2,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { OnlineOrder, OnlineOrderStatut } from "@/types";
-import { Package, MapPin, Phone, CheckCircle, Truck, XCircle, Clock, User, Calendar } from "lucide-react";
+import { Package, MapPin, Phone, CheckCircle, Truck, XCircle, Clock, User, Calendar, MoreVertical } from "lucide-react";
 
 interface OnlineOrderMobileCardProps {
   order: OnlineOrder;
@@ -62,12 +62,14 @@ const OnlineOrderMobileCard = ({
   const StatutIcon = statut.icon;
 
   return (
-    <Card className="transition-shadow hover:shadow-lg hover:border-primary/30">
+    <Card className="overflow-hidden transition-all duration-200 hover:shadow-lg hover:-translate-y-0.5 border-l-4" style={{ borderLeftColor: statut.className.includes('orange') ? '#f97316' : statut.className.includes('blue') ? '#3b82f6' : statut.className.includes('green') ? '#10b981' : statut.className.includes('gray') ? '#6b7280' : '#ef4444' }}>
       <CardContent className="p-0">
         {/* En-tête avec numéro et statut */}
-        <div className="flex items-center justify-between p-4 border-b border-border/50">
-          <div className="flex items-center gap-2">
-            <Package className="w-5 h-5 text-primary flex-shrink-0" />
+        <div className="flex items-center justify-between p-3 bg-gradient-to-r from-primary/5 to-transparent">
+          <div className="flex items-center gap-2.5">
+            <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center">
+              <Package className="w-5 h-5 text-primary" />
+            </div>
             <div>
               <p className="text-sm font-bold text-foreground">{order.numero}</p>
               <div className="flex items-center gap-1 mt-0.5">
@@ -76,9 +78,9 @@ const OnlineOrderMobileCard = ({
               </div>
             </div>
           </div>
-          <div className={`px-2 py-1 rounded-full border ${statut.bgClassName}`}>
-            <div className="flex items-center gap-1">
-              <StatutIcon className={`w-3 h-3 ${statut.className}`} />
+          <div className={`px-2.5 py-1.5 rounded-full border ${statut.bgClassName} shadow-sm`}>
+            <div className="flex items-center gap-1.5">
+              <StatutIcon className={`w-3.5 h-3.5 ${statut.className}`} />
               <p className={`text-xs font-bold ${statut.className}`}>{statut.label}</p>
             </div>
           </div>
@@ -115,49 +117,65 @@ const OnlineOrderMobileCard = ({
           </div>
 
           {/* Articles preview */}
-          <div className="space-y-1.5">
-            {order.items.slice(0, 2).map((item) => (
-              <div key={item.id} className="flex items-center justify-between text-xs">
-                <div className="flex items-center gap-2 flex-1 min-w-0">
-                  <Package className="w-3 h-3 text-muted-foreground flex-shrink-0" />
-                  <span className="text-foreground truncate">{item.articleNom}</span>
+          <div className="space-y-2">
+            {order.items.slice(0, 2).map((item, index) => (
+              <div key={item.id} className="flex items-center justify-between p-2 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors">
+                <div className="flex items-center gap-2.5 flex-1 min-w-0">
+                  <div className="w-8 h-8 rounded-md bg-primary/10 flex items-center justify-center flex-shrink-0">
+                    <span className="text-xs font-bold text-primary">{index + 1}</span>
+                  </div>
+                  <span className="text-xs font-medium text-foreground truncate">{item.articleNom}</span>
                 </div>
-                <span className="text-muted-foreground whitespace-nowrap ml-2">×{item.quantite}</span>
+                <div className="px-2 py-1 rounded-md bg-primary/10">
+                  <span className="text-xs font-bold text-primary">×{item.quantite}</span>
+                </div>
               </div>
             ))}
             {order.items.length > 2 && (
               <button
                 onClick={() => onViewDetails(order.id)}
-                className="text-xs text-primary font-medium hover:underline transition-transform active:scale-95"
+                className="w-full text-xs text-primary font-semibold hover:underline transition-all active:scale-95 py-1.5"
               >
-                + {order.items.length - 2} autre{order.items.length - 2 > 1 ? 's' : ''}
+                + {order.items.length - 2} autre{order.items.length - 2 > 1 ? 's' : ''} article{order.items.length - 2 > 1 ? 's' : ''}
               </button>
             )}
           </div>
         </div>
 
         {/* Montants */}
-        <div className="px-4 py-3 bg-primary/5 border-t border-border/50">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-xs text-muted-foreground">Total</span>
-            <span className="text-2xl font-black text-primary">{formatPrix(order.total)}</span>
+        <div className="px-4 py-3 bg-gradient-to-br from-primary/10 via-primary/5 to-transparent border-t border-primary/10">
+          <div className="flex items-end justify-between mb-2">
+            <div>
+              <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide mb-1">Total</p>
+              <span className="text-2xl font-black text-primary bg-gradient-to-r from-primary to-primary/80 bg-clip-text">{formatPrix(order.total)}</span>
+            </div>
+            <div className="px-3 py-1.5 rounded-full bg-primary shadow-sm">
+              <span className="text-xs font-bold text-primary-foreground">{order.items.length} article{order.items.length > 1 ? 's' : ''}</span>
+            </div>
           </div>
 
-          <div className="flex items-center justify-between gap-2 text-xs">
-            <span className="text-muted-foreground">
-              Sous-total: {formatPrix(order.sousTotal)} • Livraison: {formatPrix(order.fraisLivraison)}
+          <div className="flex items-center gap-3 text-[10px] text-muted-foreground">
+            <span className="flex items-center gap-1">
+              <span className="font-medium">Sous-total:</span> {formatPrix(order.sousTotal)}
             </span>
-            <div className="px-2 py-1 rounded-md bg-primary/10">
-              <span className="font-bold text-primary">{order.items.length} article{order.items.length > 1 ? 's' : ''}</span>
-            </div>
+            <span className="text-border">•</span>
+            <span className="flex items-center gap-1">
+              <Truck className="w-3 h-3" />
+              {formatPrix(order.fraisLivraison)}
+            </span>
           </div>
         </div>
 
         {/* Actions */}
-        <div className="p-3 border-t border-border bg-card">
+        <div className="p-3 border-t border-border/50 bg-muted/20">
           <Sheet>
             <SheetTrigger asChild>
-              <Button variant="outline" size="lg" className="w-full h-12 text-sm font-semibold">
+              <Button
+                variant="default"
+                size="lg"
+                className="w-full h-11 text-sm font-semibold shadow-sm hover:shadow-md transition-all active:scale-95"
+              >
+                <MoreVertical className="w-4 h-4 mr-2" />
                 Actions
               </Button>
             </SheetTrigger>

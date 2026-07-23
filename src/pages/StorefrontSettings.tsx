@@ -12,8 +12,10 @@ import { useStorefrontConfig, useUpdateStorefrontConfig } from '@/hooks/useStore
 import { storefrontConfigApi } from '@/api/storefront-config';
 import { apiClient } from '@/lib/api-client';
 import { toast } from 'sonner';
+import { useMediaQuery } from '@/hooks/useMediaQuery';
 
 const StorefrontSettings = () => {
+  const isMobile = useMediaQuery('(max-width: 768px)');
   const { data: config, isLoading } = useStorefrontConfig();
   const updateMutation = useUpdateStorefrontConfig();
   const [copied, setCopied] = useState(false);
@@ -105,28 +107,63 @@ const StorefrontSettings = () => {
 
   return (
     <AppLayout>
-      <div className="space-y-6">
+      <div className="space-y-4 md:space-y-6 pb-6">
         {/* Header */}
-        <div>
-          <h1 className="text-2xl font-bold">Vitrine en ligne</h1>
-          <p className="text-muted-foreground">
+        <div className="px-4 md:px-0">
+          <h1 className="text-xl md:text-2xl font-bold">Vitrine en ligne</h1>
+          <p className="text-sm md:text-base text-muted-foreground">
             Configurez votre boutique en ligne accessible par vos clients
           </p>
         </div>
 
-        <div className="grid gap-6 lg:grid-cols-3">
+        <div className="grid gap-4 md:gap-6 lg:grid-cols-3">
+          {/* QR Code - Afficher en premier sur mobile */}
+          {isMobile && config?.isActive && (
+            <div className="space-y-4 px-4">
+              <Card>
+                <CardHeader className="pb-3">
+                  <CardTitle className="flex items-center gap-2 text-lg">
+                    <QrCode className="h-5 w-5" />
+                    QR Code
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="flex flex-col items-center pt-0">
+                  <div className="bg-white p-3 rounded-lg border w-full flex items-center justify-center min-h-[180px]">
+                    {qrLoading ? (
+                      <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+                    ) : qrCodeUrl ? (
+                      <img src={qrCodeUrl} alt="QR Code" className="w-40 h-40" />
+                    ) : (
+                      <p className="text-sm text-muted-foreground">Erreur de chargement</p>
+                    )}
+                  </div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="mt-3 w-full"
+                    onClick={handleDownloadQr}
+                    disabled={!qrCodeUrl}
+                  >
+                    <QrCode className="h-4 w-4 mr-2" />
+                    Télécharger le QR
+                  </Button>
+                </CardContent>
+              </Card>
+            </div>
+          )}
+
           {/* Formulaire principal */}
-          <div className="lg:col-span-2 space-y-6">
-            <form onSubmit={handleSubmit}>
+          <div className="lg:col-span-2 space-y-4 md:space-y-6 px-4 md:px-0">
+            <form onSubmit={handleSubmit} className="space-y-4 md:space-y-6">
               {/* Activation */}
-              <Card className="mb-6">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
+              <Card>
+                <CardHeader className="pb-3 md:pb-6">
+                  <CardTitle className="flex items-center gap-2 text-lg md:text-xl">
                     <Globe className="h-5 w-5" />
                     Statut de la vitrine
                   </CardTitle>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="pt-0">
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="font-medium">Activer la vitrine</p>
@@ -140,22 +177,24 @@ const StorefrontSettings = () => {
                     />
                   </div>
                   {form.isActive && config?.fullUrl && (
-                    <div className="mt-4 p-3 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-800">
-                      <p className="text-sm text-green-700 dark:text-green-400 font-medium">
+                    <div className="mt-4 p-3 md:p-4 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-800">
+                      <p className="text-xs md:text-sm text-green-700 dark:text-green-400 font-medium mb-2">
                         Votre boutique est accessible sur :
                       </p>
-                      <div className="flex items-center gap-2 mt-1">
-                        <code className="text-sm bg-green-100 dark:bg-green-900/40 px-2 py-1 rounded">
+                      <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2">
+                        <code className="text-xs md:text-sm bg-green-100 dark:bg-green-900/40 px-2 py-1 rounded break-all flex-1">
                           {config.fullUrl}
                         </code>
-                        <Button type="button" variant="ghost" size="sm" onClick={handleCopyLink}>
-                          {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
-                        </Button>
-                        <Button type="button" variant="ghost" size="sm" asChild>
-                          <a href={config.fullUrl} target="_blank" rel="noopener noreferrer">
-                            <ExternalLink className="h-4 w-4" />
-                          </a>
-                        </Button>
+                        <div className="flex gap-1 w-full sm:w-auto">
+                          <Button type="button" variant="ghost" size="sm" onClick={handleCopyLink} className="flex-1 sm:flex-none h-8">
+                            {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+                          </Button>
+                          <Button type="button" variant="ghost" size="sm" asChild className="flex-1 sm:flex-none h-8">
+                            <a href={config.fullUrl} target="_blank" rel="noopener noreferrer">
+                              <ExternalLink className="h-4 w-4" />
+                            </a>
+                          </Button>
+                        </div>
                       </div>
                     </div>
                   )}
@@ -163,29 +202,29 @@ const StorefrontSettings = () => {
               </Card>
 
               {/* Informations */}
-              <Card className="mb-6">
-                <CardHeader>
-                  <CardTitle>Informations</CardTitle>
-                  <CardDescription>
+              <Card>
+                <CardHeader className="pb-3 md:pb-6">
+                  <CardTitle className="text-lg md:text-xl">Informations</CardTitle>
+                  <CardDescription className="text-xs md:text-sm">
                     Ces informations seront affichées sur votre vitrine
                   </CardDescription>
                 </CardHeader>
-                <CardContent className="space-y-4">
+                <CardContent className="space-y-3 md:space-y-4 pt-0">
                   <div>
-                    <Label htmlFor="description">Description</Label>
+                    <Label htmlFor="description" className="text-sm">Description</Label>
                     <Textarea
                       id="description"
                       placeholder="Décrivez votre boutique..."
                       value={form.description}
                       onChange={(e) => setForm({ ...form, description: e.target.value })}
-                      className="mt-1"
+                      className="mt-1.5 text-sm md:text-base"
                       rows={3}
                     />
                   </div>
 
                   <div>
-                    <Label htmlFor="whatsappNumber" className="flex items-center gap-2">
-                      <Phone className="h-4 w-4" />
+                    <Label htmlFor="whatsappNumber" className="flex items-center gap-2 text-sm">
+                      <Phone className="h-3.5 w-3.5 md:h-4 md:w-4" />
                       Numéro WhatsApp
                     </Label>
                     <Input
@@ -193,7 +232,7 @@ const StorefrontSettings = () => {
                       placeholder="+224 6XX XXX XXX"
                       value={form.whatsappNumber}
                       onChange={(e) => setForm({ ...form, whatsappNumber: e.target.value })}
-                      className="mt-1 h-12"
+                      className="mt-1.5 h-10 md:h-12 text-sm md:text-base"
                     />
                     <p className="text-xs text-muted-foreground mt-1">
                       Les clients pourront vous contacter via ce numéro
@@ -201,8 +240,8 @@ const StorefrontSettings = () => {
                   </div>
 
                   <div>
-                    <Label htmlFor="horaires" className="flex items-center gap-2">
-                      <Clock className="h-4 w-4" />
+                    <Label htmlFor="horaires" className="flex items-center gap-2 text-sm">
+                      <Clock className="h-3.5 w-3.5 md:h-4 md:w-4" />
                       Horaires d'ouverture
                     </Label>
                     <Input
@@ -210,13 +249,13 @@ const StorefrontSettings = () => {
                       placeholder="Ex: Lun-Sam 9h-18h"
                       value={form.horaires}
                       onChange={(e) => setForm({ ...form, horaires: e.target.value })}
-                      className="mt-1 h-12"
+                      className="mt-1.5 h-10 md:h-12 text-sm md:text-base"
                     />
                   </div>
 
                   <div>
-                    <Label htmlFor="adresse" className="flex items-center gap-2">
-                      <MapPin className="h-4 w-4" />
+                    <Label htmlFor="adresse" className="flex items-center gap-2 text-sm">
+                      <MapPin className="h-3.5 w-3.5 md:h-4 md:w-4" />
                       Adresse
                     </Label>
                     <Input
@@ -224,30 +263,30 @@ const StorefrontSettings = () => {
                       placeholder="Ex: Marché Madina, Conakry"
                       value={form.adresse}
                       onChange={(e) => setForm({ ...form, adresse: e.target.value })}
-                      className="mt-1 h-12"
+                      className="mt-1.5 h-10 md:h-12 text-sm md:text-base"
                     />
                   </div>
                 </CardContent>
               </Card>
 
               {/* Livraison */}
-              <Card className="mb-6">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
+              <Card>
+                <CardHeader className="pb-3 md:pb-6">
+                  <CardTitle className="flex items-center gap-2 text-lg md:text-xl">
                     <Truck className="h-5 w-5" />
                     Livraison
                   </CardTitle>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="pt-0">
                   <div>
-                    <Label htmlFor="fraisLivraison">Frais de livraison (GNF)</Label>
+                    <Label htmlFor="fraisLivraison" className="text-sm">Frais de livraison (GNF)</Label>
                     <Input
                       id="fraisLivraison"
                       type="number"
                       min="0"
                       value={form.fraisLivraison}
                       onChange={(e) => setForm({ ...form, fraisLivraison: Number(e.target.value) })}
-                      className="mt-1 h-12"
+                      className="mt-1.5 h-10 md:h-12 text-sm md:text-base"
                     />
                     <p className="text-xs text-muted-foreground mt-1">
                       Mettre 0 pour la livraison gratuite
@@ -259,7 +298,7 @@ const StorefrontSettings = () => {
               {/* Submit */}
               <Button
                 type="submit"
-                className="w-full h-12"
+                className="w-full h-11 md:h-12 text-sm md:text-base"
                 disabled={updateMutation.isPending}
               >
                 {updateMutation.isPending ? (
@@ -274,8 +313,8 @@ const StorefrontSettings = () => {
             </form>
           </div>
 
-          {/* Sidebar - QR Code */}
-          <div className="space-y-6">
+          {/* Sidebar - QR Code (Desktop uniquement) */}
+          <div className="hidden lg:block space-y-6">
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
