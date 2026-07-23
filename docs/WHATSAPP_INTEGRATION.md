@@ -69,6 +69,7 @@ Merci pour votre confiance! 🙏
 
 Fichiers modifiés:
 - `src/components/storefront/CartDrawer.tsx` - Fonctions et intégration
+- `src/components/storefront/StorefrontLayout.tsx` - Passage du prop storefront
 
 Fonctions principales:
 - `buildWhatsAppMessage()` - Construit le message formaté
@@ -133,5 +134,5 @@ Tous les tests doivent passer avec:
 ## Support
 
 Pour toute question ou problème, consulter:
-- Spec: `docs/superpowers/specs/2026-07-22-whatsapp-integration-design.md`
-- Plan: `docs/superpowers/plans/2026-07-22-whatsapp-integration.md`
+- Spec: `../Gestion_boutique_backend/docs/superpowers/specs/2026-07-22-whatsapp-integration-design.md`
+- Plan: `../Gestion_boutique_backend/docs/superpowers/plans/2026-07-22-whatsapp-integration.md`
