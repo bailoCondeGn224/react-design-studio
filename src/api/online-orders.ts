@@ -63,7 +63,7 @@ export const onlineOrdersApi = {
     return response.data;
   },
 
-  getStats: async (): Promise<{ enAttente: number; confirmees: number; pretes: number; livrees: number; total: number }> => {
+  getStats: async (): Promise<{ enAttente: number; confirmees: number; pretes: number; livreesToday: number; total: number }> => {
     const response = await apiClient.get('/online-orders/stats');
     return response.data;
   },

@@ -39,13 +39,18 @@ export const useOrderNotifications = () => {
   }, []);
 
   // Afficher la notification navigateur
-  const showBrowserNotification = useCallback((count: number) => {
+  const showBrowserNotification = useCallback((newOrders: number, totalCount: number) => {
     if ('Notification' in window && Notification.permission === 'granted') {
-      const notification = new Notification('Nouvelle commande !', {
-        body: `Vous avez ${count} commande${count > 1 ? 's' : ''} en attente`,
+      const title = newOrders === 1 ? '🛒 Nouvelle commande !' : `🛒 ${newOrders} Nouvelles commandes !`;
+      const body = `${totalCount} commande${totalCount > 1 ? 's' : ''} en attente au total. Cliquez pour voir.`;
+
+      const notification = new Notification(title, {
+        body,
         icon: '/favicon.ico',
+        badge: '/favicon.ico',
         tag: 'new-order',
-        requireInteraction: true,
+        requireInteraction: false,
+        silent: false,
       });
 
       notification.onclick = () => {
@@ -54,8 +59,8 @@ export const useOrderNotifications = () => {
         notification.close();
       };
 
-      // Fermer automatiquement après 10 secondes
-      setTimeout(() => notification.close(), 10000);
+      // Fermer automatiquement après 15 secondes
+      setTimeout(() => notification.close(), 15000);
     }
   }, []);
 
@@ -80,16 +85,18 @@ export const useOrderNotifications = () => {
       playNotificationSound();
 
       // Afficher notification navigateur
-      showBrowserNotification(currentCount);
+      showBrowserNotification(newOrders, currentCount);
 
-      // Toast dans l'app
-      toast.info(
-        `${newOrders} nouvelle${newOrders > 1 ? 's' : ''} commande${newOrders > 1 ? 's' : ''} !`,
+      // Toast dans l'app avec emoji et meilleur message
+      toast.success(
+        `🎉 ${newOrders} nouvelle${newOrders > 1 ? 's' : ''} commande${newOrders > 1 ? 's' : ''} en ligne !`,
         {
+          description: `Total: ${currentCount} commande${currentCount > 1 ? 's' : ''} en attente`,
           action: {
-            label: 'Voir',
+            label: '👀 Voir',
             onClick: () => window.location.href = '/online-orders',
           },
+          duration: 8000,
         }
       );
     }
