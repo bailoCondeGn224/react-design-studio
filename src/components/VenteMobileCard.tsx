@@ -43,7 +43,7 @@ const VenteMobileCard = ({
 }: VenteMobileCardProps) => {
   const PaymentIcon = paymentIcons[vente.modePaiement] || Receipt;
   const hasCredit = vente.montantRestant > 0;
-  const totalQuantite = vente.lignes?.reduce((sum: number, ligne: any) => sum + (ligne.quantite || 0), 0) || 0;
+  const totalQuantite = vente.lignes?.reduce((sum: number, ligne: any) => sum + (ligne.quantiteBase || ligne.quantite || 0), 0) || 0;
 
   return (
     <Card className={`transition-shadow hover:shadow-lg ${
@@ -103,7 +103,12 @@ const VenteMobileCard = ({
                     <Package className="w-3 h-3 text-muted-foreground flex-shrink-0" />
                     <span className="text-foreground truncate">{ligne.nom}</span>
                   </div>
-                  <span className="text-muted-foreground whitespace-nowrap ml-2">×{ligne.quantite}</span>
+                  <div className="text-muted-foreground whitespace-nowrap ml-2 flex items-center gap-1">
+                    <span>×{ligne.quantiteBase || ligne.quantite}</span>
+                    {ligne.modeVente && ligne.quantite !== ligne.quantiteBase && (
+                      <span className="text-[10px]">({ligne.quantite}×{ligne.modeVente.nom})</span>
+                    )}
+                  </div>
                 </div>
               ))}
               {vente.lignes.length > 2 && (
