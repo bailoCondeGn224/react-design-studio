@@ -268,6 +268,10 @@ const AppSidebar = () => {
   const { collapsed, setCollapsed } = useSidebar();
   const [mobileOpen, setMobileOpen] = useState(false);
 
+  // Get pending orders count for mobile badge
+  const { data: pendingData } = usePendingOrderCount();
+  const pendingCount = pendingData?.count ?? 0;
+
   return (
     <>
       {/* Mobile Menu Button */}
@@ -277,6 +281,12 @@ const AppSidebar = () => {
         style={{ top: 'max(1rem, env(safe-area-inset-top))' }}
       >
         <Menu className="w-5 h-5" />
+        {/* Badge pour commandes en attente */}
+        {pendingCount > 0 && (
+          <span className="absolute -top-1 -right-1 min-w-[20px] h-5 px-1.5 flex items-center justify-center text-xs font-bold rounded-full bg-primary text-primary-foreground shadow-lg">
+            {pendingCount > 99 ? '99+' : pendingCount}
+          </span>
+        )}
       </button>
 
       {/* Mobile Sidebar - Sheet */}
