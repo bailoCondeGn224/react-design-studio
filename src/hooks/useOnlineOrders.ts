@@ -58,6 +58,7 @@ export const useConfirmOrder = () => {
     mutationFn: (id: string) => onlineOrdersApi.confirm(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['online-orders'] });
+      queryClient.invalidateQueries({ queryKey: ['online-orders-stats'] });
       toast.success('Commande confirmée');
     },
     onError: (error: any) => {
@@ -72,6 +73,7 @@ export const useMarkOrderReady = () => {
     mutationFn: (id: string) => onlineOrdersApi.markReady(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['online-orders'] });
+      queryClient.invalidateQueries({ queryKey: ['online-orders-stats'] });
       toast.success('Commande marquée prête');
     },
     onError: (error: any) => {
@@ -86,6 +88,7 @@ export const useMarkOrderDelivered = () => {
     mutationFn: (id: string) => onlineOrdersApi.markDelivered(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['online-orders'] });
+      queryClient.invalidateQueries({ queryKey: ['online-orders-stats'] });
       toast.success('Commande livrée');
     },
     onError: (error: any) => {
@@ -100,6 +103,7 @@ export const useCancelOrder = () => {
     mutationFn: ({ id, motif }: { id: string; motif: string }) => onlineOrdersApi.cancel(id, motif),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['online-orders'] });
+      queryClient.invalidateQueries({ queryKey: ['online-orders-stats'] });
       toast.success('Commande annulée');
     },
     onError: (error: any) => {
