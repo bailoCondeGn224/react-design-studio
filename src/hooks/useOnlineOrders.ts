@@ -121,7 +121,7 @@ export const useOnlineOrderStats = () => {
 
 export const usePendingOrderCount = () => {
   // Ne pas appeler si pas de token (page login)
-  const hasToken = !!localStorage.getItem('token');
+  const hasToken = !!localStorage.getItem('access_token');
 
   return useQuery({
     queryKey: ['online-orders-pending-count'],
