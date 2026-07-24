@@ -54,6 +54,7 @@ export interface OnlineOrderItem {
   modeVenteId?: string;
   modeVenteNom?: string;
   quantite: number;
+  quantiteBase?: number;
   prixUnitaire: number;
   sousTotal: number;
 }

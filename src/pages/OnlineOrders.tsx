@@ -389,7 +389,10 @@ const OnlineOrders = () => {
                           <p className="text-xs text-muted-foreground">{item.modeVenteNom}</p>
                         )}
                         <p className="text-sm text-muted-foreground">
-                          {formatPrix(item.prixUnitaire)} × {item.quantite}
+                          {formatPrix(item.prixUnitaire)} × {item.quantiteBase || item.quantite}
+                          {item.modeVenteNom && item.quantite !== item.quantiteBase && (
+                            <span className="text-xs ml-1">({item.quantite} {item.modeVenteNom})</span>
+                          )}
                         </p>
                       </div>
                       <p className="font-semibold">{formatPrix(item.sousTotal)}</p>

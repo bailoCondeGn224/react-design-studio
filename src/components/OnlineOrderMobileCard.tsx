@@ -124,10 +124,15 @@ const OnlineOrderMobileCard = ({
                   <div className="w-8 h-8 rounded-md bg-primary/10 flex items-center justify-center flex-shrink-0">
                     <span className="text-xs font-bold text-primary">{index + 1}</span>
                   </div>
-                  <span className="text-xs font-medium text-foreground truncate">{item.articleNom}</span>
+                  <div className="flex-1 min-w-0">
+                    <span className="text-xs font-medium text-foreground truncate block">{item.articleNom}</span>
+                    {item.modeVenteNom && item.quantite !== item.quantiteBase && (
+                      <span className="text-[10px] text-muted-foreground">({item.quantite} {item.modeVenteNom})</span>
+                    )}
+                  </div>
                 </div>
                 <div className="px-2 py-1 rounded-md bg-primary/10">
-                  <span className="text-xs font-bold text-primary">×{item.quantite}</span>
+                  <span className="text-xs font-bold text-primary">×{item.quantiteBase || item.quantite}</span>
                 </div>
               </div>
             ))}
