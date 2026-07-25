@@ -13,6 +13,10 @@ interface OnlineOrderMobileCardProps {
   onViewDetails: (id: string) => void;
   formatPrix: (prix: number) => string;
   formatDate: (date: string) => string;
+  isConfirming?: boolean;
+  isMarkingReady?: boolean;
+  isMarkingDelivered?: boolean;
+  isCanceling?: boolean;
 }
 
 const statutConfig: Record<OnlineOrderStatut, { label: string; icon: typeof Clock; className: string; bgClassName: string }> = {
@@ -57,6 +61,10 @@ const OnlineOrderMobileCard = ({
   onViewDetails,
   formatPrix,
   formatDate,
+  isConfirming = false,
+  isMarkingReady = false,
+  isMarkingDelivered = false,
+  isCanceling = false,
 }: OnlineOrderMobileCardProps) => {
   const statut = statutConfig[order.statut];
   const StatutIcon = statut.icon;
@@ -199,9 +207,10 @@ const OnlineOrderMobileCard = ({
                     size="lg"
                     className="w-full h-14 justify-start text-left text-base"
                     onClick={() => onConfirm(order.id)}
+                    disabled={isConfirming}
                   >
                     <CheckCircle className="w-5 h-5 mr-3" />
-                    Confirmer la commande
+                    {isConfirming ? 'Confirmation...' : 'Confirmer la commande'}
                   </Button>
                 )}
 
@@ -211,9 +220,10 @@ const OnlineOrderMobileCard = ({
                     size="lg"
                     className="w-full h-14 justify-start text-left text-base"
                     onClick={() => onMarkReady(order.id)}
+                    disabled={isMarkingReady}
                   >
                     <Package className="w-5 h-5 mr-3" />
-                    Marquer prête
+                    {isMarkingReady ? 'Marquage...' : 'Marquer prête'}
                   </Button>
                 )}
 
@@ -223,9 +233,10 @@ const OnlineOrderMobileCard = ({
                     size="lg"
                     className="w-full h-14 justify-start text-left text-base"
                     onClick={() => onMarkDelivered(order.id)}
+                    disabled={isMarkingDelivered}
                   >
                     <Truck className="w-5 h-5 mr-3" />
-                    Marquer livrée
+                    {isMarkingDelivered ? 'Marquage...' : 'Marquer livrée'}
                   </Button>
                 )}
 
@@ -245,9 +256,10 @@ const OnlineOrderMobileCard = ({
                     size="lg"
                     className="w-full h-14 justify-start text-left text-base text-destructive hover:text-destructive hover:bg-destructive/10 border-destructive/30"
                     onClick={() => onCancel(order.id)}
+                    disabled={isCanceling}
                   >
                     <XCircle className="w-5 h-5 mr-3" />
-                    Annuler la commande
+                    {isCanceling ? 'Annulation...' : 'Annuler la commande'}
                   </Button>
                 )}
               </div>

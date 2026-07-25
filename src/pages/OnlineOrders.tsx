@@ -220,6 +220,10 @@ const OnlineOrders = () => {
                 onViewDetails={handleViewDetails}
                 formatPrix={formatPrix}
                 formatDate={formatDate}
+                isConfirming={confirmOrder.isPending}
+                isMarkingReady={markReady.isPending}
+                isMarkingDelivered={markDelivered.isPending}
+                isCanceling={cancelOrder.isPending}
               />
             ))}
           </div>
@@ -263,18 +267,30 @@ const OnlineOrders = () => {
                       <TableCell className="text-right">
                         <div className="flex justify-end gap-2">
                           {order.statut === OnlineOrderStatut.EN_ATTENTE && (
-                            <Button size="sm" onClick={() => handleConfirm(order.id)}>
-                              Confirmer
+                            <Button
+                              size="sm"
+                              onClick={() => handleConfirm(order.id)}
+                              disabled={confirmOrder.isPending}
+                            >
+                              {confirmOrder.isPending ? 'En cours...' : 'Confirmer'}
                             </Button>
                           )}
                           {order.statut === OnlineOrderStatut.CONFIRMEE && (
-                            <Button size="sm" onClick={() => handleMarkReady(order.id)}>
-                              Prête
+                            <Button
+                              size="sm"
+                              onClick={() => handleMarkReady(order.id)}
+                              disabled={markReady.isPending}
+                            >
+                              {markReady.isPending ? 'En cours...' : 'Prête'}
                             </Button>
                           )}
                           {order.statut === OnlineOrderStatut.PRETE && (
-                            <Button size="sm" onClick={() => handleMarkDelivered(order.id)}>
-                              Livrée
+                            <Button
+                              size="sm"
+                              onClick={() => handleMarkDelivered(order.id)}
+                              disabled={markDelivered.isPending}
+                            >
+                              {markDelivered.isPending ? 'En cours...' : 'Livrée'}
                             </Button>
                           )}
                           <Button size="sm" variant="outline" onClick={() => handleViewDetails(order.id)}>
