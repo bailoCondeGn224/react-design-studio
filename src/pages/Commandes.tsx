@@ -1124,12 +1124,21 @@ const Commandes = () => {
             {/* Footer */}
             <div className="px-6 py-4 border-t bg-muted/30 flex-shrink-0">
               <div className="flex gap-3 justify-end">
-                <Button variant="outline" onClick={() => setLivrerCommande(null)} className="h-11">
+                <Button
+                  variant="outline"
+                  onClick={() => setLivrerCommande(null)}
+                  disabled={livrerCommandeMutation.isPending}
+                  className="h-11"
+                >
                   Annuler
                 </Button>
-                <Button onClick={handleLivrer} className="h-11 bg-green-600 hover:bg-green-700">
+                <Button
+                  onClick={handleLivrer}
+                  disabled={livrerCommandeMutation.isPending}
+                  className="h-11 bg-green-600 hover:bg-green-700"
+                >
                   <CheckCircle className="mr-2 h-4 w-4" />
-                  Confirmer la livraison
+                  {livrerCommandeMutation.isPending ? 'Livraison...' : 'Confirmer la livraison'}
                 </Button>
               </div>
             </div>
@@ -1147,8 +1156,13 @@ const Commandes = () => {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Non, conserver</AlertDialogCancel>
-            <AlertDialogAction onClick={handleAnnuler}>Oui, annuler</AlertDialogAction>
+            <AlertDialogCancel disabled={annulerCommande.isPending}>Non, conserver</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleAnnuler}
+              disabled={annulerCommande.isPending}
+            >
+              {annulerCommande.isPending ? 'Annulation...' : 'Oui, annuler'}
+            </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
