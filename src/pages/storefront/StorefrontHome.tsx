@@ -74,7 +74,7 @@ const StorefrontHomeContent = () => {
                   placeholder="Rechercher..."
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  className="w-full h-10 pl-9 pr-8 bg-gray-100 border-0 rounded-lg text-sm placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
+                  className="w-full h-10 pl-9 pr-8 bg-gray-100 border-0 rounded-lg text-sm placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:bg-white transition-all duration-200"
                 />
                 {search && (
                   <button
@@ -91,16 +91,16 @@ const StorefrontHomeContent = () => {
                 <div className="relative">
                   <button
                     onClick={() => setIsCategoryOpen(!isCategoryOpen)}
-                    className={`h-10 px-3 flex items-center gap-1.5 bg-gray-100 rounded-lg text-sm font-medium transition-all ${
+                    className={`h-10 px-3 flex items-center gap-1.5 rounded-lg text-sm font-medium transition-all duration-200 ${
                       categoryId !== 'all'
-                        ? 'bg-primary/10 text-primary'
-                        : 'text-gray-700'
+                        ? 'bg-primary/10 text-primary shadow-sm'
+                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                     }`}
                   >
                     <span className="max-w-[80px] truncate">
                       {selectedCategory?.nom || 'Catégorie'}
                     </span>
-                    <ChevronDown className={`h-4 w-4 transition-transform ${isCategoryOpen ? 'rotate-180' : ''}`} />
+                    <ChevronDown className={`h-4 w-4 transition-transform duration-200 ${isCategoryOpen ? 'rotate-180' : ''}`} />
                   </button>
 
                   {/* Dropdown Menu */}
@@ -110,10 +110,10 @@ const StorefrontHomeContent = () => {
                         className="fixed inset-0 z-10"
                         onClick={() => setIsCategoryOpen(false)}
                       />
-                      <div className="absolute right-0 top-full mt-1 w-44 bg-white rounded-lg shadow-lg border border-gray-100 py-1 z-20 animate-in fade-in slide-in-from-top-2 duration-200">
+                      <div className="absolute right-0 top-full mt-1 w-44 bg-white rounded-lg shadow-lg border border-gray-100 py-1 z-20 animate-in fade-in slide-in-from-top-2 duration-200 max-h-[60vh] overflow-y-auto">
                         <button
                           onClick={() => handleCategorySelect('all')}
-                          className={`w-full px-3 py-2 text-left text-sm hover:bg-gray-50 transition-colors ${
+                          className={`w-full px-3 py-2 text-left text-sm hover:bg-gray-50 transition-colors duration-150 ${
                             categoryId === 'all' ? 'text-primary font-medium bg-primary/5' : 'text-gray-700'
                           }`}
                         >
@@ -124,7 +124,7 @@ const StorefrontHomeContent = () => {
                           <button
                             key={cat.id}
                             onClick={() => handleCategorySelect(cat.id)}
-                            className={`w-full px-3 py-2 text-left text-sm hover:bg-gray-50 transition-colors ${
+                            className={`w-full px-3 py-2 text-left text-sm hover:bg-gray-50 transition-colors duration-150 ${
                               categoryId === cat.id ? 'text-primary font-medium bg-primary/5' : 'text-gray-700'
                             }`}
                           >

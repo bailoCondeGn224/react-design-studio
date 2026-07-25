@@ -178,10 +178,10 @@ const StorefrontProduct = () => {
                   <button
                     key={mode.id}
                     onClick={() => setSelectedModeId(selectedModeId === mode.id ? null : mode.id)}
-                    className={`relative w-full p-4 rounded-xl border-2 transition-all text-left ${
+                    className={`relative w-full p-4 rounded-xl border-2 transition-all duration-200 text-left active:scale-[0.98] ${
                       selectedModeId === mode.id
-                        ? 'border-primary bg-primary/5'
-                        : 'border-gray-100 hover:border-gray-200 bg-gray-50'
+                        ? 'border-primary bg-primary/5 shadow-sm'
+                        : 'border-gray-100 hover:border-gray-200 bg-gray-50 hover:bg-gray-100'
                     }`}
                   >
                     {selectedModeId === mode.id && (
@@ -224,7 +224,7 @@ const StorefrontProduct = () => {
                 {/* Quantity Selector */}
                 <div className="flex items-center bg-gray-100 rounded-xl">
                   <button
-                    className="w-12 h-12 flex items-center justify-center rounded-l-xl hover:bg-gray-200 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                    className="w-12 h-12 flex items-center justify-center rounded-l-xl hover:bg-gray-200 active:bg-gray-300 transition-all duration-150 disabled:opacity-40 disabled:cursor-not-allowed"
                     onClick={decrementQuantity}
                     disabled={quantity <= 1}
                   >
@@ -232,7 +232,7 @@ const StorefrontProduct = () => {
                   </button>
                   <span className="w-10 text-center font-bold text-gray-900">{quantity}</span>
                   <button
-                    className="w-12 h-12 flex items-center justify-center rounded-r-xl hover:bg-gray-200 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                    className="w-12 h-12 flex items-center justify-center rounded-r-xl hover:bg-gray-200 active:bg-gray-300 transition-all duration-150 disabled:opacity-40 disabled:cursor-not-allowed"
                     onClick={incrementQuantity}
                     disabled={quantity >= maxQuantity}
                   >
@@ -242,7 +242,7 @@ const StorefrontProduct = () => {
 
                 {/* Add to Cart Button */}
                 <button
-                  className="flex-1 h-12 flex items-center justify-center gap-2 bg-primary text-white font-semibold rounded-xl hover:bg-primary/90 active:scale-[0.98] transition-all shadow-lg shadow-primary/25"
+                  className="flex-1 h-12 flex items-center justify-center gap-2 bg-primary text-white font-semibold rounded-xl hover:bg-primary/90 active:scale-95 transition-all duration-200 shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/30"
                   onClick={handleAddToCart}
                 >
                   <ShoppingCart className="h-5 w-5" />

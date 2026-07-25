@@ -140,7 +140,7 @@ export const ImageZoomDialog = ({ imageUrl, isOpen, onClose, productName }: Imag
     <>
       {/* Backdrop */}
       <div
-        className="fixed inset-0 bg-black z-[100] animate-in fade-in duration-200"
+        className="fixed inset-0 bg-black z-[100] animate-in fade-in duration-300"
         onClick={onClose}
       />
 
@@ -197,7 +197,7 @@ export const ImageZoomDialog = ({ imageUrl, isOpen, onClose, productName }: Imag
             <button
               onClick={handleZoomOut}
               disabled={scale <= 1}
-              className="w-11 h-11 rounded-full bg-white/20 hover:bg-white/30 disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center transition-all"
+              className="w-11 h-11 rounded-full bg-white/20 hover:bg-white/30 active:bg-white/40 disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center transition-all duration-150 active:scale-95"
             >
               <ZoomOut className="h-5 w-5 text-white" strokeWidth={2.5} />
             </button>
@@ -211,7 +211,7 @@ export const ImageZoomDialog = ({ imageUrl, isOpen, onClose, productName }: Imag
             <button
               onClick={handleZoomIn}
               disabled={scale >= 4}
-              className="w-11 h-11 rounded-full bg-white/20 hover:bg-white/30 disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center transition-all"
+              className="w-11 h-11 rounded-full bg-white/20 hover:bg-white/30 active:bg-white/40 disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center transition-all duration-150 active:scale-95"
             >
               <ZoomIn className="h-5 w-5 text-white" strokeWidth={2.5} />
             </button>
@@ -221,7 +221,7 @@ export const ImageZoomDialog = ({ imageUrl, isOpen, onClose, productName }: Imag
             <button
               onClick={handleReset}
               disabled={scale === 1}
-              className="w-11 h-11 rounded-full bg-white/20 hover:bg-white/30 disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center transition-all"
+              className="w-11 h-11 rounded-full bg-white/20 hover:bg-white/30 active:bg-white/40 disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center transition-all duration-150 active:scale-95"
               title="Réinitialiser"
             >
               <Maximize2 className="h-5 w-5 text-white" strokeWidth={2.5} />

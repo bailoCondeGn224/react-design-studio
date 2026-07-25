@@ -57,12 +57,12 @@ export const ProductDetailDialog = ({
     <>
       {/* Backdrop */}
       <div
-        className="fixed inset-0 bg-black/60 z-50 animate-in fade-in duration-200"
+        className="fixed inset-0 bg-black/60 z-50 animate-in fade-in duration-300"
         onClick={onClose}
       />
 
       {/* Dialog - Bottom sheet mobile-first */}
-      <div className="fixed inset-x-0 bottom-0 z-50 bg-white rounded-t-2xl shadow-2xl max-h-[85vh] flex flex-col animate-in slide-in-from-bottom duration-300">
+      <div className="fixed inset-x-0 bottom-0 z-50 bg-white rounded-t-2xl shadow-2xl max-h-[85vh] flex flex-col animate-in slide-in-from-bottom duration-300 ease-out">
         {/* Drag handle indicator */}
         <div className="flex justify-center pt-3 pb-2">
           <div className="w-12 h-1 bg-gray-300 rounded-full" />
@@ -89,7 +89,7 @@ export const ProductDetailDialog = ({
                   <img
                     src={photoUrl}
                     alt={article.nom}
-                    className="w-full h-full object-cover"
+                    className="w-full h-full object-contain"
                   />
                   {/* Zoom indicator */}
                   <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors flex items-center justify-center">
@@ -161,10 +161,10 @@ export const ProductDetailDialog = ({
                     <button
                       key={mode.id}
                       onClick={() => setSelectedModeId(selectedModeId === mode.id ? null : mode.id)}
-                      className={`relative w-full p-3 rounded-lg border transition-all text-left ${
+                      className={`relative w-full p-3 rounded-lg border transition-all duration-200 text-left active:scale-[0.98] ${
                         selectedModeId === mode.id
                           ? 'border-primary bg-primary/10 shadow-sm'
-                          : 'border-gray-200 bg-gray-50/50 hover:bg-gray-50'
+                          : 'border-gray-200 bg-gray-50/50 hover:bg-gray-50 hover:border-gray-300'
                       }`}
                     >
                       {selectedModeId === mode.id && (
@@ -204,7 +204,7 @@ export const ProductDetailDialog = ({
               {/* Compact quantity selector */}
               <div className="flex items-center bg-gray-100 rounded-lg overflow-hidden">
                 <button
-                  className="w-10 h-12 flex items-center justify-center hover:bg-gray-200 transition-colors disabled:opacity-30"
+                  className="w-10 h-12 flex items-center justify-center hover:bg-gray-200 active:bg-gray-300 transition-all duration-150 disabled:opacity-30"
                   onClick={decrementQuantity}
                   disabled={quantity <= 1}
                 >
@@ -212,7 +212,7 @@ export const ProductDetailDialog = ({
                 </button>
                 <span className="w-8 text-center font-bold text-gray-900 text-sm">{quantity}</span>
                 <button
-                  className="w-10 h-12 flex items-center justify-center hover:bg-gray-200 transition-colors disabled:opacity-30"
+                  className="w-10 h-12 flex items-center justify-center hover:bg-gray-200 active:bg-gray-300 transition-all duration-150 disabled:opacity-30"
                   onClick={incrementQuantity}
                   disabled={quantity >= maxQuantity}
                 >
@@ -222,7 +222,7 @@ export const ProductDetailDialog = ({
 
               {/* Add to cart - prominent */}
               <button
-                className="flex-1 h-12 flex items-center justify-center gap-2 bg-primary text-white font-bold rounded-lg hover:bg-primary/95 active:scale-[0.98] transition-all shadow-md"
+                className="flex-1 h-12 flex items-center justify-center gap-2 bg-primary text-white font-bold rounded-lg hover:bg-primary/95 active:scale-95 transition-all duration-200 shadow-md hover:shadow-lg"
                 onClick={handleAddToCart}
               >
                 <ShoppingCart className="h-4 w-4" strokeWidth={2.5} />

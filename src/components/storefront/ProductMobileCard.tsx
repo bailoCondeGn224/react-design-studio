@@ -14,17 +14,17 @@ export const ProductMobileCard = ({ article, onClick, formatPrix }: ProductMobil
   const isOutOfStock = article.stock <= 0;
 
   return (
-    <div className="bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 border border-gray-100">
+    <div className="bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300 border border-gray-100 hover:border-gray-200 active:scale-[0.98]">
       {/* IMAGE - Style Post Facebook (pleine largeur, edge-to-edge) */}
       <div
-        className="relative w-full aspect-square bg-gradient-to-br from-gray-50 to-gray-100 cursor-pointer overflow-hidden"
+        className="relative w-full aspect-square bg-gradient-to-br from-gray-50 to-gray-100 cursor-pointer overflow-hidden group"
         onClick={onClick}
       >
         {photoUrl ? (
           <img
             src={photoUrl}
             alt={article.nom}
-            className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ease-out"
             loading="lazy"
           />
         ) : (
@@ -109,10 +109,10 @@ export const ProductMobileCard = ({ article, onClick, formatPrix }: ProductMobil
             onClick();
           }}
           disabled={isOutOfStock}
-          className={`w-full h-9 rounded-lg text-xs font-semibold transition-all flex items-center justify-center gap-1.5 ${
+          className={`w-full h-9 rounded-lg text-xs font-semibold transition-all duration-200 flex items-center justify-center gap-1.5 ${
             isOutOfStock
               ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-              : 'bg-primary hover:bg-primary/90 text-white active:scale-[0.98] shadow-sm'
+              : 'bg-primary hover:bg-primary/90 text-white active:scale-95 shadow-sm hover:shadow-md'
           }`}
         >
           <ShoppingCart className="w-3.5 h-3.5" />
