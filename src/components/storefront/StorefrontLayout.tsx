@@ -3,6 +3,7 @@ import { ReactNode } from 'react';
 import { useParams } from 'react-router-dom';
 import { StorefrontHeader } from './StorefrontHeader';
 import { CartDrawer } from './CartDrawer';
+import { WhatsAppFloatingButton } from './WhatsAppFloatingButton';
 import { useStorefront } from '@/hooks/useStorefront';
 import { CartDrawerProvider, useCartDrawer } from '@/contexts/CartDrawerContext';
 import { CartProvider, useCartContext } from '@/contexts/CartContext';
@@ -64,6 +65,13 @@ const StorefrontLayoutContent = ({ children }: StorefrontLayoutProps) => {
         onCheckout={() => {}}
         storefront={storefront}
       />
+      {/* Bouton WhatsApp flottant */}
+      {storefront.whatsappNumber && (
+        <WhatsAppFloatingButton
+          phoneNumber={storefront.whatsappNumber}
+          storeName={storefront.nom}
+        />
+      )}
     </div>
   );
 };
