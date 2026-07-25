@@ -1,5 +1,5 @@
 // src/components/storefront/WhatsAppFloatingButton.tsx
-import { MessageCircle } from 'lucide-react';
+import { WhatsAppIcon } from '@/components/icons/WhatsAppIcon';
 
 interface WhatsAppFloatingButtonProps {
   phoneNumber: string;
@@ -35,7 +35,7 @@ export const WhatsAppFloatingButton = ({ phoneNumber, storeName }: WhatsAppFloat
       >
         {/* Icône + texte sur desktop */}
         <div className="flex items-center gap-2 pl-5 pr-5 py-4">
-          <MessageCircle className="h-6 w-6 animate-pulse" strokeWidth={2} />
+          <WhatsAppIcon className="h-6 w-6 animate-pulse" size={24} />
           <span className="hidden sm:inline font-semibold text-sm">
             Besoin d'aide ?
           </span>
