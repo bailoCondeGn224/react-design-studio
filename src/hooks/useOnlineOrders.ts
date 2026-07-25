@@ -123,10 +123,15 @@ export const usePendingOrderCount = () => {
   // Ne pas appeler si pas de token (page login)
   const hasToken = !!localStorage.getItem('access_token');
 
+  // Ne pas appeler pour les super admins (ils n'ont pas d'organizationId)
+  const userStr = localStorage.getItem('user');
+  const user = userStr ? JSON.parse(userStr) : null;
+  const isSuperAdmin = user?.isSuperAdmin ?? false;
+
   return useQuery({
     queryKey: ['online-orders-pending-count'],
     queryFn: () => onlineOrdersApi.getPendingCount(),
-    refetchInterval: hasToken ? 30000 : false,
-    enabled: hasToken,
+    refetchInterval: hasToken && !isSuperAdmin ? 30000 : false,
+    enabled: hasToken && !isSuperAdmin,
   });
 };
