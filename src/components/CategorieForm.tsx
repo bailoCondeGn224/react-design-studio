@@ -15,9 +15,10 @@ interface CategorieFormProps {
   onSubmit: (data: any) => void;
   initialData?: Categorie | null;
   mode?: 'create' | 'edit';
+  isSubmitting?: boolean;
 }
 
-const CategorieForm = ({ open, onOpenChange, onSubmit, initialData = null, mode = 'create' }: CategorieFormProps) => {
+const CategorieForm = ({ open, onOpenChange, onSubmit, initialData = null, mode = 'create', isSubmitting = false }: CategorieFormProps) => {
   const { data: zones = [], isLoading: loadingZones } = useZonesActive();
   const isMobile = useIsMobile();
 
@@ -242,6 +243,7 @@ const CategorieForm = ({ open, onOpenChange, onSubmit, initialData = null, mode 
           </Button>
           <Button
             type="submit"
+            disabled={isSubmitting}
             onClick={(e: any) => {
               const dialogContent = e.target.closest('[role="dialog"]');
               const formElement = dialogContent?.querySelector('form');
@@ -252,7 +254,7 @@ const CategorieForm = ({ open, onOpenChange, onSubmit, initialData = null, mode 
             className="w-full sm:w-auto"
           >
             <Check className="w-4 h-4 mr-2" />
-            {mode === 'edit' ? 'Enregistrer les modifications' : 'Créer la catégorie'}
+            {isSubmitting ? 'En cours...' : (mode === 'edit' ? 'Enregistrer les modifications' : 'Créer la catégorie')}
           </Button>
         </div>
       </div>

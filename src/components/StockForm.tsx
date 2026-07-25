@@ -18,6 +18,7 @@ interface StockFormProps {
   onSubmit: (data: any) => void;
   initialData?: any;
   mode?: 'create' | 'edit';
+  isSubmitting?: boolean;
 }
 
 function inferTypeVenteFromModes(modes: ModeVenteInline[] | undefined): {
@@ -53,7 +54,7 @@ function inferTypeVenteFromModes(modes: ModeVenteInline[] | undefined): {
   }
 }
 
-const StockForm = ({ open, onOpenChange, onSubmit, initialData = null, mode = 'create' }: StockFormProps) => {
+const StockForm = ({ open, onOpenChange, onSubmit, initialData = null, mode = 'create', isSubmitting = false }: StockFormProps) => {
   const { data: categories = [], isLoading: loadingCategories } = useCategoriesActive();
 
   const getInitialState = () => {
@@ -660,9 +661,10 @@ const StockForm = ({ open, onOpenChange, onSubmit, initialData = null, mode = 'c
             </button>
             <button
               type="submit"
-              className="w-full sm:flex-1 h-12 rounded-lg gradient-gold text-primary-foreground text-base font-semibold hover:opacity-90 active:scale-[0.98] transition-all"
+              disabled={isSubmitting}
+              className="w-full sm:flex-1 h-12 rounded-lg gradient-gold text-primary-foreground text-base font-semibold hover:opacity-90 active:scale-[0.98] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Enregistrer
+              {isSubmitting ? 'En cours...' : 'Enregistrer'}
             </button>
           </div>
         </form>

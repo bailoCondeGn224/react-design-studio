@@ -38,9 +38,10 @@ interface BulkArticleFormProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSubmit: (articles: any[], photos: (File | null)[]) => void;
+  isSubmitting?: boolean;
 }
 
-const BulkArticleForm = ({ open, onOpenChange, onSubmit }: BulkArticleFormProps) => {
+const BulkArticleForm = ({ open, onOpenChange, onSubmit, isSubmitting = false }: BulkArticleFormProps) => {
   const { data: categories = [] } = useCategoriesActive();
   const { data: zones = [] } = useZonesActive();
   const isMobile = useIsMobile();
@@ -598,10 +599,10 @@ const BulkArticleForm = ({ open, onOpenChange, onSubmit }: BulkArticleFormProps)
           <Button
             type="button"
             onClick={handleSubmit}
-            disabled={lignesValides === 0}
+            disabled={lignesValides === 0 || isSubmitting}
             className="w-full sm:flex-1 h-12 gradient-gold text-primary-foreground"
           >
-            Enregistrer {lignesValides > 0 && `(${lignesValides})`}
+            {isSubmitting ? 'En cours...' : `Enregistrer ${lignesValides > 0 ? `(${lignesValides})` : ''}`}
           </Button>
         </div>
       </div>

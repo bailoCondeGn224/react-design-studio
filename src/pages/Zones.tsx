@@ -203,6 +203,7 @@ const Zones = () => {
         onSubmit={handleSubmit}
         initialData={editingZone}
         mode={formMode}
+        isSubmitting={createMutation.isPending || updateMutation.isPending}
       />
 
       {/* Delete Confirmation Dialog */}

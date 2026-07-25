@@ -14,9 +14,10 @@ interface RetourFournisseurFormProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSubmit: (data: any) => void;
+  isSubmitting?: boolean;
 }
 
-const RetourFournisseurForm = ({ open, onOpenChange, onSubmit }: RetourFournisseurFormProps) => {
+const RetourFournisseurForm = ({ open, onOpenChange, onSubmit, isSubmitting = false }: RetourFournisseurFormProps) => {
   const isMobile = useIsMobile();
   const [form, setForm] = useState({
     approvisionnementId: "",
@@ -466,6 +467,7 @@ const RetourFournisseurForm = ({ open, onOpenChange, onSubmit }: RetourFournisse
           </Button>
           <Button
             type="submit"
+            disabled={isSubmitting}
             onClick={(e: any) => {
               const dialogContent = e.target.closest('[role="dialog"]');
               const formElement = dialogContent?.querySelector('form');
@@ -476,7 +478,7 @@ const RetourFournisseurForm = ({ open, onOpenChange, onSubmit }: RetourFournisse
             className="w-full sm:w-auto"
           >
             <Check className="w-4 h-4 mr-2" />
-            Enregistrer le retour
+            {isSubmitting ? 'En cours...' : 'Enregistrer le retour'}
           </Button>
         </div>
       </div>

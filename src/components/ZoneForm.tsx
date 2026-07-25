@@ -11,9 +11,10 @@ interface ZoneFormProps {
   onSubmit: (data: any) => void;
   initialData?: any;
   mode: 'create' | 'edit';
+  isSubmitting?: boolean;
 }
 
-const ZoneForm = ({ open, onOpenChange, onSubmit, initialData, mode }: ZoneFormProps) => {
+const ZoneForm = ({ open, onOpenChange, onSubmit, initialData, mode, isSubmitting = false }: ZoneFormProps) => {
   const isMobile = useIsMobile();
 
   const [formData, setFormData] = useState({
@@ -198,6 +199,7 @@ const ZoneForm = ({ open, onOpenChange, onSubmit, initialData, mode }: ZoneFormP
           </Button>
           <Button
             type="submit"
+            disabled={isSubmitting}
             onClick={(e: any) => {
               const dialogContent = e.target.closest('[role="dialog"]');
               const formElement = dialogContent?.querySelector('form');
@@ -208,7 +210,7 @@ const ZoneForm = ({ open, onOpenChange, onSubmit, initialData, mode }: ZoneFormP
             className="w-full sm:w-auto"
           >
             <Check className="w-4 h-4 mr-2" />
-            {mode === 'create' ? 'Créer la zone' : 'Enregistrer les modifications'}
+            {isSubmitting ? 'En cours...' : (mode === 'create' ? 'Créer la zone' : 'Enregistrer les modifications')}
           </Button>
         </div>
       </div>

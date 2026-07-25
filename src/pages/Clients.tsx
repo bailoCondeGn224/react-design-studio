@@ -143,6 +143,7 @@ const Clients = () => {
         onSubmit={handleSubmit}
         initialData={editingItem}
         mode={editingItem ? 'edit' : 'create'}
+        isSubmitting={createClient.isPending || updateClient.isPending}
       />
 
       {selectedClient && (

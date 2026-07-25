@@ -315,6 +315,7 @@ const Stock = () => {
         open={bulkFormOpen}
         onOpenChange={setBulkFormOpen}
         onSubmit={handleBulkSubmit}
+        isSubmitting={createBulkArticles.isPending}
       />
 
       {/* Dialog Import Excel */}
@@ -334,6 +335,7 @@ const Stock = () => {
         onSubmit={handleSubmit}
         initialData={editingItem}
         mode={editingItem ? "edit" : "create"}
+        isSubmitting={createArticle.isPending || updateArticle.isPending}
       />
 
       <AlertDialog open={deleteId !== null} onOpenChange={() => setDeleteId(null)}>

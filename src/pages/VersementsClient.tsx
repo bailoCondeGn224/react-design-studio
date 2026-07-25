@@ -181,6 +181,7 @@ const VersementsClient = () => {
         versementClient={selectedVersement || undefined}
         clientId={selectedClient?.id}
         client={selectedClient}
+        isSubmitting={createVersement.isPending || updateVersement.isPending}
       />
 
       {/* Dialog Confirmation Suppression */}

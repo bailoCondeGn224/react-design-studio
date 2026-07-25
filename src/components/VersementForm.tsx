@@ -18,9 +18,10 @@ interface VersementFormProps {
   versement?: Versement;
   fournisseurId?: string;
   fournisseur?: any; // Objet fournisseur complet avec dette
+  isSubmitting?: boolean;
 }
 
-const VersementForm = ({ open, onOpenChange, onSubmit, versement, fournisseurId, fournisseur }: VersementFormProps) => {
+const VersementForm = ({ open, onOpenChange, onSubmit, versement, fournisseurId, fournisseur, isSubmitting = false }: VersementFormProps) => {
   const isMobile = useIsMobile();
 
   const getInitialState = () => {
@@ -383,6 +384,7 @@ const VersementForm = ({ open, onOpenChange, onSubmit, versement, fournisseurId,
           </Button>
           <Button
             type="submit"
+            disabled={isSubmitting}
             onClick={(e: any) => {
               const dialogContent = e.target.closest('[role="dialog"]');
               const formElement = dialogContent?.querySelector('form');
@@ -393,7 +395,7 @@ const VersementForm = ({ open, onOpenChange, onSubmit, versement, fournisseurId,
             className="w-full sm:w-auto"
           >
             <Check className="w-4 h-4 mr-2" />
-            {versement ? 'Modifier le versement' : 'Enregistrer le versement'}
+            {isSubmitting ? 'En cours...' : (versement ? 'Modifier le versement' : 'Enregistrer le versement')}
           </Button>
         </div>
       </div>

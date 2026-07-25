@@ -16,9 +16,10 @@ interface VersementClientFormProps {
   versementClient?: VersementClient;
   clientId?: string;
   client?: any; // Objet client complet avec dette
+  isSubmitting?: boolean;
 }
 
-const VersementClientForm = ({ open, onOpenChange, onSubmit, versementClient, clientId, client }: VersementClientFormProps) => {
+const VersementClientForm = ({ open, onOpenChange, onSubmit, versementClient, clientId, client, isSubmitting = false }: VersementClientFormProps) => {
   const isMobile = useIsMobile();
   const { data: clientsResponse } = useClients({ page: 1, limit: 100 });
   const clients = clientsResponse?.data || [];
@@ -360,9 +361,10 @@ const VersementClientForm = ({ open, onOpenChange, onSubmit, versementClient, cl
         <button
           type="submit"
           onClick={handleSubmit}
-          className="flex-1 py-2.5 rounded-lg gradient-gold text-primary-foreground text-sm font-semibold hover:opacity-90 transition-opacity"
+          disabled={isSubmitting}
+          className="flex-1 py-2.5 rounded-lg gradient-gold text-primary-foreground text-sm font-semibold hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          {versementClient ? 'Modifier' : 'Enregistrer'}
+          {isSubmitting ? 'En cours...' : (versementClient ? 'Modifier' : 'Enregistrer')}
         </button>
       </div>
     </div>

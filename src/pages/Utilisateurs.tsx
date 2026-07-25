@@ -124,6 +124,7 @@ const Utilisateurs = () => {
         onSubmit={handleSubmit}
         initialData={editingItem}
         mode={editingItem ? 'edit' : 'create'}
+        isSubmitting={createUser.isPending || updateUser.isPending}
       />
 
       <AlertDialog open={deleteId !== null} onOpenChange={() => setDeleteId(null)}>

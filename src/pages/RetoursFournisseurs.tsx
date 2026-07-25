@@ -213,6 +213,7 @@ const RetoursFournisseurs = () => {
         open={formOpen}
         onOpenChange={setFormOpen}
         onSubmit={handleSubmit}
+        isSubmitting={createRetourFournisseur.isPending}
       />
     </AppLayout>
   );

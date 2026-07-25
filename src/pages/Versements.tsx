@@ -184,6 +184,7 @@ const Versements = () => {
         versement={selectedVersement || undefined}
         fournisseurId={selectedFournisseur?.id}
         fournisseur={selectedFournisseur}
+        isSubmitting={createVersement.isPending || updateVersement.isPending}
       />
 
       {/* Dialog Détails */}

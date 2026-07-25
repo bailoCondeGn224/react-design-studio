@@ -15,6 +15,7 @@ interface VenteFormProps {
   onSubmit: (data: any) => void;
   initialData?: any;
   mode?: 'create' | 'edit';
+  isSubmitting?: boolean;
   preselectedArticle?: {
     id: string;
     nom: string;
@@ -32,7 +33,7 @@ interface VenteFormProps {
   };
 }
 
-const VenteForm = ({ open, onOpenChange, onSubmit, initialData = null, mode = 'create', preselectedArticle }: VenteFormProps) => {
+const VenteForm = ({ open, onOpenChange, onSubmit, initialData = null, mode = 'create', isSubmitting = false, preselectedArticle }: VenteFormProps) => {
   const getInitialState = () => {
     if (mode === 'edit' && initialData) {
       // Si on a nom et prenom séparés, les concaténer
@@ -787,9 +788,10 @@ const VenteForm = ({ open, onOpenChange, onSubmit, initialData = null, mode = 'c
         <button
           type="submit"
           onClick={handleSubmit}
-          className="w-full sm:flex-1 h-12 rounded-xl text-base font-bold bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-primary-foreground shadow-lg shadow-primary/25 active:scale-[0.98] transition-all"
+          disabled={isSubmitting}
+          className="w-full sm:flex-1 h-12 rounded-xl text-base font-bold bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-primary-foreground shadow-lg shadow-primary/25 active:scale-[0.98] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          {mode === 'edit' ? '✓ Enregistrer' : '✓ Valider la Vente'}
+          {isSubmitting ? 'En cours...' : (mode === 'edit' ? '✓ Enregistrer' : '✓ Valider la Vente')}
         </button>
       </div>
     </div>

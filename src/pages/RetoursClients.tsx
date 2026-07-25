@@ -231,6 +231,7 @@ const RetoursClients = () => {
         open={formOpen}
         onOpenChange={setFormOpen}
         onSubmit={handleSubmit}
+        isSubmitting={createRetourClient.isPending}
       />
     </AppLayout>
   );

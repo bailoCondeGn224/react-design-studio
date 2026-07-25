@@ -13,9 +13,10 @@ interface FournisseurFormProps {
   onSubmit: (data: any) => void;
   initialData?: any;
   mode?: 'create' | 'edit';
+  isSubmitting?: boolean;
 }
 
-const FournisseurForm = ({ open, onOpenChange, onSubmit, initialData = null, mode = 'create' }: FournisseurFormProps) => {
+const FournisseurForm = ({ open, onOpenChange, onSubmit, initialData = null, mode = 'create', isSubmitting = false }: FournisseurFormProps) => {
   const { data: categories = [], isLoading: loadingCategories } = useCategoriesActive();
   const isMobile = useIsMobile();
 
@@ -302,6 +303,7 @@ const FournisseurForm = ({ open, onOpenChange, onSubmit, initialData = null, mod
           </Button>
           <Button
             type="submit"
+            disabled={isSubmitting}
             onClick={(e: any) => {
               const container = e.target.closest('[role="dialog"]');
               const formElement = container?.querySelector('form');
@@ -312,7 +314,7 @@ const FournisseurForm = ({ open, onOpenChange, onSubmit, initialData = null, mod
             className="w-full sm:w-auto"
           >
             <Check className="w-4 h-4 mr-2" />
-            {mode === 'edit' ? 'Enregistrer les modifications' : 'Ajouter le fournisseur'}
+            {isSubmitting ? 'En cours...' : (mode === 'edit' ? 'Enregistrer les modifications' : 'Ajouter le fournisseur')}
           </Button>
         </div>
       </div>

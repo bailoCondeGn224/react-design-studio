@@ -17,9 +17,10 @@ interface ApprovisionnementFormProps {
   onSubmit: (data: any) => void;
   initialData?: any;
   mode?: 'create' | 'edit';
+  isSubmitting?: boolean;
 }
 
-const ApprovisionnementForm = ({ open, onOpenChange, onSubmit, initialData = null, mode = 'create' }: ApprovisionnementFormProps) => {
+const ApprovisionnementForm = ({ open, onOpenChange, onSubmit, initialData = null, mode = 'create', isSubmitting = false }: ApprovisionnementFormProps) => {
 
   const getInitialState = () => {
     if (mode === 'edit' && initialData) {
@@ -786,6 +787,7 @@ const ApprovisionnementForm = ({ open, onOpenChange, onSubmit, initialData = nul
             </Button>
             <Button
               type="submit"
+              disabled={isSubmitting}
               onClick={(e: any) => {
                 const form = e.target.closest('form');
                 if (!form) {
@@ -802,7 +804,7 @@ const ApprovisionnementForm = ({ open, onOpenChange, onSubmit, initialData = nul
               className="w-full sm:w-auto"
             >
               <Check className="w-4 h-4 mr-2" />
-              {mode === 'edit' ? 'Enregistrer' : 'Valider l\'approvisionnement'}
+              {isSubmitting ? 'En cours...' : (mode === 'edit' ? 'Enregistrer' : 'Valider l\'approvisionnement')}
             </Button>
           </div>
         </div>

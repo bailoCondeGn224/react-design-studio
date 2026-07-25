@@ -253,6 +253,7 @@ const Ventes = () => {
         onSubmit={handleSubmit}
         initialData={editingItem}
         mode={editingItem ? 'edit' : 'create'}
+        isSubmitting={createVente.isPending || updateVente.isPending}
         preselectedArticle={preselectedArticle}
       />
 

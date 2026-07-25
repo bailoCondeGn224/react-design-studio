@@ -364,6 +364,7 @@ const Depenses = () => {
         onSubmit={handleSubmit}
         initialData={editingDepense}
         mode={formMode}
+        isSubmitting={createMutation.isPending || updateMutation.isPending}
       />
 
       {/* Delete Confirmation Dialog */}

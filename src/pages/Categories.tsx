@@ -256,6 +256,7 @@ const Categories = () => {
         onSubmit={handleSubmit}
         initialData={editingCategorie}
         mode={formMode}
+        isSubmitting={createMutation.isPending || updateMutation.isPending}
       />
 
       {/* Delete Confirmation Dialog */}

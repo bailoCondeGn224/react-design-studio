@@ -15,9 +15,10 @@ interface UserFormProps {
   onSubmit: (data: any) => void;
   initialData?: User | null;
   mode?: 'create' | 'edit';
+  isSubmitting?: boolean;
 }
 
-const UserForm = ({ open, onOpenChange, onSubmit, initialData = null, mode = 'create' }: UserFormProps) => {
+const UserForm = ({ open, onOpenChange, onSubmit, initialData = null, mode = 'create', isSubmitting = false }: UserFormProps) => {
   const isMobile = useIsMobile();
   const { data: roles = [], isLoading: loadingRoles } = useRoles();
   const [showPassword, setShowPassword] = useState(false);
@@ -255,6 +256,7 @@ const UserForm = ({ open, onOpenChange, onSubmit, initialData = null, mode = 'cr
           </Button>
           <Button
             type="submit"
+            disabled={isSubmitting}
             onClick={(e: any) => {
               const dialogContent = e.target.closest('[role="dialog"]');
               const formElement = dialogContent?.querySelector('form');
@@ -265,7 +267,7 @@ const UserForm = ({ open, onOpenChange, onSubmit, initialData = null, mode = 'cr
             className="w-full sm:w-auto"
           >
             <Check className="w-4 h-4 mr-2" />
-            {mode === 'edit' ? 'Enregistrer les modifications' : 'Créer l\'utilisateur'}
+            {isSubmitting ? 'En cours...' : (mode === 'edit' ? 'Enregistrer les modifications' : 'Créer l\'utilisateur')}
           </Button>
         </div>
       </div>

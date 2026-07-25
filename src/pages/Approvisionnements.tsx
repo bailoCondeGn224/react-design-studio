@@ -211,6 +211,7 @@ const Approvisionnements = () => {
         onSubmit={handleSubmit}
         initialData={editingItem}
         mode={editingItem ? 'edit' : 'create'}
+        isSubmitting={createApprovisionnement.isPending || updateApprovisionnement.isPending}
       />
 
       <AlertDialog open={deleteId !== null} onOpenChange={() => setDeleteId(null)}>

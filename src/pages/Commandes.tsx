@@ -575,6 +575,7 @@ const Commandes = () => {
         onSubmit={editingCommande ? handleUpdate : handleCreate}
         initialData={editingCommande}
         mode={editingCommande ? 'edit' : 'create'}
+        isSubmitting={createCommande.isPending || updateCommande.isPending}
       />
 
       {/* Dialog Détails */}

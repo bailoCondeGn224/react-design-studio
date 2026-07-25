@@ -15,9 +15,10 @@ interface DepenseFormProps {
   onSubmit: (data: any) => void;
   initialData?: Depense | null;
   mode?: 'create' | 'edit';
+  isSubmitting?: boolean;
 }
 
-const DepenseForm = ({ open, onOpenChange, onSubmit, initialData = null, mode = 'create' }: DepenseFormProps) => {
+const DepenseForm = ({ open, onOpenChange, onSubmit, initialData = null, mode = 'create', isSubmitting = false }: DepenseFormProps) => {
   const isMobile = useIsMobile();
 
   const getInitialState = () => {
@@ -282,6 +283,7 @@ const DepenseForm = ({ open, onOpenChange, onSubmit, initialData = null, mode = 
           </Button>
           <Button
             type="submit"
+            disabled={isSubmitting}
             onClick={(e: any) => {
               const dialogContent = e.target.closest('[role="dialog"]');
               const formElement = dialogContent?.querySelector('form');
@@ -292,7 +294,7 @@ const DepenseForm = ({ open, onOpenChange, onSubmit, initialData = null, mode = 
             className="w-full sm:w-auto"
           >
             <Check className="w-4 h-4 mr-2" />
-            {mode === 'edit' ? 'Enregistrer les modifications' : 'Enregistrer la dépense'}
+            {isSubmitting ? 'En cours...' : (mode === 'edit' ? 'Enregistrer les modifications' : 'Enregistrer la dépense')}
           </Button>
         </div>
       </div>

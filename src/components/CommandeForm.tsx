@@ -15,9 +15,10 @@ interface CommandeFormProps {
   onSubmit: (data: any) => void;
   initialData?: any;
   mode?: 'create' | 'edit';
+  isSubmitting?: boolean;
 }
 
-const CommandeForm = ({ open, onOpenChange, onSubmit, initialData = null, mode = 'create' }: CommandeFormProps) => {
+const CommandeForm = ({ open, onOpenChange, onSubmit, initialData = null, mode = 'create', isSubmitting = false }: CommandeFormProps) => {
   const getInitialState = () => {
     if (mode === 'edit' && initialData) {
       // Recalculer les sousTotal pour chaque ligne en s'assurant que tout est en nombre
@@ -587,9 +588,10 @@ const CommandeForm = ({ open, onOpenChange, onSubmit, initialData = null, mode =
       <button
         type="submit"
         onClick={handleSubmit}
-        className="w-full sm:flex-1 h-12 rounded-xl text-base font-bold bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-primary-foreground shadow-lg shadow-primary/25 active:scale-[0.98] transition-all"
+        disabled={isSubmitting}
+        className="w-full sm:flex-1 h-12 rounded-xl text-base font-bold bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-primary-foreground shadow-lg shadow-primary/25 active:scale-[0.98] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
       >
-        {mode === 'edit' ? '✓ Modifier' : '✓ Créer la commande'}
+        {isSubmitting ? 'En cours...' : (mode === 'edit' ? '✓ Modifier' : '✓ Créer la commande')}
       </button>
     </div>
   );
