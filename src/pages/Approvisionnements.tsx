@@ -222,12 +222,13 @@ const Approvisionnements = () => {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Annuler</AlertDialogCancel>
+            <AlertDialogCancel disabled={deleteApprovisionnement.isPending}>Annuler</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDelete}
+              disabled={deleteApprovisionnement.isPending}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
-              Confirmer
+              {deleteApprovisionnement.isPending ? 'Suppression...' : 'Confirmer'}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
