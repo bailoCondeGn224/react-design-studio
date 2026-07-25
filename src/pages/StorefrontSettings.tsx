@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
-import { Loader2, Save, ExternalLink, QrCode, Copy, Check, Globe, Phone, Clock, MapPin, Truck } from 'lucide-react';
+import { Loader2, Save, ExternalLink, QrCode, Copy, Check, Globe, Phone, Clock, MapPin, Truck, FileText } from 'lucide-react';
 import { useStorefrontConfig, useUpdateStorefrontConfig } from '@/hooks/useStorefrontConfig';
 import { storefrontConfigApi } from '@/api/storefront-config';
 import { apiClient } from '@/lib/api-client';
@@ -107,67 +107,79 @@ const StorefrontSettings = () => {
 
   return (
     <AppLayout>
-      <div className="space-y-4 md:space-y-6 pb-6">
-        {/* Header */}
-        <div className="px-4 md:px-0">
-          <h1 className="text-xl md:text-2xl font-bold">Vitrine en ligne</h1>
-          <p className="text-sm md:text-base text-muted-foreground">
-            Configurez votre boutique en ligne accessible par vos clients
-          </p>
+      <div className="space-y-5 md:space-y-6 pb-6">
+        {/* Header avec gradient - Architecture standard */}
+        <div className="px-4 md:px-0 py-4 md:py-5 rounded-xl bg-gradient-to-r from-primary/10 via-primary/5 to-transparent border border-primary/20">
+          <div className="flex items-center gap-3">
+            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center shadow-lg">
+              <Globe className="w-6 h-6 text-white" />
+            </div>
+            <div>
+              <h1 className="text-lg md:text-xl font-bold text-foreground">Vitrine en ligne</h1>
+              <p className="text-xs md:text-sm text-muted-foreground mt-0.5">
+                Configurez votre boutique en ligne accessible par vos clients
+              </p>
+            </div>
+          </div>
         </div>
 
         <div className="grid gap-4 md:gap-6 lg:grid-cols-3">
-          {/* QR Code - Afficher en premier sur mobile */}
+          {/* QR Code - Mobile - Architecture standard */}
           {isMobile && config?.isActive && (
-            <div className="space-y-4 px-4">
-              <Card>
-                <CardHeader className="pb-3">
-                  <CardTitle className="flex items-center gap-2 text-lg">
-                    <QrCode className="h-5 w-5" />
-                    QR Code
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="flex flex-col items-center pt-0">
-                  <div className="bg-white p-3 rounded-lg border w-full flex items-center justify-center min-h-[180px]">
+            <div className="px-4">
+              <div className="relative overflow-hidden rounded-xl bg-gradient-to-br from-primary/5 via-background to-background border-2 border-border p-5">
+                <div className="absolute top-0 right-0 w-24 h-24 bg-primary/5 rounded-full -mr-12 -mt-12"></div>
+                <div className="relative space-y-4">
+                  <div className="flex items-center gap-2">
+                    <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
+                      <QrCode className="w-4 h-4 text-primary" />
+                    </div>
+                    <h3 className="text-sm font-bold text-foreground">QR Code</h3>
+                  </div>
+
+                  <div className="bg-white p-4 rounded-lg border flex items-center justify-center min-h-[200px]">
                     {qrLoading ? (
                       <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
                     ) : qrCodeUrl ? (
-                      <img src={qrCodeUrl} alt="QR Code" className="w-40 h-40" />
+                      <img src={qrCodeUrl} alt="QR Code" className="w-44 h-44" />
                     ) : (
                       <p className="text-sm text-muted-foreground">Erreur de chargement</p>
                     )}
                   </div>
+
                   <Button
                     variant="outline"
                     size="sm"
-                    className="mt-3 w-full"
+                    className="w-full h-10"
                     onClick={handleDownloadQr}
                     disabled={!qrCodeUrl}
                   >
                     <QrCode className="h-4 w-4 mr-2" />
-                    Télécharger le QR
+                    Télécharger le QR Code
                   </Button>
-                </CardContent>
-              </Card>
+                </div>
+              </div>
             </div>
           )}
 
           {/* Formulaire principal */}
           <div className="lg:col-span-2 space-y-4 md:space-y-6 px-4 md:px-0">
             <form onSubmit={handleSubmit} className="space-y-4 md:space-y-6">
-              {/* Activation */}
-              <Card>
-                <CardHeader className="pb-3 md:pb-6">
-                  <CardTitle className="flex items-center gap-2 text-lg md:text-xl">
-                    <Globe className="h-5 w-5" />
-                    Statut de la vitrine
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="pt-0">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="font-medium">Activer la vitrine</p>
-                      <p className="text-sm text-muted-foreground">
+              {/* Activation - Architecture standard */}
+              <div className="relative overflow-hidden rounded-xl bg-gradient-to-br from-success/5 via-background to-background border-2 border-border p-5">
+                <div className="absolute top-0 right-0 w-24 h-24 bg-success/5 rounded-full -mr-12 -mt-12"></div>
+                <div className="relative space-y-4">
+                  <div className="flex items-center gap-2 mb-3">
+                    <div className="w-8 h-8 rounded-lg bg-success/10 flex items-center justify-center">
+                      <Globe className="w-4 h-4 text-success" />
+                    </div>
+                    <h3 className="text-sm font-bold text-foreground">Statut de la vitrine</h3>
+                  </div>
+
+                  <div className="flex items-center justify-between p-4 bg-success/10 rounded-lg border border-success/20">
+                    <div className="flex-1">
+                      <p className="font-medium text-sm">Activer la vitrine</p>
+                      <p className="text-xs text-muted-foreground mt-0.5">
                         Rendre votre boutique visible au public
                       </p>
                     </div>
@@ -176,63 +188,72 @@ const StorefrontSettings = () => {
                       onCheckedChange={(checked) => setForm({ ...form, isActive: checked })}
                     />
                   </div>
+
                   {form.isActive && config?.fullUrl && (
-                    <div className="mt-4 p-3 md:p-4 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-800">
-                      <p className="text-xs md:text-sm text-green-700 dark:text-green-400 font-medium mb-2">
-                        Votre boutique est accessible sur :
+                    <div className="mt-2 p-4 bg-success/10 rounded-lg border border-success/20">
+                      <p className="text-xs font-medium text-success mb-2 flex items-center gap-1.5">
+                        <Check className="w-3.5 h-3.5" />
+                        Votre boutique est en ligne
                       </p>
                       <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2">
-                        <code className="text-xs md:text-sm bg-green-100 dark:bg-green-900/40 px-2 py-1 rounded break-all flex-1">
+                        <code className="text-xs bg-background px-2 py-1.5 rounded border border-border break-all flex-1 font-mono">
                           {config.fullUrl}
                         </code>
-                        <div className="flex gap-1 w-full sm:w-auto">
-                          <Button type="button" variant="ghost" size="sm" onClick={handleCopyLink} className="flex-1 sm:flex-none h-8">
-                            {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+                        <div className="flex gap-1.5 w-full sm:w-auto">
+                          <Button type="button" variant="outline" size="sm" onClick={handleCopyLink} className="flex-1 sm:flex-none h-9">
+                            {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
                           </Button>
-                          <Button type="button" variant="ghost" size="sm" asChild className="flex-1 sm:flex-none h-8">
+                          <Button type="button" variant="outline" size="sm" asChild className="flex-1 sm:flex-none h-9">
                             <a href={config.fullUrl} target="_blank" rel="noopener noreferrer">
-                              <ExternalLink className="h-4 w-4" />
+                              <ExternalLink className="h-3.5 w-3.5" />
                             </a>
                           </Button>
                         </div>
                       </div>
                     </div>
                   )}
-                </CardContent>
-              </Card>
+                </div>
+              </div>
 
-              {/* Informations */}
-              <Card>
-                <CardHeader className="pb-3 md:pb-6">
-                  <CardTitle className="text-lg md:text-xl">Informations</CardTitle>
-                  <CardDescription className="text-xs md:text-sm">
-                    Ces informations seront affichées sur votre vitrine
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-3 md:space-y-4 pt-0">
+              {/* Informations - Architecture standard */}
+              <div className="relative overflow-hidden rounded-xl bg-gradient-to-br from-primary/5 via-background to-background border-2 border-border p-5">
+                <div className="absolute top-0 right-0 w-24 h-24 bg-primary/5 rounded-full -mr-12 -mt-12"></div>
+                <div className="relative space-y-4">
+                  <div className="flex items-center gap-2 mb-3">
+                    <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
+                      <FileText className="w-4 h-4 text-primary" />
+                    </div>
+                    <h3 className="text-sm font-bold text-foreground">Informations de la boutique</h3>
+                  </div>
+                  <p className="text-xs text-muted-foreground -mt-2">
+                    Ces informations seront affichées sur votre vitrine en ligne
+                  </p>
+
                   <div>
-                    <Label htmlFor="description" className="text-sm">Description</Label>
+                    <label className="block text-xs font-medium text-muted-foreground mb-1.5">
+                      Description
+                    </label>
                     <Textarea
                       id="description"
                       placeholder="Décrivez votre boutique..."
                       value={form.description}
                       onChange={(e) => setForm({ ...form, description: e.target.value })}
-                      className="mt-1.5 text-sm md:text-base"
+                      className="resize-none"
                       rows={3}
                     />
                   </div>
 
                   <div>
-                    <Label htmlFor="whatsappNumber" className="flex items-center gap-2 text-sm">
-                      <Phone className="h-3.5 w-3.5 md:h-4 md:w-4" />
+                    <label htmlFor="whatsappNumber" className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground mb-1.5">
+                      <Phone className="h-3.5 w-3.5" />
                       Numéro WhatsApp
-                    </Label>
+                    </label>
                     <Input
                       id="whatsappNumber"
                       placeholder="+224 6XX XXX XXX"
                       value={form.whatsappNumber}
                       onChange={(e) => setForm({ ...form, whatsappNumber: e.target.value })}
-                      className="mt-1.5 h-10 md:h-12 text-sm md:text-base"
+                      className="h-11"
                     />
                     <p className="text-xs text-muted-foreground mt-1">
                       Les clients pourront vous contacter via ce numéro
@@ -240,153 +261,161 @@ const StorefrontSettings = () => {
                   </div>
 
                   <div>
-                    <Label htmlFor="horaires" className="flex items-center gap-2 text-sm">
-                      <Clock className="h-3.5 w-3.5 md:h-4 md:w-4" />
+                    <label htmlFor="horaires" className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground mb-1.5">
+                      <Clock className="h-3.5 w-3.5" />
                       Horaires d'ouverture
-                    </Label>
+                    </label>
                     <Input
                       id="horaires"
                       placeholder="Ex: Lun-Sam 9h-18h"
                       value={form.horaires}
                       onChange={(e) => setForm({ ...form, horaires: e.target.value })}
-                      className="mt-1.5 h-10 md:h-12 text-sm md:text-base"
+                      className="h-11"
                     />
                   </div>
 
                   <div>
-                    <Label htmlFor="adresse" className="flex items-center gap-2 text-sm">
-                      <MapPin className="h-3.5 w-3.5 md:h-4 md:w-4" />
+                    <label htmlFor="adresse" className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground mb-1.5">
+                      <MapPin className="h-3.5 w-3.5" />
                       Adresse
-                    </Label>
+                    </label>
                     <Input
                       id="adresse"
                       placeholder="Ex: Marché Madina, Conakry"
                       value={form.adresse}
                       onChange={(e) => setForm({ ...form, adresse: e.target.value })}
-                      className="mt-1.5 h-10 md:h-12 text-sm md:text-base"
+                      className="h-11"
                     />
                   </div>
-                </CardContent>
-              </Card>
+                </div>
+              </div>
 
-              {/* Livraison */}
-              <Card>
-                <CardHeader className="pb-3 md:pb-6">
-                  <CardTitle className="flex items-center gap-2 text-lg md:text-xl">
-                    <Truck className="h-5 w-5" />
-                    Livraison
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="pt-0">
+              {/* Livraison - Architecture standard */}
+              <div className="relative overflow-hidden rounded-xl bg-gradient-to-br from-secondary/5 via-background to-background border-2 border-border p-5">
+                <div className="absolute top-0 right-0 w-24 h-24 bg-secondary/5 rounded-full -mr-12 -mt-12"></div>
+                <div className="relative space-y-3">
+                  <div className="flex items-center gap-2 mb-2">
+                    <div className="w-8 h-8 rounded-lg bg-secondary/10 flex items-center justify-center">
+                      <Truck className="w-4 h-4 text-secondary-foreground" />
+                    </div>
+                    <h3 className="text-sm font-bold text-foreground">Livraison</h3>
+                  </div>
+
                   <div>
-                    <Label htmlFor="fraisLivraison" className="text-sm">Frais de livraison (GNF)</Label>
+                    <label htmlFor="fraisLivraison" className="block text-xs font-medium text-muted-foreground mb-1.5">
+                      Frais de livraison (GNF)
+                    </label>
                     <Input
                       id="fraisLivraison"
                       type="number"
                       min="0"
                       value={form.fraisLivraison}
                       onChange={(e) => setForm({ ...form, fraisLivraison: Number(e.target.value) })}
-                      className="mt-1.5 h-10 md:h-12 text-sm md:text-base"
+                      className="h-11"
                     />
                     <p className="text-xs text-muted-foreground mt-1">
                       Mettre 0 pour la livraison gratuite
                     </p>
                   </div>
-                </CardContent>
-              </Card>
+                </div>
+              </div>
 
-              {/* Submit */}
-              <Button
-                type="submit"
-                className="w-full h-11 md:h-12 text-sm md:text-base"
-                disabled={updateMutation.isPending}
-              >
-                {updateMutation.isPending ? (
-                  <Loader2 className="h-5 w-5 animate-spin" />
-                ) : (
-                  <>
-                    <Save className="h-4 w-4 mr-2" />
-                    Enregistrer
-                  </>
-                )}
-              </Button>
+              {/* Submit - Architecture standard */}
+              <div className="pt-2">
+                <Button
+                  type="submit"
+                  className="w-full h-12 text-sm font-semibold shadow-lg hover:shadow-xl transition-all duration-200"
+                  disabled={updateMutation.isPending}
+                >
+                  {updateMutation.isPending ? (
+                    <Loader2 className="h-5 w-5 animate-spin" />
+                  ) : (
+                    <>
+                      <Check className="h-4 w-4 mr-2" />
+                      Enregistrer les modifications
+                    </>
+                  )}
+                </Button>
+              </div>
             </form>
           </div>
 
-          {/* Sidebar - QR Code (Desktop uniquement) */}
-          <div className="hidden lg:block space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <QrCode className="h-5 w-5" />
-                  QR Code
-                </CardTitle>
-                <CardDescription>
-                  Partagez ce QR code pour accéder à votre boutique
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="flex flex-col items-center">
+          {/* Sidebar - QR Code (Desktop) - Architecture standard */}
+          <div className="hidden lg:block space-y-5">
+            <div className="relative overflow-hidden rounded-xl bg-gradient-to-br from-primary/5 via-background to-background border-2 border-border p-5">
+              <div className="absolute top-0 right-0 w-24 h-24 bg-primary/5 rounded-full -mr-12 -mt-12"></div>
+              <div className="relative space-y-4">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
+                    <QrCode className="w-4 h-4 text-primary" />
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-bold text-foreground">QR Code</h3>
+                    <p className="text-xs text-muted-foreground">Partagez votre boutique</p>
+                  </div>
+                </div>
+
                 {config?.isActive ? (
                   <>
-                    <div className="bg-white p-4 rounded-lg border min-h-[200px] flex items-center justify-center">
+                    <div className="bg-white p-4 rounded-lg border min-h-[220px] flex items-center justify-center">
                       {qrLoading ? (
                         <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
                       ) : qrCodeUrl ? (
-                        <img
-                          src={qrCodeUrl}
-                          alt="QR Code"
-                          className="w-48 h-48"
-                        />
+                        <img src={qrCodeUrl} alt="QR Code" className="w-52 h-52" />
                       ) : (
                         <p className="text-sm text-muted-foreground">Erreur de chargement</p>
                       )}
                     </div>
                     <Button
                       variant="outline"
-                      className="mt-4 w-full"
+                      className="w-full h-10"
                       onClick={handleDownloadQr}
                       disabled={!qrCodeUrl}
                     >
                       <QrCode className="h-4 w-4 mr-2" />
-                      Télécharger
+                      Télécharger le QR Code
                     </Button>
                   </>
                 ) : (
-                  <div className="text-center py-8 text-muted-foreground">
-                    <QrCode className="h-12 w-12 mx-auto mb-2 opacity-30" />
+                  <div className="text-center py-10 text-muted-foreground">
+                    <QrCode className="h-14 w-14 mx-auto mb-3 opacity-20" />
                     <p className="text-sm">Activez la vitrine pour générer le QR code</p>
                   </div>
                 )}
-              </CardContent>
-            </Card>
+              </div>
+            </div>
 
-            {/* Statistiques rapides */}
+            {/* Lien de partage - Architecture standard */}
             {config?.isActive && (
-              <Card>
-                <CardHeader>
-                  <CardTitle>Lien de partage</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-3">
-                    <div className="p-3 bg-muted rounded-lg">
-                      <p className="text-xs text-muted-foreground mb-1">URL de votre boutique</p>
-                      <p className="text-sm font-mono break-all">{config.fullUrl}</p>
+              <div className="relative overflow-hidden rounded-xl bg-gradient-to-br from-secondary/5 via-background to-background border-2 border-border p-5">
+                <div className="absolute top-0 right-0 w-24 h-24 bg-secondary/5 rounded-full -mr-12 -mt-12"></div>
+                <div className="relative space-y-3">
+                  <div className="flex items-center gap-2">
+                    <div className="w-8 h-8 rounded-lg bg-secondary/10 flex items-center justify-center">
+                      <ExternalLink className="w-4 h-4 text-secondary-foreground" />
                     </div>
-                    <div className="flex gap-2">
-                      <Button variant="outline" size="sm" className="flex-1" onClick={handleCopyLink}>
-                        {copied ? <Check className="h-4 w-4 mr-1" /> : <Copy className="h-4 w-4 mr-1" />}
-                        Copier
-                      </Button>
-                      <Button variant="outline" size="sm" className="flex-1" asChild>
-                        <a href={config.fullUrl} target="_blank" rel="noopener noreferrer">
-                          <ExternalLink className="h-4 w-4 mr-1" />
-                          Ouvrir
-                        </a>
-                      </Button>
-                    </div>
+                    <h3 className="text-sm font-bold text-foreground">Lien de partage</h3>
                   </div>
-                </CardContent>
-              </Card>
+
+                  <div className="p-3 bg-muted/50 rounded-lg border border-border">
+                    <p className="text-xs text-muted-foreground mb-1.5">URL de votre boutique</p>
+                    <p className="text-xs font-mono break-all text-foreground">{config.fullUrl}</p>
+                  </div>
+
+                  <div className="flex gap-2 pt-1">
+                    <Button variant="outline" size="sm" className="flex-1 h-9" onClick={handleCopyLink}>
+                      {copied ? <Check className="h-3.5 w-3.5 mr-1.5" /> : <Copy className="h-3.5 w-3.5 mr-1.5" />}
+                      <span className="text-xs">Copier</span>
+                    </Button>
+                    <Button variant="outline" size="sm" className="flex-1 h-9" asChild>
+                      <a href={config.fullUrl} target="_blank" rel="noopener noreferrer">
+                        <ExternalLink className="h-3.5 w-3.5 mr-1.5" />
+                        <span className="text-xs">Ouvrir</span>
+                      </a>
+                    </Button>
+                  </div>
+                </div>
+              </div>
             )}
           </div>
         </div>
