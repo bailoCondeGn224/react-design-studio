@@ -63,7 +63,7 @@ const StorefrontHomeContent = () => {
       <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
         {/* Search & Filter Section */}
         <div className="sticky top-0 z-20 bg-white/95 backdrop-blur-md border-b border-gray-100 shadow-sm">
-          <div className="px-2 py-2 space-y-2">
+          <div className="px-4 py-3 space-y-3">
             {/* Search Bar with integrated Category Dropdown */}
             <div className="flex gap-2">
               {/* Search Input */}
@@ -161,7 +161,7 @@ const StorefrontHomeContent = () => {
         </div>
 
         {/* Products Content */}
-        <div className="px-2 py-3">
+        <div className="px-4 py-4">
           {loadingProducts ? (
             <div className="flex flex-col items-center justify-center py-20">
               <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-4">

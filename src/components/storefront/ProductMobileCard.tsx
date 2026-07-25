@@ -57,7 +57,7 @@ export const ProductMobileCard = ({ article, onClick, formatPrix }: ProductMobil
       </div>
 
       {/* INFORMATIONS - Style Post Facebook */}
-      <div className="p-3 space-y-2.5">
+      <div className="p-4 space-y-3">
         {/* Titre */}
         <h3 className="font-bold text-sm text-gray-900 line-clamp-2 leading-tight">
           {article.nom}

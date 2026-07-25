@@ -133,7 +133,7 @@ const StorefrontProduct = () => {
         </div>
 
         {/* Product Details */}
-        <div className="px-4 py-5 space-y-5">
+        <div className="px-5 py-6 space-y-6">
           {/* Title & Price */}
           <div className="space-y-3">
             <h1 className="text-2xl font-bold text-gray-900 leading-tight">
@@ -219,7 +219,7 @@ const StorefrontProduct = () => {
         {/* Fixed Bottom Action Bar */}
         {!isOutOfStock && (
           <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 shadow-[0_-4px_20px_rgba(0,0,0,0.08)]">
-            <div className="p-4 max-w-lg mx-auto">
+            <div className="p-5 max-w-lg mx-auto">
               <div className="flex items-center gap-3">
                 {/* Quantity Selector */}
                 <div className="flex items-center bg-gray-100 rounded-xl">

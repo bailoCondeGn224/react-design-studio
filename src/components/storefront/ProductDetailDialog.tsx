@@ -79,7 +79,7 @@ export const ProductDetailDialog = ({
         {/* Scrollable content */}
         <div className="flex-1 overflow-y-auto overscroll-contain">
           {/* Product Image - Full width, compact */}
-          <div className="relative bg-white px-4 pt-2 pb-4">
+          <div className="relative bg-white px-5 pt-3 pb-5">
             <div
               className="w-full aspect-square max-h-[320px] bg-gradient-to-br from-gray-50 to-white rounded-xl overflow-hidden flex items-center justify-center relative cursor-zoom-in group"
               onClick={() => photoUrl && setIsImageZoomOpen(true)}
@@ -125,7 +125,7 @@ export const ProductDetailDialog = ({
           </div>
 
           {/* Product Info - Compact */}
-          <div className="px-4 pb-6 space-y-3">
+          <div className="px-5 pb-6 space-y-4">
             {/* Title and price together */}
             <div>
               <h2 className="text-xl font-bold text-gray-900 leading-tight mb-2">
@@ -199,7 +199,7 @@ export const ProductDetailDialog = ({
 
         {/* Fixed Bottom CTA - Always visible, no scroll needed */}
         {!isOutOfStock && (
-          <div className="border-t border-gray-200 bg-white p-3 shadow-[0_-2px_10px_rgba(0,0,0,0.05)]">
+          <div className="border-t border-gray-200 bg-white p-4 shadow-[0_-2px_10px_rgba(0,0,0,0.05)]">
             <div className="flex items-stretch gap-2">
               {/* Compact quantity selector */}
               <div className="flex items-center bg-gray-100 rounded-lg overflow-hidden">
