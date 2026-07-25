@@ -13,6 +13,7 @@ import { storefrontConfigApi } from '@/api/storefront-config';
 import { apiClient } from '@/lib/api-client';
 import { toast } from 'sonner';
 import { useMediaQuery } from '@/hooks/useMediaQuery';
+import { formatPrixInput, handlePrixChange } from '@/utils/format-prix';
 
 const StorefrontSettings = () => {
   const isMobile = useMediaQuery('(max-width: 768px)');
@@ -307,10 +308,13 @@ const StorefrontSettings = () => {
                     </label>
                     <Input
                       id="fraisLivraison"
-                      type="number"
-                      min="0"
-                      value={form.fraisLivraison}
-                      onChange={(e) => setForm({ ...form, fraisLivraison: Number(e.target.value) })}
+                      type="text"
+                      placeholder="Ex: 5 000"
+                      value={formatPrixInput(form.fraisLivraison)}
+                      onChange={(e) => {
+                        const cleaned = handlePrixChange(e.target.value);
+                        setForm({ ...form, fraisLivraison: Number(cleaned) || 0 });
+                      }}
                       className="h-11"
                     />
                     <p className="text-xs text-muted-foreground mt-1">
