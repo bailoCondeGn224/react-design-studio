@@ -1,7 +1,7 @@
 import { NavLink, useLocation } from "react-router-dom";
 import {
   LayoutDashboard, Users, UserCheck, Package, FolderTree, MapPin, Truck, ShoppingCart, Wallet,
-  ChevronLeft, ChevronRight, Sparkles, ArrowDownRight, ArrowDownLeft, Menu, LogOut, History, BarChart3,
+  ChevronLeft, ChevronRight, ArrowDownRight, ArrowDownLeft, Menu, LogOut, History, BarChart3,
   Shield, UserCog, Settings, Building2, CreditCard, RotateCcw, PackageX, ClipboardList, ClipboardCheck,
   Receipt, Calculator, Globe, Store
 } from "lucide-react";
@@ -186,8 +186,12 @@ const SidebarContent = ({ collapsed, setCollapsed, onItemClick }: { collapsed: b
             />
           </div>
         ) : (
-          <div className="w-9 h-9 rounded-lg gradient-gold flex items-center justify-center flex-shrink-0">
-            <Sparkles className="w-5 h-5 text-sidebar-primary-foreground" />
+          <div className="w-9 h-9 rounded-lg overflow-hidden flex items-center justify-center flex-shrink-0 bg-sidebar-accent/30">
+            <img
+              src="/pwa-512x512.png"
+              alt="Logo"
+              className="w-full h-full object-contain"
+            />
           </div>
         )}
         {!collapsed && (
