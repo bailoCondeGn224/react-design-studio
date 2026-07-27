@@ -27,3 +27,7 @@ documentation/*.pdf
 # Gros médias de documentation (à héberger hors Git)
 documentation/video-scenes/
 *.webm
+
+# Temporary skills and hooks
+.github/hooks/
+.github/skills/
