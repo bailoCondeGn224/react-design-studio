@@ -1,33 +1,11 @@
 // src/api/customer-auth.ts
 import { apiClient } from '@/lib/api-client';
-
-export interface RegisterCustomerDto {
-  nom: string;
-  telephone: string;
-  email?: string;
-  password: string;
-}
-
-export interface LoginCustomerDto {
-  telephone: string;
-  password: string;
-}
-
-export interface UpdateCustomerDto {
-  nom?: string;
-  telephone?: string;
-  email?: string;
-}
-
-export interface CustomerAccount {
-  id: string;
-  nom: string;
-  telephone: string;
-  email: string | null;
-  isActive: boolean;
-  createdAt: string;
-  updatedAt: string;
-}
+import {
+  CustomerAccount,
+  RegisterCustomerDto,
+  LoginCustomerDto,
+  UpdateCustomerDto,
+} from '@/types/customer';
 
 export interface AuthResponse {
   access_token: string;

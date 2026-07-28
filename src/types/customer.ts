@@ -3,7 +3,7 @@ export interface CustomerAccount {
   id: string;
   nom: string;
   telephone: string;
-  email?: string;
+  email: string | null;
   isActive: boolean;
   createdAt: string;
 }
