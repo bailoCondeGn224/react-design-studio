@@ -17,7 +17,7 @@ export const CustomerProtectedRoute = ({ children }: CustomerProtectedRouteProps
   useEffect(() => {
     if (!isAuthenticated) {
       // Rediriger vers home de la vitrine
-      navigate(`/storefront/${slug}`);
+      navigate(`/b/${slug}`);
       // Ouvrir modal d'authentification
       setAuthModalOpen(true);
     }
@@ -31,7 +31,7 @@ export const CustomerProtectedRoute = ({ children }: CustomerProtectedRouteProps
           setAuthModalOpen(open);
           if (!open) {
             // Si l'utilisateur ferme la modal sans se connecter, rester sur la home
-            navigate(`/storefront/${slug}`);
+            navigate(`/b/${slug}`);
           }
         }}
       />

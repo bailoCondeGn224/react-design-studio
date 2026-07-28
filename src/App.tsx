@@ -57,6 +57,7 @@ const StorefrontHome = lazy(() => import("./pages/storefront/StorefrontHome.tsx"
 const StorefrontProduct = lazy(() => import("./pages/storefront/StorefrontProduct.tsx"));
 const StorefrontCart = lazy(() => import("./pages/storefront/StorefrontCart.tsx"));
 const StorefrontCheckout = lazy(() => import("./pages/storefront/StorefrontCheckout.tsx"));
+const StorefrontOrders = lazy(() => import("./pages/storefront/StorefrontOrders.tsx"));
 // Customer pages
 const CustomerLogin = lazy(() => import("./pages/customer/CustomerLogin.tsx"));
 const CustomerRegister = lazy(() => import("./pages/customer/CustomerRegister.tsx"));
@@ -329,6 +330,15 @@ const App = () => (
                 <Route path="/b/:slug/product/:id" element={<StorefrontProduct />} />
                 <Route path="/b/:slug/cart" element={<StorefrontCart />} />
                 <Route path="/b/:slug/checkout" element={<StorefrontCheckout />} />
+                {/* Storefront Orders (protected) */}
+                <Route
+                  path="/b/:slug/orders"
+                  element={
+                    <CustomerProtectedRoute>
+                      <StorefrontOrders />
+                    </CustomerProtectedRoute>
+                  }
+                />
                 {/* Customer auth (public) */}
                 <Route path="/customer/login" element={<CustomerLogin />} />
                 <Route path="/customer/register" element={<CustomerRegister />} />

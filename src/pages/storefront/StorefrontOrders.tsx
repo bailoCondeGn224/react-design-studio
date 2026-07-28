@@ -49,7 +49,7 @@ const StorefrontOrders = () => {
 
   const { data: ordersData, isLoading } = useQuery({
     queryKey: ['customer-orders', customer?.id],
-    queryFn: () => apiClient.get('/public/orders/my-orders').then(res => res.data),
+    queryFn: () => apiClient.get('/public/orders').then(res => res.data),
     enabled: !!customer,
   });
 
@@ -85,7 +85,7 @@ const StorefrontOrders = () => {
               <p className="text-sm text-gray-600 text-center mb-4">
                 Vous n'avez pas encore passé de commande
               </p>
-              <Button onClick={() => navigate(`/storefront/${slug}`)}>
+              <Button onClick={() => navigate(`/b/${slug}`)}>
                 Découvrir les produits
               </Button>
             </div>
@@ -95,7 +95,7 @@ const StorefrontOrders = () => {
               return (
                 <div
                   key={order.id}
-                  onClick={() => navigate(`/storefront/${slug}/orders/${order.id}`)}
+                  onClick={() => navigate(`/b/${slug}/orders/${order.id}`)}
                   className="bg-white rounded-lg border border-gray-200 p-4 active:bg-gray-50 transition-colors cursor-pointer"
                 >
                   <div className="flex items-start justify-between mb-2">

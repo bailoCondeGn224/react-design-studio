@@ -86,7 +86,7 @@ export const CustomerAccountMenu = ({
             <Button
               variant="ghost"
               className="w-full justify-start"
-              onClick={() => handleNavigation(`/storefront/${slug}/orders`)}
+              onClick={() => handleNavigation(`/b/${slug}/orders`)}
             >
               <Package className="mr-2 h-4 w-4" />
               Mes commandes
@@ -95,7 +95,7 @@ export const CustomerAccountMenu = ({
             <Button
               variant="ghost"
               className="w-full justify-start"
-              onClick={() => handleNavigation(`/storefront/${slug}/profile`)}
+              onClick={() => handleNavigation(`/b/${slug}/profile`)}
             >
               <User className="mr-2 h-4 w-4" />
               Mon profil
