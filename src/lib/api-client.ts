@@ -13,7 +13,15 @@ export const apiClient = axios.create({
 // Intercepteur pour ajouter le token JWT
 apiClient.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('access_token');
+    // Déterminer quel token utiliser selon la route
+    const isCustomerRoute = config.url?.startsWith('/public/auth') ||
+                            config.url?.startsWith('/public/orders') ||
+                            config.url?.startsWith('/public/stores');
+
+    const token = isCustomerRoute
+      ? localStorage.getItem('customer_token')
+      : localStorage.getItem('access_token');
+
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -29,10 +37,22 @@ apiClient.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
-      // Token expiré ou invalide
-      localStorage.removeItem('access_token');
-      localStorage.removeItem('user');
-      window.location.href = '/login';
+      const isCustomerRoute = error.config?.url?.startsWith('/public/auth') ||
+                              error.config?.url?.startsWith('/public/orders') ||
+                              error.config?.url?.startsWith('/public/stores');
+
+      if (isCustomerRoute) {
+        // Client token expiré
+        localStorage.removeItem('customer_token');
+        localStorage.removeItem('customer_data');
+        // Déclencher événement pour ouvrir CustomerAuthModal
+        window.dispatchEvent(new CustomEvent('customer-auth-required'));
+      } else {
+        // Admin token expiré
+        localStorage.removeItem('access_token');
+        localStorage.removeItem('user');
+        window.location.href = '/login';
+      }
     }
     return Promise.reject(error);
   }
