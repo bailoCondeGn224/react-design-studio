@@ -1,13 +1,16 @@
 // src/components/storefront/CartDrawer.tsx
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { CartMobileItem } from './CartMobileItem';
 import { CartItem } from '@/types';
-import { ShoppingBag, ChevronLeft, Loader2, CheckCircle, ArrowRight, MessageCircle } from 'lucide-react';
+import { ShoppingBag, ChevronLeft, Loader2, CheckCircle, ArrowRight, MessageCircle, User } from 'lucide-react';
 import { apiClient } from '@/lib/api-client';
 import { toast } from 'sonner';
 import { useCartContext } from '@/contexts/CartContext';
+import { useCustomerAuth } from '@/contexts/CustomerAuthContext';
+import { CustomerAuthModal } from './CustomerAuthModal';
+import { Button } from '@/components/ui/button';
 
 interface CartDrawerProps {
   open: boolean;
@@ -108,15 +111,28 @@ export const CartDrawer = ({
 }: CartDrawerProps) => {
   const { slug } = useParams<{ slug: string }>();
   const { clear } = useCartContext();
+  const { isAuthenticated, customer } = useCustomerAuth();
   const [step, setStep] = useState<'cart' | 'checkout' | 'success'>('cart');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [authModalOpen, setAuthModalOpen] = useState(false);
   const [formData, setFormData] = useState({
-    nomClient: '',
-    telephone: '',
+    nomClient: customer?.nom || '',
+    telephone: customer?.telephone || '',
     adresseLivraison: '',
     notes: ''
   });
   const [savedOrderData, setSavedOrderData] = useState<OrderData | null>(null);
+
+  // Update formData when customer changes
+  useEffect(() => {
+    if (customer) {
+      setFormData(prev => ({
+        ...prev,
+        nomClient: customer.nom,
+        telephone: customer.telephone,
+      }));
+    }
+  }, [customer]);
 
   const total = subtotal + fraisLivraison;
 
@@ -307,108 +323,128 @@ export const CartDrawer = ({
             {/* Checkout step */}
             {step === 'checkout' && (
               <>
-                <div className="flex-1 overflow-y-auto px-4 py-4">
-                  <form id="checkout-form" onSubmit={handleSubmitOrder} className="space-y-4">
-                    {/* Name */}
-                    <div>
-                      <label className="block text-sm font-semibold text-gray-700 mb-2">
-                        Nom complet <span className="text-red-500">*</span>
-                      </label>
-                      <input
-                        type="text"
-                        value={formData.nomClient}
-                        onChange={(e) => setFormData(prev => ({ ...prev, nomClient: e.target.value }))}
-                        placeholder="Entrez votre nom"
-                        required
-                        className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
-                      />
-                    </div>
+                {!isAuthenticated ? (
+                  <div className="flex-1 flex flex-col items-center justify-center p-6">
+                    <User className="h-16 w-16 text-gray-300 mb-4" />
+                    <h3 className="font-semibold text-lg mb-2">Connexion requise</h3>
+                    <p className="text-sm text-gray-600 text-center mb-4">
+                      Créez un compte ou connectez-vous pour passer commande et suivre vos livraisons
+                    </p>
+                    <Button onClick={() => setAuthModalOpen(true)} className="w-full max-w-xs">
+                      Se connecter / Créer un compte
+                    </Button>
 
-                    {/* Phone */}
-                    <div>
-                      <label className="block text-sm font-semibold text-gray-700 mb-2">
-                        Téléphone <span className="text-red-500">*</span>
-                      </label>
-                      <input
-                        type="tel"
-                        value={formData.telephone}
-                        onChange={(e) => setFormData(prev => ({ ...prev, telephone: e.target.value }))}
-                        placeholder="Entrez votre numéro"
-                        required
-                        className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
-                      />
-                    </div>
-
-                    {/* Address */}
-                    <div>
-                      <label className="block text-sm font-semibold text-gray-700 mb-2">
-                        Adresse de livraison
-                      </label>
-                      <input
-                        type="text"
-                        value={formData.adresseLivraison}
-                        onChange={(e) => setFormData(prev => ({ ...prev, adresseLivraison: e.target.value }))}
-                        placeholder="Entrez votre adresse (optionnel)"
-                        className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
-                      />
-                    </div>
-
-                    {/* Notes */}
-                    <div>
-                      <label className="block text-sm font-semibold text-gray-700 mb-2">
-                        Notes (optionnel)
-                      </label>
-                      <textarea
-                        value={formData.notes}
-                        onChange={(e) => setFormData(prev => ({ ...prev, notes: e.target.value }))}
-                        placeholder="Instructions spéciales pour la livraison..."
-                        rows={3}
-                        className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all resize-none"
-                      />
-                    </div>
-
-                    {/* Summary */}
-                    <div className="bg-gray-50 rounded-lg p-4 space-y-2 mt-6">
-                      <h4 className="font-semibold text-sm text-gray-900 mb-3">Résumé</h4>
-                      <div className="flex justify-between text-sm">
-                        <span className="text-gray-600">{items.length} article{items.length > 1 ? 's' : ''}</span>
-                        <span className="font-medium">{formatPrix(subtotal)}</span>
+                    <CustomerAuthModal
+                      open={authModalOpen}
+                      onOpenChange={setAuthModalOpen}
+                    />
+                  </div>
+                ) : (
+                <>
+                  <div className="flex-1 overflow-y-auto px-4 py-4">
+                    <form id="checkout-form" onSubmit={handleSubmitOrder} className="space-y-4">
+                      {/* Name */}
+                      <div>
+                        <label className="block text-sm font-semibold text-gray-700 mb-2">
+                          Nom complet <span className="text-red-500">*</span>
+                        </label>
+                        <input
+                          type="text"
+                          value={formData.nomClient}
+                          onChange={(e) => setFormData(prev => ({ ...prev, nomClient: e.target.value }))}
+                          placeholder="Entrez votre nom"
+                          required
+                          className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                        />
                       </div>
-                      {fraisLivraison > 0 && (
+
+                      {/* Phone */}
+                      <div>
+                        <label className="block text-sm font-semibold text-gray-700 mb-2">
+                          Téléphone <span className="text-red-500">*</span>
+                        </label>
+                        <input
+                          type="tel"
+                          value={formData.telephone}
+                          onChange={(e) => setFormData(prev => ({ ...prev, telephone: e.target.value }))}
+                          placeholder="Entrez votre numéro"
+                          required
+                          className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                        />
+                      </div>
+
+                      {/* Address */}
+                      <div>
+                        <label className="block text-sm font-semibold text-gray-700 mb-2">
+                          Adresse de livraison
+                        </label>
+                        <input
+                          type="text"
+                          value={formData.adresseLivraison}
+                          onChange={(e) => setFormData(prev => ({ ...prev, adresseLivraison: e.target.value }))}
+                          placeholder="Entrez votre adresse (optionnel)"
+                          className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                        />
+                      </div>
+
+                      {/* Notes */}
+                      <div>
+                        <label className="block text-sm font-semibold text-gray-700 mb-2">
+                          Notes (optionnel)
+                        </label>
+                        <textarea
+                          value={formData.notes}
+                          onChange={(e) => setFormData(prev => ({ ...prev, notes: e.target.value }))}
+                          placeholder="Instructions spéciales pour la livraison..."
+                          rows={3}
+                          className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all resize-none"
+                        />
+                      </div>
+
+                      {/* Summary */}
+                      <div className="bg-gray-50 rounded-lg p-4 space-y-2 mt-6">
+                        <h4 className="font-semibold text-sm text-gray-900 mb-3">Résumé</h4>
                         <div className="flex justify-between text-sm">
-                          <span className="text-gray-600">Livraison</span>
-                          <span className="font-medium">{formatPrix(fraisLivraison)}</span>
+                          <span className="text-gray-600">{items.length} article{items.length > 1 ? 's' : ''}</span>
+                          <span className="font-medium">{formatPrix(subtotal)}</span>
                         </div>
-                      )}
-                      <div className="flex justify-between font-bold pt-2 border-t border-gray-200">
-                        <span>Total</span>
-                        <span className="text-primary text-lg">{formatPrix(total)}</span>
+                        {fraisLivraison > 0 && (
+                          <div className="flex justify-between text-sm">
+                            <span className="text-gray-600">Livraison</span>
+                            <span className="font-medium">{formatPrix(fraisLivraison)}</span>
+                          </div>
+                        )}
+                        <div className="flex justify-between font-bold pt-2 border-t border-gray-200">
+                          <span>Total</span>
+                          <span className="text-primary text-lg">{formatPrix(total)}</span>
+                        </div>
                       </div>
-                    </div>
-                  </form>
-                </div>
+                    </form>
+                  </div>
 
-                {/* Submit button */}
-                <div className="border-t bg-white p-4 flex-shrink-0">
-                  <button
-                    type="submit"
-                    form="checkout-form"
-                    disabled={isSubmitting}
-                    className="w-full h-12 flex items-center justify-center gap-2 bg-primary text-white font-bold rounded-lg hover:bg-primary/95 active:scale-[0.98] transition-all shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    {isSubmitting ? (
-                      <>
-                        <Loader2 className="h-5 w-5 animate-spin" />
-                        <span>Envoi en cours...</span>
-                      </>
-                    ) : (
-                      <>
-                        <ShoppingBag className="h-5 w-5" />
-                        <span>Confirmer la commande</span>
-                      </>
-                    )}
-                  </button>
-                </div>
+                  {/* Submit button */}
+                  <div className="border-t bg-white p-4 flex-shrink-0">
+                    <button
+                      type="submit"
+                      form="checkout-form"
+                      disabled={isSubmitting}
+                      className="w-full h-12 flex items-center justify-center gap-2 bg-primary text-white font-bold rounded-lg hover:bg-primary/95 active:scale-[0.98] transition-all shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {isSubmitting ? (
+                        <>
+                          <Loader2 className="h-5 w-5 animate-spin" />
+                          <span>Envoi en cours...</span>
+                        </>
+                      ) : (
+                        <>
+                          <ShoppingBag className="h-5 w-5" />
+                          <span>Confirmer la commande</span>
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </>
+              )}
               </>
             )}
 
