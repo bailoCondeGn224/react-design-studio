@@ -1,27 +1,41 @@
 // src/components/customer/CustomerProtectedRoute.tsx
-import { ReactNode } from 'react';
-import { Navigate, useLocation } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 import { useCustomerAuth } from '@/contexts/CustomerAuthContext';
-import { Loader2 } from 'lucide-react';
+import { CustomerAuthModal } from '@/components/storefront/CustomerAuthModal';
 
 interface CustomerProtectedRouteProps {
-  children: ReactNode;
+  children: React.ReactNode;
 }
 
 export const CustomerProtectedRoute = ({ children }: CustomerProtectedRouteProps) => {
-  const { isAuthenticated, isLoading } = useCustomerAuth();
-  const location = useLocation();
+  const { isAuthenticated } = useCustomerAuth();
+  const { slug } = useParams<{ slug: string }>();
+  const navigate = useNavigate();
+  const [authModalOpen, setAuthModalOpen] = useState(false);
 
-  if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      </div>
-    );
-  }
+  useEffect(() => {
+    if (!isAuthenticated) {
+      // Rediriger vers home de la vitrine
+      navigate(`/storefront/${slug}`);
+      // Ouvrir modal d'authentification
+      setAuthModalOpen(true);
+    }
+  }, [isAuthenticated, slug, navigate]);
 
   if (!isAuthenticated) {
-    return <Navigate to={`/customer/login?redirect=${encodeURIComponent(location.pathname)}`} replace />;
+    return (
+      <CustomerAuthModal
+        open={authModalOpen}
+        onOpenChange={(open) => {
+          setAuthModalOpen(open);
+          if (!open) {
+            // Si l'utilisateur ferme la modal sans se connecter, rester sur la home
+            navigate(`/storefront/${slug}`);
+          }
+        }}
+      />
+    );
   }
 
   return <>{children}</>;
