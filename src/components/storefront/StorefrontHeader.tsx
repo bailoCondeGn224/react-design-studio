@@ -1,9 +1,12 @@
 // src/components/storefront/StorefrontHeader.tsx
-import { Menu, ShoppingCart, Store, MapPin, Clock, Phone, Truck } from 'lucide-react';
+import { useState } from 'react';
+import { User, ShoppingCart, MapPin, Clock, Phone, Truck } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { StoreFront } from '@/types';
 import { getPhotoUrl } from '@/lib/api-client';
+import { useCustomerAuth } from '@/contexts/CustomerAuthContext';
+import { CustomerAuthModal } from './CustomerAuthModal';
+import { CustomerAccountMenu } from './CustomerAccountMenu';
 
 interface StorefrontHeaderProps {
   storefront: StoreFront;
@@ -17,75 +20,29 @@ const formatPrix = (prix: number) => {
 
 export const StorefrontHeader = ({ storefront, cartCount, onCartClick }: StorefrontHeaderProps) => {
   const logoUrl = storefront.logoUrl ? getPhotoUrl(storefront.logoUrl) : null;
+  const { isAuthenticated } = useCustomerAuth();
+  const [authModalOpen, setAuthModalOpen] = useState(false);
+  const [accountMenuOpen, setAccountMenuOpen] = useState(false);
 
   return (
     <header className="sticky top-0 z-50 bg-white border-b border-gray-200 shadow-sm">
       {/* Header principal avec logo et panier */}
       <div className="flex items-center justify-between h-16 px-4 bg-gradient-to-r from-primary/5 to-primary/10">
-        {/* Menu */}
-        <Sheet>
-          <SheetTrigger asChild>
-            <Button variant="ghost" size="icon" className="h-10 w-10">
-              <Menu className="h-5 w-5" />
-            </Button>
-          </SheetTrigger>
-          <SheetContent side="left" className="w-[280px]">
-            <div className="space-y-4">
-              {/* Nom de la boutique */}
-              <div className="pb-4 border-b border-gray-200">
-                <h2 className="text-xl font-bold text-gray-900">
-                  {storefront.organizationNom}
-                </h2>
-              </div>
-
-              {storefront.description && (
-                <div>
-                  <p className="text-sm font-medium mb-1">À propos</p>
-                  <p className="text-sm text-muted-foreground">{storefront.description}</p>
-                </div>
-              )}
-              {storefront.horaires && (
-                <div className="flex items-start gap-2">
-                  <Clock className="w-4 h-4 text-primary mt-0.5 shrink-0" />
-                  <div>
-                    <p className="text-sm font-medium">Horaires</p>
-                    <p className="text-sm text-muted-foreground">{storefront.horaires}</p>
-                  </div>
-                </div>
-              )}
-              {storefront.adresse && (
-                <div className="flex items-start gap-2">
-                  <MapPin className="w-4 h-4 text-primary mt-0.5 shrink-0" />
-                  <div>
-                    <p className="text-sm font-medium">Adresse</p>
-                    <p className="text-sm text-muted-foreground">{storefront.adresse}</p>
-                  </div>
-                </div>
-              )}
-              {storefront.fraisLivraison !== undefined && (
-                <div className="flex items-start gap-2">
-                  <Truck className="w-4 h-4 text-primary mt-0.5 shrink-0" />
-                  <div>
-                    <p className="text-sm font-medium">Frais de livraison</p>
-                    <p className="text-sm text-muted-foreground">
-                      {storefront.fraisLivraison === 0 ? 'Gratuit' : formatPrix(storefront.fraisLivraison)}
-                    </p>
-                  </div>
-                </div>
-              )}
-              {storefront.whatsappNumber && (
-                <Button
-                  variant="default"
-                  className="w-full gap-2"
-                  onClick={() => window.open(`https://wa.me/${storefront.whatsappNumber}`, '_blank')}
-                >
-                  <Phone className="w-4 h-4" />
-                  Nous contacter
-                </Button>
-              )}
-            </div>
-          </SheetContent>
-        </Sheet>
+        {/* Account Button */}
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-10 w-10"
+          onClick={() => {
+            if (isAuthenticated) {
+              setAccountMenuOpen(true);
+            } else {
+              setAuthModalOpen(true);
+            }
+          }}
+        >
+          <User className="h-5 w-5" />
+        </Button>
 
         {/* Nom de la boutique */}
         <div className="flex-1 flex items-center justify-center px-2">
@@ -135,6 +92,18 @@ export const StorefrontHeader = ({ storefront, cartCount, onCartClick }: Storefr
           )}
         </div>
       </div>
+
+      {/* Modals/Menus */}
+      <CustomerAuthModal
+        open={authModalOpen}
+        onOpenChange={setAuthModalOpen}
+      />
+
+      <CustomerAccountMenu
+        open={accountMenuOpen}
+        onOpenChange={setAccountMenuOpen}
+        storefront={storefront}
+      />
     </header>
   );
 };
