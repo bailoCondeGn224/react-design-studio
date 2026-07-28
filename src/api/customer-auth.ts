@@ -1,43 +1,49 @@
 // src/api/customer-auth.ts
 import { apiClient } from '@/lib/api-client';
-import { CustomerAccount, RegisterCustomerDto, LoginCustomerDto, UpdateCustomerDto } from '@/types';
 
-// Client API avec token client séparé
-const getCustomerToken = () => localStorage.getItem('customer_token');
+export interface RegisterCustomerDto {
+  nom: string;
+  telephone: string;
+  email?: string;
+  password: string;
+}
 
-const customerApiClient = {
-  get: async <T>(url: string) => {
-    const token = getCustomerToken();
-    return apiClient.get<T>(url, {
-      headers: token ? { Authorization: `Bearer ${token}` } : {},
-    });
-  },
-  patch: async <T>(url: string, data: unknown) => {
-    const token = getCustomerToken();
-    return apiClient.patch<T>(url, data, {
-      headers: token ? { Authorization: `Bearer ${token}` } : {},
-    });
-  },
-};
+export interface LoginCustomerDto {
+  telephone: string;
+  password: string;
+}
+
+export interface UpdateCustomerDto {
+  nom?: string;
+  telephone?: string;
+  email?: string;
+}
+
+export interface CustomerAccount {
+  id: string;
+  nom: string;
+  telephone: string;
+  email: string | null;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface AuthResponse {
+  access_token: string;
+  customer: CustomerAccount;
+}
 
 export const customerAuthApi = {
-  register: async (data: RegisterCustomerDto): Promise<{ access_token: string; customer: CustomerAccount }> => {
-    const response = await apiClient.post('/public/customer/auth/register', data);
-    return response.data;
-  },
+  register: (data: RegisterCustomerDto): Promise<AuthResponse> =>
+    apiClient.post('/public/auth/register', data).then(res => res.data),
 
-  login: async (data: LoginCustomerDto): Promise<{ access_token: string; customer: CustomerAccount }> => {
-    const response = await apiClient.post('/public/customer/auth/login', data);
-    return response.data;
-  },
+  login: (data: LoginCustomerDto): Promise<AuthResponse> =>
+    apiClient.post('/public/auth/login', data).then(res => res.data),
 
-  getProfile: async (): Promise<CustomerAccount> => {
-    const response = await customerApiClient.get<CustomerAccount>('/public/customer/auth/me');
-    return response.data;
-  },
+  getProfile: (): Promise<CustomerAccount> =>
+    apiClient.get('/public/auth/me').then(res => res.data),
 
-  updateProfile: async (data: UpdateCustomerDto): Promise<CustomerAccount> => {
-    const response = await customerApiClient.patch<CustomerAccount>('/public/customer/auth/me', data);
-    return response.data;
-  },
+  updateProfile: (data: UpdateCustomerDto): Promise<CustomerAccount> =>
+    apiClient.put('/public/auth/profile', data).then(res => res.data),
 };
