@@ -4,6 +4,7 @@ import { useParams } from 'react-router-dom';
 import { StorefrontHeader } from './StorefrontHeader';
 import { CartDrawer } from './CartDrawer';
 import { WhatsAppFloatingButton } from './WhatsAppFloatingButton';
+import { CustomerNotificationProvider } from './CustomerNotificationProvider';
 import { useStorefront } from '@/hooks/useStorefront';
 import { CartDrawerProvider, useCartDrawer } from '@/contexts/CartDrawerContext';
 import { CartProvider, useCartContext } from '@/contexts/CartContext';
@@ -47,32 +48,34 @@ const StorefrontLayoutContent = ({ children }: StorefrontLayoutProps) => {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <StorefrontHeader
-        storefront={storefront}
-        cartCount={itemCount}
-        onCartClick={openCart}
-      />
-      <main className="pb-20">{children}</main>
-      <CartDrawer
-        open={isOpen}
-        onOpenChange={(open) => !open && closeCart()}
-        items={items}
-        subtotal={subtotal}
-        fraisLivraison={storefront.fraisLivraison}
-        onRemove={removeItem}
-        onUpdateQuantity={updateQuantity}
-        onCheckout={() => {}}
-        storefront={storefront}
-      />
-      {/* Bouton WhatsApp flottant */}
-      {storefront.whatsappNumber && (
-        <WhatsAppFloatingButton
-          phoneNumber={storefront.whatsappNumber}
-          storeName={storefront.nom}
+    <CustomerNotificationProvider>
+      <div className="min-h-screen bg-background">
+        <StorefrontHeader
+          storefront={storefront}
+          cartCount={itemCount}
+          onCartClick={openCart}
         />
-      )}
-    </div>
+        <main className="pb-20">{children}</main>
+        <CartDrawer
+          open={isOpen}
+          onOpenChange={(open) => !open && closeCart()}
+          items={items}
+          subtotal={subtotal}
+          fraisLivraison={storefront.fraisLivraison}
+          onRemove={removeItem}
+          onUpdateQuantity={updateQuantity}
+          onCheckout={() => {}}
+          storefront={storefront}
+        />
+        {/* Bouton WhatsApp flottant */}
+        {storefront.whatsappNumber && (
+          <WhatsAppFloatingButton
+            phoneNumber={storefront.whatsappNumber}
+            storeName={storefront.nom}
+          />
+        )}
+      </div>
+    </CustomerNotificationProvider>
   );
 };
 

@@ -7,6 +7,7 @@ import { getPhotoUrl } from '@/lib/api-client';
 import { useCustomerAuth } from '@/contexts/CustomerAuthContext';
 import { CustomerAuthModal } from './CustomerAuthModal';
 import { CustomerAccountMenu } from './CustomerAccountMenu';
+import { NotificationBell } from './NotificationBell';
 
 interface StorefrontHeaderProps {
   storefront: StoreFront;
@@ -51,15 +52,21 @@ export const StorefrontHeader = ({ storefront, cartCount, onCartClick }: Storefr
           </h1>
         </div>
 
-        {/* Panier */}
-        <Button variant="ghost" size="icon" className="h-10 w-10 relative" onClick={onCartClick}>
-          <ShoppingCart className="h-5 w-5" />
-          {cartCount > 0 && (
-            <span className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-primary text-primary-foreground text-xs flex items-center justify-center font-bold">
-              {cartCount > 99 ? '99+' : cartCount}
-            </span>
-          )}
-        </Button>
+        {/* Actions */}
+        <div className="flex items-center gap-1">
+          {/* Notifications (seulement si connecté) */}
+          {isAuthenticated && <NotificationBell />}
+
+          {/* Panier */}
+          <Button variant="ghost" size="icon" className="h-10 w-10 relative" onClick={onCartClick}>
+            <ShoppingCart className="h-5 w-5" />
+            {cartCount > 0 && (
+              <span className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-primary text-primary-foreground text-xs flex items-center justify-center font-bold">
+                {cartCount > 99 ? '99+' : cartCount}
+              </span>
+            )}
+          </Button>
+        </div>
       </div>
 
       {/* Barre d'informations rapides sous le header */}

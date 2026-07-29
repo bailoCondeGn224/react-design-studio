@@ -1,7 +1,9 @@
 // src/pages/storefront/StorefrontOrders.tsx
+import { useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { useCustomerAuth } from '@/contexts/CustomerAuthContext';
+import { useCustomerNotifications } from '@/hooks/useCustomerNotifications';
 import { StorefrontLayout } from '@/components/storefront/StorefrontLayout';
 import { apiClient } from '@/lib/api-client';
 import { Loader2, Package, ChevronRight } from 'lucide-react';
@@ -46,6 +48,7 @@ const StorefrontOrders = () => {
   const { slug } = useParams<{ slug: string }>();
   const { customer } = useCustomerAuth();
   const navigate = useNavigate();
+  const { refresh } = useCustomerNotifications();
 
   const { data: ordersData, isLoading } = useQuery({
     queryKey: ['customer-orders', customer?.id],
@@ -54,6 +57,11 @@ const StorefrontOrders = () => {
   });
 
   const orders = ordersData?.data || [];
+
+  // Rafraîchir les notifications quand on accède à cette page
+  useEffect(() => {
+    refresh();
+  }, [refresh]);
 
   if (isLoading) {
     return (
