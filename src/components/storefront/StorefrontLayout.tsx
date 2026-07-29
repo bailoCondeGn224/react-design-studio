@@ -6,6 +6,7 @@ import { CartDrawer } from './CartDrawer';
 import { WhatsAppFloatingButton } from './WhatsAppFloatingButton';
 import { CustomerNotificationProvider } from './CustomerNotificationProvider';
 import { useStorefront } from '@/hooks/useStorefront';
+import { useCustomerAuth } from '@/contexts/CustomerAuthContext';
 import { CartDrawerProvider, useCartDrawer } from '@/contexts/CartDrawerContext';
 import { CartProvider, useCartContext } from '@/contexts/CartContext';
 import { Loader2 } from 'lucide-react';
@@ -17,6 +18,7 @@ interface StorefrontLayoutProps {
 const StorefrontLayoutContent = ({ children }: StorefrontLayoutProps) => {
   const { slug } = useParams<{ slug: string }>();
   const { isOpen, openCart, closeCart } = useCartDrawer();
+  const { isAuthenticated } = useCustomerAuth();
 
   const { data: storefront, isLoading, error } = useStorefront(slug || '');
   const { items, itemCount, subtotal, removeItem, updateQuantity } = useCartContext();
@@ -47,35 +49,40 @@ const StorefrontLayoutContent = ({ children }: StorefrontLayoutProps) => {
     );
   }
 
-  return (
-    <CustomerNotificationProvider>
-      <div className="min-h-screen bg-background">
-        <StorefrontHeader
-          storefront={storefront}
-          cartCount={itemCount}
-          onCartClick={openCart}
+  const content = (
+    <div className="min-h-screen bg-background">
+      <StorefrontHeader
+        storefront={storefront}
+        cartCount={itemCount}
+        onCartClick={openCart}
+      />
+      <main className="pb-20">{children}</main>
+      <CartDrawer
+        open={isOpen}
+        onOpenChange={(open) => !open && closeCart()}
+        items={items}
+        subtotal={subtotal}
+        fraisLivraison={storefront.fraisLivraison}
+        onRemove={removeItem}
+        onUpdateQuantity={updateQuantity}
+        onCheckout={() => {}}
+        storefront={storefront}
+      />
+      {/* Bouton WhatsApp flottant */}
+      {storefront.whatsappNumber && (
+        <WhatsAppFloatingButton
+          phoneNumber={storefront.whatsappNumber}
+          storeName={storefront.nom}
         />
-        <main className="pb-20">{children}</main>
-        <CartDrawer
-          open={isOpen}
-          onOpenChange={(open) => !open && closeCart()}
-          items={items}
-          subtotal={subtotal}
-          fraisLivraison={storefront.fraisLivraison}
-          onRemove={removeItem}
-          onUpdateQuantity={updateQuantity}
-          onCheckout={() => {}}
-          storefront={storefront}
-        />
-        {/* Bouton WhatsApp flottant */}
-        {storefront.whatsappNumber && (
-          <WhatsAppFloatingButton
-            phoneNumber={storefront.whatsappNumber}
-            storeName={storefront.nom}
-          />
-        )}
-      </div>
-    </CustomerNotificationProvider>
+      )}
+    </div>
+  );
+
+  // Activer les notifications seulement si connecté
+  return isAuthenticated ? (
+    <CustomerNotificationProvider>{content}</CustomerNotificationProvider>
+  ) : (
+    content
   );
 };
 
