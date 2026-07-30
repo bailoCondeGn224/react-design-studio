@@ -16,7 +16,8 @@ apiClient.interceptors.request.use(
     // Déterminer quel token utiliser selon la route
     const isCustomerRoute = config.url?.startsWith('/public/auth') ||
                             config.url?.startsWith('/public/orders') ||
-                            config.url?.startsWith('/public/stores');
+                            config.url?.startsWith('/public/stores') ||
+                            config.url?.startsWith('/public/notifications');
 
     const token = isCustomerRoute
       ? localStorage.getItem('customer_token')
@@ -39,7 +40,8 @@ apiClient.interceptors.response.use(
     if (error.response?.status === 401) {
       const isCustomerRoute = error.config?.url?.startsWith('/public/auth') ||
                               error.config?.url?.startsWith('/public/orders') ||
-                              error.config?.url?.startsWith('/public/stores');
+                              error.config?.url?.startsWith('/public/stores') ||
+                              error.config?.url?.startsWith('/public/notifications');
 
       if (isCustomerRoute) {
         // Client token expiré

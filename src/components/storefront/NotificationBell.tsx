@@ -1,4 +1,5 @@
 // src/components/storefront/NotificationBell.tsx
+import { useState } from 'react';
 import { Bell, CheckCircle, Package, Truck, XCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -9,11 +10,15 @@ import {
   SheetTrigger,
 } from '@/components/ui/sheet';
 import { useCustomerNotifications } from '@/hooks/useCustomerNotifications';
+import { useNavigate, useParams } from 'react-router-dom';
 import { formatDistanceToNow } from 'date-fns';
 import { fr } from 'date-fns/locale';
 
 export const NotificationBell = () => {
   const { notifications, unreadCount, markAsRead } = useCustomerNotifications();
+  const navigate = useNavigate();
+  const { slug } = useParams<{ slug: string }>();
+  const [open, setOpen] = useState(false);
 
   const getNotificationIcon = (type: string) => {
     const iconClass = "h-5 w-5";
@@ -26,7 +31,7 @@ export const NotificationBell = () => {
   };
 
   return (
-    <Sheet>
+    <Sheet open={open} onOpenChange={setOpen}>
       <SheetTrigger asChild>
         <Button variant="ghost" size="icon" className="relative">
           <Bell className="h-5 w-5" />
@@ -37,7 +42,7 @@ export const NotificationBell = () => {
           )}
         </Button>
       </SheetTrigger>
-      <SheetContent side="right" className="w-full sm:w-[400px] overflow-y-auto">
+      <SheetContent side="right" className="w-[85%] max-w-[400px] overflow-y-auto">
         <SheetHeader>
           <SheetTitle>Notifications</SheetTitle>
         </SheetHeader>
@@ -55,6 +60,11 @@ export const NotificationBell = () => {
                 onClick={() => {
                   if (!notification.isRead) {
                     markAsRead(notification.id);
+                  }
+                  // Naviguer vers la commande si orderId existe
+                  if (notification.data?.orderId && slug) {
+                    setOpen(false); // Fermer le drawer
+                    navigate(`/b/${slug}/orders/${notification.data.orderId}`);
                   }
                 }}
                 className={`p-4 rounded-lg border cursor-pointer transition-colors ${

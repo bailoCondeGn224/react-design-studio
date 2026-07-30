@@ -41,7 +41,8 @@ export const useCustomerNotifications = () => {
     refetchOnWindowFocus: true, // Rafraîchir quand la fenêtre reprend le focus
   });
 
-  const notifications = notificationsData?.data || [];
+  // Filtrer pour ne montrer que les notifications non lues
+  const notifications = (notificationsData?.data || []).filter(n => !n.isRead);
   const unreadCount = notificationsData?.meta?.unreadCount || 0;
 
   // Afficher les nouvelles notifications sous forme de toast
@@ -90,14 +91,29 @@ export const useCustomerNotifications = () => {
     }
   }, [notifications, isAuthenticated, lastNotificationId]);
 
-  // Marquer une notification comme lue
+  // Marquer une notification comme lue (et la retirer de la liste)
   const markAsRead = async (notificationId: string) => {
     try {
+      // Retirer immédiatement la notification de la liste
+      queryClient.setQueryData<NotificationsResponse>(['customer-notifications'], (old) => {
+        if (!old) return old;
+
+        return {
+          ...old,
+          data: old.data.filter(n => n.id !== notificationId),
+          meta: {
+            ...old.meta,
+            unreadCount: Math.max(0, old.meta.unreadCount - 1),
+          },
+        };
+      });
+
+      // Marquer comme lue dans le backend
       await apiClient.patch(`/public/notifications/${notificationId}/read`);
-      // Rafraîchir les notifications
-      queryClient.invalidateQueries({ queryKey: ['customer-notifications'] });
     } catch (error) {
       console.error('Erreur lors du marquage de la notification:', error);
+      // En cas d'erreur, refetch pour restaurer l'état correct
+      queryClient.invalidateQueries({ queryKey: ['customer-notifications'] });
     }
   };
 
