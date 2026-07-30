@@ -1,4 +1,5 @@
 // src/pages/storefront/StorefrontCheckout.tsx
+import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { StorefrontLayout } from '@/components/storefront/StorefrontLayout';
 import { CheckoutMobileForm } from '@/components/storefront/CheckoutMobileForm';
@@ -7,8 +8,15 @@ import { useCart } from '@/hooks/useCart';
 import { useCreateOrder } from '@/hooks/useOnlineOrders';
 import { useCustomerAuth } from '@/contexts/CustomerAuthContext';
 import { ModeLivraison, CartItem, StoreFront } from '@/types';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, MessageCircle, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 
 const formatPrix = (prix: number) => {
   return new Intl.NumberFormat('fr-GN', { style: 'decimal' }).format(prix) + ' GNF';
@@ -62,6 +70,8 @@ const StorefrontCheckout = () => {
   const { items, subtotal, clear } = useCart(slug || '');
   const { customer, isAuthenticated } = useCustomerAuth();
   const createOrder = useCreateOrder();
+  const [showWhatsAppDialog, setShowWhatsAppDialog] = useState(false);
+  const [whatsappData, setWhatsappData] = useState<{ url: string; message: string } | null>(null);
 
   if (!storefront) return null;
 
@@ -110,20 +120,44 @@ const StorefrontCheckout = () => {
       // Vider le panier
       clear();
 
-      // Ouvrir WhatsApp si numéro configuré
+      // Afficher dialog de confirmation WhatsApp si numéro configuré
       if (storefront.whatsappNumber) {
         const whatsappUrl = `https://wa.me/${storefront.whatsappNumber}?text=${encodeURIComponent(message)}`;
-        window.open(whatsappUrl, '_blank');
-      }
-
-      // Rediriger vers confirmation ou historique
-      if (isAuthenticated) {
-        navigate('/customer/orders');
+        setWhatsappData({ url: whatsappUrl, message });
+        setShowWhatsAppDialog(true);
       } else {
-        navigate(`/b/${slug}?success=1`);
+        // Pas de WhatsApp configuré, rediriger directement
+        if (isAuthenticated) {
+          navigate('/customer/orders');
+        } else {
+          navigate(`/b/${slug}?success=1`);
+        }
       }
     } catch {
       // Error handled by mutation
+    }
+  };
+
+  const handleWhatsAppConfirm = () => {
+    if (whatsappData) {
+      window.open(whatsappData.url, '_blank');
+    }
+    setShowWhatsAppDialog(false);
+    // Rediriger vers confirmation ou historique
+    if (isAuthenticated) {
+      navigate('/customer/orders');
+    } else {
+      navigate(`/b/${slug}?success=1`);
+    }
+  };
+
+  const handleWhatsAppSkip = () => {
+    setShowWhatsAppDialog(false);
+    // Rediriger vers confirmation ou historique
+    if (isAuthenticated) {
+      navigate('/customer/orders');
+    } else {
+      navigate(`/b/${slug}?success=1`);
     }
   };
 
@@ -154,6 +188,40 @@ const StorefrontCheckout = () => {
           }
         />
       </div>
+
+      {/* WhatsApp Confirmation Dialog */}
+      <AlertDialog open={showWhatsAppDialog} onOpenChange={setShowWhatsAppDialog}>
+        <AlertDialogContent className="max-w-[90vw] md:max-w-md rounded-xl">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2 text-lg">
+              <MessageCircle className="h-5 w-5 text-[#25D366]" />
+              Envoyer via WhatsApp ?
+            </AlertDialogTitle>
+            <AlertDialogDescription className="text-left pt-2">
+              Votre commande a été créée avec succès!
+              <br /><br />
+              Souhaitez-vous envoyer les détails de votre commande au commerçant via WhatsApp?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <div className="flex flex-col gap-2 pt-4">
+            <Button
+              onClick={handleWhatsAppConfirm}
+              className="w-full h-12 bg-[#25D366] hover:bg-[#20BA5A] text-white"
+            >
+              <MessageCircle className="h-5 w-5 mr-2" />
+              Oui, envoyer via WhatsApp
+            </Button>
+            <Button
+              onClick={handleWhatsAppSkip}
+              variant="outline"
+              className="w-full h-12"
+            >
+              <X className="h-4 w-4 mr-2" />
+              Non, continuer
+            </Button>
+          </div>
+        </AlertDialogContent>
+      </AlertDialog>
     </StorefrontLayout>
   );
 };
