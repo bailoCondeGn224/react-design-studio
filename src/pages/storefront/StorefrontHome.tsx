@@ -1,15 +1,28 @@
 // src/pages/storefront/StorefrontHome.tsx
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect, useRef } from 'react';
 import { useParams } from 'react-router-dom';
 import { StorefrontLayout } from '@/components/storefront/StorefrontLayout';
 import { ProductGrid } from '@/components/storefront/ProductGrid';
 import { ProductDetailDialog } from '@/components/storefront/ProductDetailDialog';
-import { useStorefrontProducts, useStorefrontCategories } from '@/hooks/useStorefront';
+import { useStorefrontProducts, useStorefrontCategories, useInfiniteStorefrontProducts } from '@/hooks/useStorefront';
 import { useCartContext } from '@/contexts/CartContext';
-import { Loader2, Search, ChevronDown, Package, X } from 'lucide-react';
+import { Loader2, Search, ChevronDown, Package, X, ChevronLeft, ChevronRight } from 'lucide-react';
 import { toast } from 'sonner';
 import { useDebounce } from '@/hooks/useDebounce';
 import { StorefrontArticle } from '@/types';
+
+const useIsMobile = () => {
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 768);
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
+  return isMobile;
+};
 
 const formatPrix = (prix: number) => {
   return new Intl.NumberFormat('fr-GN', { style: 'decimal' }).format(prix) + ' GNF';
@@ -21,20 +34,68 @@ const StorefrontHomeContent = () => {
   const [categoryId, setCategoryId] = useState<string>('all');
   const [isCategoryOpen, setIsCategoryOpen] = useState(false);
   const [selectedArticle, setSelectedArticle] = useState<StorefrontArticle | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const loadMoreRef = useRef<HTMLDivElement>(null);
 
   const debouncedSearch = useDebounce(search, 300);
   const { addItem } = useCartContext();
+  const isMobile = useIsMobile();
 
-  const { data: productsData, isLoading: loadingProducts } = useStorefrontProducts(slug || '', {
+  const queryParams = {
     search: debouncedSearch || undefined,
     categorieId: categoryId !== 'all' ? categoryId : undefined,
+  };
+
+  // Infinite scroll pour mobile
+  const {
+    data: infiniteData,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    isLoading: isLoadingInfinite,
+  } = useInfiniteStorefrontProducts(slug || '', queryParams);
+
+  // Pagination classique pour desktop
+  const { data: paginatedData, isLoading: isLoadingPaginated } = useStorefrontProducts(slug || '', {
+    ...queryParams,
+    page: currentPage,
+    limit: 12,
   });
 
   const { data: categories = [] } = useStorefrontCategories(slug || '');
 
-  const articles = useMemo(() => productsData?.data || [], [productsData]);
+  // Articles selon le type de pagination
+  const articles = useMemo(() => {
+    if (isMobile && infiniteData) {
+      return infiniteData.pages.flatMap(page => page.data);
+    }
+    return paginatedData?.data || [];
+  }, [isMobile, infiniteData, paginatedData]);
 
+  const loadingProducts = isMobile ? isLoadingInfinite : isLoadingPaginated;
   const selectedCategory = categories.find(c => c.id === categoryId);
+
+  // Intersection Observer pour infinite scroll sur mobile
+  useEffect(() => {
+    if (!isMobile || !loadMoreRef.current || !hasNextPage || isFetchingNextPage) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          fetchNextPage();
+        }
+      },
+      { threshold: 0.1 }
+    );
+
+    observer.observe(loadMoreRef.current);
+    return () => observer.disconnect();
+  }, [isMobile, hasNextPage, isFetchingNextPage, fetchNextPage]);
+
+  // Reset page quand les filtres changent
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [search, categoryId]);
 
   const handleAddToCart = (article: StorefrontArticle, quantity: number = 1, modeVente?: { id: string; nom: string; prix: number; quantiteStock: number }) => {
     addItem(article, quantity, modeVente);
@@ -161,7 +222,7 @@ const StorefrontHomeContent = () => {
         </div>
 
         {/* Products Content */}
-        <div className="px-4 py-4">
+        <div className="px-4 py-4 pb-24 md:pb-4">
           {loadingProducts ? (
             <div className="flex flex-col items-center justify-center py-20">
               <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-4">
@@ -193,11 +254,73 @@ const StorefrontHomeContent = () => {
               )}
             </div>
           ) : (
-            <ProductGrid
-              articles={articles}
-              onProductClick={handleProductClick}
-              formatPrix={formatPrix}
-            />
+            <>
+              <ProductGrid
+                articles={articles}
+                onProductClick={handleProductClick}
+                formatPrix={formatPrix}
+              />
+
+              {/* Infinite scroll trigger pour mobile */}
+              {isMobile && hasNextPage && (
+                <div ref={loadMoreRef} className="flex justify-center py-8">
+                  {isFetchingNextPage && (
+                    <Loader2 className="h-6 w-6 animate-spin text-primary" />
+                  )}
+                </div>
+              )}
+
+              {/* Pagination pour desktop */}
+              {!isMobile && paginatedData?.meta && paginatedData.meta.totalPages > 1 && (
+                <div className="flex items-center justify-center gap-2 mt-8">
+                  <button
+                    onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                    disabled={!paginatedData.meta.hasPreviousPage}
+                    className="p-2 rounded-lg border border-gray-200 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 transition-colors"
+                  >
+                    <ChevronLeft className="h-5 w-5" />
+                  </button>
+
+                  <div className="flex items-center gap-1">
+                    {Array.from({ length: paginatedData.meta.totalPages }, (_, i) => i + 1)
+                      .filter(page => {
+                        const current = paginatedData.meta.page;
+                        return page === 1 ||
+                               page === paginatedData.meta.totalPages ||
+                               (page >= current - 1 && page <= current + 1);
+                      })
+                      .map((page, idx, arr) => {
+                        const prevPage = arr[idx - 1];
+                        const showEllipsis = prevPage && page - prevPage > 1;
+
+                        return (
+                          <div key={page} className="flex items-center gap-1">
+                            {showEllipsis && <span className="px-2 text-gray-400">...</span>}
+                            <button
+                              onClick={() => setCurrentPage(page)}
+                              className={`min-w-[40px] h-10 px-3 rounded-lg font-medium transition-colors ${
+                                page === paginatedData.meta.page
+                                  ? 'bg-primary text-white'
+                                  : 'border border-gray-200 hover:bg-gray-50'
+                              }`}
+                            >
+                              {page}
+                            </button>
+                          </div>
+                        );
+                      })}
+                  </div>
+
+                  <button
+                    onClick={() => setCurrentPage(p => p + 1)}
+                    disabled={!paginatedData.meta.hasNextPage}
+                    className="p-2 rounded-lg border border-gray-200 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 transition-colors"
+                  >
+                    <ChevronRight className="h-5 w-5" />
+                  </button>
+                </div>
+              )}
+            </>
           )}
         </div>
       </div>
