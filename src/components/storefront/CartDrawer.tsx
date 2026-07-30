@@ -208,28 +208,7 @@ export const CartDrawer = ({
       // Vider le panier après succès
       clear();
 
-      // Intégration WhatsApp
-      if (storefront?.whatsappNumber) {
-        try {
-          // Construire le message WhatsApp
-          const encodedMessage = buildWhatsAppMessage({
-            nomClient: formData.nomClient,
-            items: items,
-            subtotal: subtotal,
-            fraisLivraison: fraisLivraison,
-            total: total,
-            adresseLivraison: formData.adresseLivraison,
-            telephone: formData.telephone
-          }, storefront.nom);
-
-          // Ouvrir WhatsApp avec le message
-          openWhatsApp(storefront.whatsappNumber, encodedMessage);
-        } catch (whatsappError) {
-          // Logger l'erreur mais ne pas bloquer le flux
-          console.error('Erreur WhatsApp:', whatsappError);
-        }
-      }
-
+      // Passer à l'écran de succès - l'utilisateur pourra choisir d'envoyer via WhatsApp
       setStep('success');
 
     } catch (error: any) {
