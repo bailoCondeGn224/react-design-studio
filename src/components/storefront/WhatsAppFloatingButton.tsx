@@ -27,7 +27,7 @@ export const WhatsAppFloatingButton = ({ phoneNumber, storeName }: WhatsAppFloat
   if (!phoneNumber) return null;
 
   return (
-    <div className="fixed bottom-6 right-4 z-50 animate-in slide-in-from-bottom-4 duration-500">
+    <div className="fixed bottom-20 md:bottom-6 right-4 z-50 animate-in slide-in-from-bottom-4 duration-500">
       <button
         onClick={handleWhatsAppClick}
         className="group relative flex items-center gap-3 bg-[#25D366] hover:bg-[#20BA5A] text-white rounded-full shadow-lg hover:shadow-xl transition-all duration-300 active:scale-95"
