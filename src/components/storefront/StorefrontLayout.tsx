@@ -5,6 +5,7 @@ import { StorefrontHeader } from './StorefrontHeader';
 import { CartDrawer } from './CartDrawer';
 import { WhatsAppFloatingButton } from './WhatsAppFloatingButton';
 import { CustomerNotificationProvider } from './CustomerNotificationProvider';
+import { BottomNav } from './BottomNav';
 import { useStorefront } from '@/hooks/useStorefront';
 import { useCustomerAuth } from '@/contexts/CustomerAuthContext';
 import { CartDrawerProvider, useCartDrawer } from '@/contexts/CartDrawerContext';
@@ -56,7 +57,7 @@ const StorefrontLayoutContent = ({ children }: StorefrontLayoutProps) => {
         cartCount={itemCount}
         onCartClick={openCart}
       />
-      <main className="pb-20">{children}</main>
+      <main>{children}</main>
       <CartDrawer
         open={isOpen}
         onOpenChange={(open) => !open && closeCart()}
@@ -75,6 +76,8 @@ const StorefrontLayoutContent = ({ children }: StorefrontLayoutProps) => {
           storeName={storefront.nom}
         />
       )}
+      {/* Bottom Navigation */}
+      <BottomNav />
     </div>
   );
 

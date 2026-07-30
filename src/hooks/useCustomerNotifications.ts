@@ -5,6 +5,9 @@ import { apiClient } from '@/lib/api-client';
 import { toast } from 'sonner';
 import { useCustomerAuth } from '@/contexts/CustomerAuthContext';
 
+// Son de notification (simple beep)
+const NOTIFICATION_SOUND = 'data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdH2Onp2hm5OLgoOKkZaanJuYk42Jh4aGhoiLj5OWl5eTjoqHhYWGh4qNkJOUk5COi4iFhIWGiIuOkZOTko+MiYaEhIWHiYuOkJKSkI6LiIWEhIWHiYuNj5GQjo2KhoSEhYaIio2PkJCOjImGhISFhoiKjI6Pj42LiYaEhIWGiImLjY6OjYuJhoSEhYaHiYqMjY2Mi4mGhISFhoiJi4yNjIuJh4WEhYaHiImLjIyLiomHhYSFhoeIiouMi4uJh4WEhYaHiImKi4uKiYeGhISFhoeIiYqLioqIh4WEhYaHiImKioqJiIaFhIWGh4iJioqKiYiGhYSFhoeIiYmKiomIh4WEhYaHiIiJioqJiIeGhIWFhoeIiYmJiYiHhoWEhYaHiIiJiYmIh4aFhIWGh4eIiYmJiIeGhYSFhoeHiIiJiIiHhoWEhYaGh4iIiIiIh4aFhIWGhoeIiIiIh4eGhYSFhoaHiIiIiIeHhoWEhYaGh4eIiIiHh4aFhIWGhoeHiIiIh4eGhYWFhoaHh4iIiIeHhoWFhYaGh4eIiIeHh4aFhYWGhoeHh4iHh4eGhYWFhoaHh4eHh4eHhoWFhYaGh4eHh4eHhoaFhYWGhoeHh4eHh4aGhYWFhoaHh4eHh4eGhoWFhYaGhoeHh4eHhoaFhYWGhoaHh4eHh4aGhYWFhoaGh4eHh4eGhoWFhYaGhoeHh4eHhoaFhYWGhoaHh4eHhoaGhYWFhoaGh4eHh4aGhoWFhYaGhoeHh4eGhoaFhYWGhoaHh4eHhoaGhYWFhoaGh4eHh4aGhoWFhYaGhoeHh4eGhoaFhYWGhoaHh4eGhoaGhYWFhoaGh4eHhoaGhoWFhYaGhoeHh4aGhoaFhYWGhoaHh4eGhoaGhYWFhoaGh4eHhoaGhoWFhYaGhoeHhoaGhoaFhYWGhoaHh4eGhoaGhYWFhoaGh4eGhoaGhoWFhYaGhoeHhoaGhoaFhYWGhoaHh4aGhoaGhYWFhoaGh4aGhoaGhoWFhYaGhoaGhoaGhoaFhYWGhoaGhoaGhoaGhYWFhoaGhoaGhoaGhoWFhYaGhoaGhoaGhoaFhYWGhoaGhoaGhoaGhYWFhoaGhoaGhoaGhoWFhYaGhoaGhoaGhoaFhYWGhoaGhoaGhoaGhYWFhoaGhoaGhoaGhYWFhYaGhoaGhoaGhoWFhYaGhoaGhoaGhoaFhYWGhoaGhoaGhoaGhYWFhoaGhoaGhoaGhYWFhYaGhoaGhoaGhoWFhYaGhoaGhoaGhoWFhYWGhoaGhoaGhoaFhYWFhoaGhoaGhoaGhYWFhYaGhoaGhoaGhoWFhYWGhoaGhoaGhoaFhYWFhoaGhoaGhoaFhYWFhYaGhoaGhoaGhYWFhYaGhoaGhoaGhYWFhYWGhoaGhoaGhoWFhYWGhoaGhoaGhoWFhYWFhoaGhoaGhoaFhYWFhoaGhoaGhoaFhYWFhYaGhoaGhoaGhYWFhYaGhoaGhoaGhYWFhYWGhoaGhoaGhYWFhYWFhoaGhoaGhoWFhYWFhoaGhoaGhoWFhYWFhoaGhoaGhoWFhYWFhYaGhoaGhoaFhYWFhYaGhoaGhoWFhYWFhYaGhoaGhoWFhYWFhYWGhoaGhoaFhYWFhYWGhoaGhoWFhYWFhYWGhoaGhoWFhYWFhYWGhoaGhoWFhYWFhYWGhoaGhoWFhYWFhYWGhoaGhYWFhYWFhYWGhoaGhoWFhYWFhYWGhoaGhYWFhYWFhYWGhoaGhYWFhYWFhYWGhoaGhYWFhYWFhYWGhoaFhYWFhYWFhYWGhoaFhYWFhYWFhYWGhoaFhYWFhYWFhYWGhoWFhYWFhYWFhYaGhYWFhYWFhYWFhoaFhYWFhYWFhYWGhoWFhYWFhYWFhYaGhYWFhYWFhYWFhoWFhYWFhYWFhYaGhYWFhYWFhYWFhYWFhYWFhYWFhYaFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhQ==';
+
 interface Notification {
   id: string;
   type: string;
@@ -31,6 +34,24 @@ export const useCustomerNotifications = () => {
   const queryClient = useQueryClient();
   const [lastNotificationId, setLastNotificationId] = useState<string | null>(null);
   const hasShownInitialNotifications = useRef(false);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const hasRequestedPermission = useRef(false);
+
+  // Initialiser l'audio
+  useEffect(() => {
+    audioRef.current = new Audio(NOTIFICATION_SOUND);
+    audioRef.current.volume = 0.5;
+  }, []);
+
+  // Demander permission notifications navigateur
+  useEffect(() => {
+    if (!isAuthenticated || hasRequestedPermission.current) return;
+
+    if ('Notification' in window && Notification.permission === 'default') {
+      hasRequestedPermission.current = true;
+      Notification.requestPermission();
+    }
+  }, [isAuthenticated]);
 
   // Récupérer les notifications
   const { data: notificationsData, refetch } = useQuery<NotificationsResponse>({
@@ -66,6 +87,37 @@ export const useCustomerNotifications = () => {
 
     // Afficher les nouvelles notifications
     newNotifications.forEach(notification => {
+      // Jouer le son
+      if (audioRef.current) {
+        audioRef.current.currentTime = 0;
+        audioRef.current.play().catch(() => {
+          // Autoplay peut être bloqué, ignorer l'erreur
+        });
+      }
+
+      // Notification navigateur
+      if ('Notification' in window && Notification.permission === 'granted') {
+        const browserNotification = new Notification(notification.title, {
+          body: notification.message,
+          icon: '/favicon.ico',
+          badge: '/favicon.ico',
+          tag: notification.id,
+          requireInteraction: false,
+        });
+
+        browserNotification.onclick = () => {
+          window.focus();
+          if (notification.data?.orderId) {
+            window.dispatchEvent(new CustomEvent('navigate-to-order', {
+              detail: { orderId: notification.data.orderId }
+            }));
+          }
+          browserNotification.close();
+        };
+
+        setTimeout(() => browserNotification.close(), 10000);
+      }
+
       // Type de toast selon le type de notification
       const isError = notification.type === 'COMMANDE_ANNULEE';
       const toastFn = isError ? toast.error : toast.success;
