@@ -3,6 +3,7 @@ import { Home, ShoppingBag, Package, User } from 'lucide-react';
 import { useNavigate, useLocation, useParams } from 'react-router-dom';
 import { useCustomerAuth } from '@/contexts/CustomerAuthContext';
 import { useCartContext } from '@/contexts/CartContext';
+import { useCartDrawer } from '@/contexts/CartDrawerContext';
 
 export const BottomNav = () => {
   const navigate = useNavigate();
@@ -10,6 +11,7 @@ export const BottomNav = () => {
   const { slug } = useParams<{ slug: string }>();
   const { isAuthenticated } = useCustomerAuth();
   const { itemCount } = useCartContext();
+  const { openCart, isOpen: isCartOpen } = useCartDrawer();
 
   const navItems = [
     {
@@ -21,9 +23,10 @@ export const BottomNav = () => {
     {
       icon: ShoppingBag,
       label: 'Panier',
-      path: `/b/${slug}/cart`,
-      active: location.pathname === `/b/${slug}/cart`,
+      path: '#',
+      active: isCartOpen,
       badge: itemCount > 0 ? itemCount : undefined,
+      isCart: true,
     },
     {
       icon: Package,
@@ -41,7 +44,13 @@ export const BottomNav = () => {
     },
   ];
 
-  const handleNavClick = (item: typeof navItems[0]) => {
+  const handleNavClick = (item: typeof navItems[0] & { isCart?: boolean }) => {
+    // Si c'est le panier, ouvrir le CartDrawer
+    if (item.isCart) {
+      openCart();
+      return;
+    }
+
     if (item.requiresAuth && !isAuthenticated) {
       // Déclencher l'ouverture du modal d'authentification
       window.dispatchEvent(new CustomEvent('customer-auth-required'));
