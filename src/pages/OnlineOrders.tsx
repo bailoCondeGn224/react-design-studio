@@ -47,6 +47,11 @@ const OnlineOrders = () => {
   const [cancelMotif, setCancelMotif] = useState("");
   const [orderToCancel, setOrderToCancel] = useState<string | null>(null);
 
+  // Track which order is being acted upon
+  const [pendingConfirmId, setPendingConfirmId] = useState<string | null>(null);
+  const [pendingReadyId, setPendingReadyId] = useState<string | null>(null);
+  const [pendingDeliveredId, setPendingDeliveredId] = useState<string | null>(null);
+
   const debouncedSearch = useDebounce(search, 300);
 
   const { data: ordersData, isLoading } = useOnlineOrders({
@@ -67,15 +72,24 @@ const OnlineOrders = () => {
   const meta = ordersData?.meta;
 
   const handleConfirm = (id: string) => {
-    confirmOrder.mutate(id);
+    setPendingConfirmId(id);
+    confirmOrder.mutate(id, {
+      onSettled: () => setPendingConfirmId(null),
+    });
   };
 
   const handleMarkReady = (id: string) => {
-    markReady.mutate(id);
+    setPendingReadyId(id);
+    markReady.mutate(id, {
+      onSettled: () => setPendingReadyId(null),
+    });
   };
 
   const handleMarkDelivered = (id: string) => {
-    markDelivered.mutate(id);
+    setPendingDeliveredId(id);
+    markDelivered.mutate(id, {
+      onSettled: () => setPendingDeliveredId(null),
+    });
   };
 
   const handleCancelClick = (id: string) => {
@@ -220,10 +234,10 @@ const OnlineOrders = () => {
                 onViewDetails={handleViewDetails}
                 formatPrix={formatPrix}
                 formatDate={formatDate}
-                isConfirming={confirmOrder.isPending}
-                isMarkingReady={markReady.isPending}
-                isMarkingDelivered={markDelivered.isPending}
-                isCanceling={cancelOrder.isPending}
+                isConfirming={pendingConfirmId === order.id}
+                isMarkingReady={pendingReadyId === order.id}
+                isMarkingDelivered={pendingDeliveredId === order.id}
+                isCanceling={orderToCancel === order.id && cancelOrder.isPending}
               />
             ))}
           </div>
@@ -270,27 +284,27 @@ const OnlineOrders = () => {
                             <Button
                               size="sm"
                               onClick={() => handleConfirm(order.id)}
-                              disabled={confirmOrder.isPending}
+                              disabled={pendingConfirmId === order.id}
                             >
-                              {confirmOrder.isPending ? 'En cours...' : 'Confirmer'}
+                              {pendingConfirmId === order.id ? 'En cours...' : 'Confirmer'}
                             </Button>
                           )}
                           {order.statut === OnlineOrderStatut.CONFIRMEE && (
                             <Button
                               size="sm"
                               onClick={() => handleMarkReady(order.id)}
-                              disabled={markReady.isPending}
+                              disabled={pendingReadyId === order.id}
                             >
-                              {markReady.isPending ? 'En cours...' : 'Prête'}
+                              {pendingReadyId === order.id ? 'En cours...' : 'Prête'}
                             </Button>
                           )}
                           {order.statut === OnlineOrderStatut.PRETE && (
                             <Button
                               size="sm"
                               onClick={() => handleMarkDelivered(order.id)}
-                              disabled={markDelivered.isPending}
+                              disabled={pendingDeliveredId === order.id}
                             >
-                              {markDelivered.isPending ? 'En cours...' : 'Livrée'}
+                              {pendingDeliveredId === order.id ? 'En cours...' : 'Livrée'}
                             </Button>
                           )}
                           <Button size="sm" variant="outline" onClick={() => handleViewDetails(order.id)}>
