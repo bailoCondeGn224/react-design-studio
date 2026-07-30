@@ -59,6 +59,7 @@ const StorefrontCart = lazy(() => import("./pages/storefront/StorefrontCart.tsx"
 const StorefrontCheckout = lazy(() => import("./pages/storefront/StorefrontCheckout.tsx"));
 const StorefrontOrders = lazy(() => import("./pages/storefront/StorefrontOrders.tsx"));
 const StorefrontOrderDetail = lazy(() => import("./pages/storefront/StorefrontOrderDetail.tsx"));
+const StorefrontProfile = lazy(() => import("./pages/storefront/StorefrontProfile.tsx"));
 // Customer pages
 const CustomerLogin = lazy(() => import("./pages/customer/CustomerLogin.tsx"));
 const CustomerRegister = lazy(() => import("./pages/customer/CustomerRegister.tsx"));
@@ -345,6 +346,15 @@ const App = () => (
                   element={
                     <CustomerProtectedRoute>
                       <StorefrontOrderDetail />
+                    </CustomerProtectedRoute>
+                  }
+                />
+                {/* Storefront Profile (protected) */}
+                <Route
+                  path="/b/:slug/profile"
+                  element={
+                    <CustomerProtectedRoute>
+                      <StorefrontProfile />
                     </CustomerProtectedRoute>
                   }
                 />
