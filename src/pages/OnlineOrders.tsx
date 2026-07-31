@@ -10,10 +10,11 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import OnlineOrderMobileCard from "@/components/OnlineOrderMobileCard";
+import { TrackingMap } from "@/components/storefront/TrackingMap";
 import { useOnlineOrders, useConfirmOrder, useMarkOrderReady, useMarkOrderDelivered, useCancelOrder, useOnlineOrderStats } from "@/hooks/useOnlineOrders";
-import { useActiveLivreurs, useDispatchOrder } from "@/hooks/useLivreurs";
+import { useActiveLivreurs, useDispatchOrder, useOrderTracking } from "@/hooks/useLivreurs";
 import { OnlineOrder, OnlineOrderStatut } from "@/types";
-import { Search, Package, Clock, CheckCircle, Truck, XCircle, Loader2, Navigation, Send } from "lucide-react";
+import { Search, Package, Clock, CheckCircle, Truck, XCircle, Loader2, Navigation, Send, MapPin } from "lucide-react";
 import { useDebounce } from "@/hooks/useDebounce";
 
 const formatPrix = (prix: number) => {
@@ -59,6 +60,11 @@ const OnlineOrders = () => {
   const [orderToDispatch, setOrderToDispatch] = useState<string | null>(null);
   const [selectedLivreurId, setSelectedLivreurId] = useState<string>("");
 
+  // Tracking dialog state
+  const [trackingDialogOpen, setTrackingDialogOpen] = useState(false);
+  const [trackingOrderId, setTrackingOrderId] = useState<string | null>(null);
+  const [trackingOrderNumero, setTrackingOrderNumero] = useState<string>("");
+
   const debouncedSearch = useDebounce(search, 300);
 
   const { data: ordersData, isLoading } = useOnlineOrders({
@@ -70,6 +76,12 @@ const OnlineOrders = () => {
 
   const { data: stats } = useOnlineOrderStats();
   const { data: livreurs } = useActiveLivreurs();
+
+  // Tracking data (only fetched when dialog is open)
+  const { data: trackingData, isLoading: trackingLoading } = useOrderTracking(
+    trackingOrderId || '',
+    trackingDialogOpen && !!trackingOrderId
+  );
 
   const confirmOrder = useConfirmOrder();
   const markReady = useMarkOrderReady();
@@ -124,6 +136,12 @@ const OnlineOrders = () => {
     setOrderToDispatch(id);
     setSelectedLivreurId("");
     setDispatchDialogOpen(true);
+  };
+
+  const handleShowTracking = (order: OnlineOrder) => {
+    setTrackingOrderId(order.id);
+    setTrackingOrderNumero(order.numero);
+    setTrackingDialogOpen(true);
   };
 
   const handleDispatchConfirm = () => {
@@ -339,6 +357,16 @@ const OnlineOrders = () => {
                               Dispatcher
                             </Button>
                           )}
+                          {order.statut === OnlineOrderStatut.EN_LIVRAISON && (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => handleShowTracking(order)}
+                            >
+                              <MapPin className="h-4 w-4 mr-1" />
+                              Suivre
+                            </Button>
+                          )}
                           {(order.statut === OnlineOrderStatut.PRETE || order.statut === OnlineOrderStatut.EN_LIVRAISON) && (
                             <Button
                               size="sm"
@@ -537,6 +565,33 @@ const OnlineOrders = () => {
               {dispatchOrder.isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
               <Navigation className="h-4 w-4 mr-2" />
               Démarrer la livraison
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Tracking Dialog */}
+      <Dialog open={trackingDialogOpen} onOpenChange={setTrackingDialogOpen}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <MapPin className="h-5 w-5 text-purple-600" />
+              Suivi de la commande {trackingOrderNumero}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <TrackingMap
+              tracking={trackingData}
+              isLoading={trackingLoading}
+              height="300px"
+            />
+            <p className="text-xs text-muted-foreground text-center">
+              Position mise à jour toutes les 30 secondes
+            </p>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setTrackingDialogOpen(false)}>
+              Fermer
             </Button>
           </DialogFooter>
         </DialogContent>
