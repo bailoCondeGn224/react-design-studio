@@ -123,3 +123,110 @@ export const useOrderTracking = (orderId: string, enabled: boolean = true) => {
     refetchInterval: 30000, // Polling every 30 seconds
   });
 };
+
+// ========== Livreur App Hooks (for authenticated livreur on storefront) ==========
+
+const LIVREUR_TOKEN_KEY = 'livreur_token';
+
+const getLivreurToken = () => localStorage.getItem(LIVREUR_TOKEN_KEY);
+
+// Hook pour récupérer les commandes assignées au livreur connecté
+export const useLivreurOrders = () => {
+  const token = getLivreurToken();
+
+  return useQuery({
+    queryKey: ['livreur-orders'],
+    queryFn: async () => {
+      const { data } = await apiClient.get('/livreur/orders', {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      return data;
+    },
+    enabled: !!token,
+    refetchInterval: 30000, // Polling every 30 seconds
+  });
+};
+
+// Hook pour mettre à jour la position GPS du livreur
+export const useUpdateLivreurPosition = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (position: { latitude: number; longitude: number }) => {
+      const token = getLivreurToken();
+      const { data } = await apiClient.put('/livreur/position', position, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['livreur-orders'] });
+    },
+  });
+};
+
+// Hook pour démarrer la livraison (activer le suivi GPS)
+export const useStartDelivery = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async () => {
+      const token = getLivreurToken();
+      const { data } = await apiClient.post('/livreur/start-delivery', {}, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['livreur-orders'] });
+      toast.success('Suivi GPS activé');
+    },
+    onError: (error: any) => {
+      toast.error(error.response?.data?.message || 'Erreur lors de l\'activation du suivi');
+    },
+  });
+};
+
+// Hook pour arrêter la livraison (désactiver le suivi GPS)
+export const useStopDelivery = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async () => {
+      const token = getLivreurToken();
+      const { data } = await apiClient.post('/livreur/stop-delivery', {}, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['livreur-orders'] });
+      toast.success('Suivi GPS désactivé');
+    },
+    onError: (error: any) => {
+      toast.error(error.response?.data?.message || 'Erreur lors de la désactivation du suivi');
+    },
+  });
+};
+
+// Hook pour marquer une commande comme livrée (par le livreur)
+export const useMarkOrderDelivered = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (orderId: string) => {
+      const token = getLivreurToken();
+      const { data } = await apiClient.patch(`/livreur/orders/${orderId}/delivered`, {}, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['livreur-orders'] });
+      toast.success('Commande marquée comme livrée');
+    },
+    onError: (error: any) => {
+      toast.error(error.response?.data?.message || 'Erreur lors de la mise à jour');
+    },
+  });
+};
