@@ -2,9 +2,12 @@
 import { useNavigate, useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { StorefrontLayout } from '@/components/storefront/StorefrontLayout';
+import { TrackingMap } from '@/components/storefront/TrackingMap';
 import { apiClient } from '@/lib/api-client';
-import { Loader2, ArrowLeft, Package, MapPin, Phone } from 'lucide-react';
+import { useOrderTracking } from '@/hooks/useLivreurs';
+import { Loader2, ArrowLeft, Package, MapPin, Phone, Truck } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { OnlineOrderStatut } from '@/types/customer';
 
 const formatPrix = (prix: number) => {
   return new Intl.NumberFormat('fr-GN', { style: 'decimal' }).format(prix) + ' GNF';
@@ -25,6 +28,7 @@ const getStatutBadge = (statut: string) => {
     EN_ATTENTE: 'bg-yellow-100 text-yellow-800',
     CONFIRMEE: 'bg-blue-100 text-blue-800',
     PRETE: 'bg-green-100 text-green-800',
+    EN_LIVRAISON: 'bg-purple-100 text-purple-800',
     LIVREE: 'bg-green-600 text-white',
     ANNULEE: 'bg-red-100 text-red-800',
   };
@@ -33,6 +37,7 @@ const getStatutBadge = (statut: string) => {
     EN_ATTENTE: 'En attente',
     CONFIRMEE: 'Confirmée',
     PRETE: 'Prête',
+    EN_LIVRAISON: 'En livraison',
     LIVREE: 'Livrée',
     ANNULEE: 'Annulée',
   };
@@ -52,6 +57,13 @@ const StorefrontOrderDetail = () => {
     queryFn: () => apiClient.get(`/public/orders/${id}`).then(res => res.data),
     enabled: !!id,
   });
+
+  // Suivi GPS du livreur (seulement si commande en livraison)
+  const isEnLivraison = orderData?.statut === OnlineOrderStatut.EN_LIVRAISON;
+  const { data: tracking, isLoading: trackingLoading } = useOrderTracking(
+    id || '',
+    isEnLivraison && !!id
+  );
 
   if (isLoading) {
     return (
@@ -104,6 +116,24 @@ const StorefrontOrderDetail = () => {
 
         {/* Content */}
         <div className="p-4 space-y-4">
+          {/* Suivi GPS du livreur */}
+          {isEnLivraison && (
+            <div className="bg-white rounded-lg border border-purple-200 p-4">
+              <div className="flex items-center gap-2 mb-3">
+                <Truck className="h-5 w-5 text-purple-600" />
+                <h2 className="font-semibold text-base text-purple-800">Suivi en temps réel</h2>
+              </div>
+              <TrackingMap
+                tracking={tracking}
+                isLoading={trackingLoading}
+                height="250px"
+              />
+              <p className="text-xs text-gray-500 mt-2 text-center">
+                La position est mise à jour toutes les 30 secondes
+              </p>
+            </div>
+          )}
+
           {/* Informations de livraison */}
           <div className="bg-white rounded-lg border border-gray-200 p-4">
             <h2 className="font-semibold text-base mb-3">Informations de livraison</h2>
@@ -174,7 +204,7 @@ const StorefrontOrderDetail = () => {
           </div>
 
           {/* Statut timeline */}
-          {(order.confirmeeLe || order.preteLe || order.livreeLe || order.annuleeLe) && (
+          {(order.confirmeeLe || order.preteLe || order.expedieeLe || order.livreeLe || order.annuleeLe) && (
             <div className="bg-white rounded-lg border border-gray-200 p-4">
               <h2 className="font-semibold text-base mb-3">Suivi</h2>
               <div className="space-y-3">
@@ -200,6 +230,18 @@ const StorefrontOrderDetail = () => {
                     <div>
                       <p className="text-sm font-medium">Prête</p>
                       <p className="text-xs text-gray-500">{formatDate(order.preteLe)}</p>
+                    </div>
+                  </div>
+                )}
+                {order.expedieeLe && (
+                  <div className="flex items-start gap-3">
+                    <div className="h-2 w-2 rounded-full bg-purple-500 mt-1.5 shrink-0"></div>
+                    <div>
+                      <p className="text-sm font-medium">En livraison</p>
+                      <p className="text-xs text-gray-500">{formatDate(order.expedieeLe)}</p>
+                      {order.livreurNom && (
+                        <p className="text-xs text-gray-600 mt-1">Livreur: {order.livreurNom}</p>
+                      )}
                     </div>
                   </div>
                 )}
