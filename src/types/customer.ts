@@ -38,6 +38,7 @@ export enum OnlineOrderStatut {
   EN_ATTENTE = 'EN_ATTENTE',
   CONFIRMEE = 'CONFIRMEE',
   PRETE = 'PRETE',
+  EN_LIVRAISON = 'EN_LIVRAISON',
   LIVREE = 'LIVREE',
   ANNULEE = 'ANNULEE',
 }
@@ -72,6 +73,8 @@ export interface OnlineOrder {
   total: number;
   items: OnlineOrderItem[];
   customerAccount?: CustomerAccount;
+  customerNom?: string;
+  customerTelephone?: string;
   clientNom?: string;
   clientTelephone?: string;
   motifAnnulation?: string;
@@ -80,6 +83,10 @@ export interface OnlineOrder {
   preteLe?: string;
   livreeLe?: string;
   annuleeLe?: string;
+  expedieeLe?: string;
+  livreurId?: string;
+  livreurNom?: string;
+  livreurTelephone?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -131,4 +138,58 @@ export interface OnlineOrderFilterParams {
   limit?: number;
   statut?: OnlineOrderStatut;
   search?: string;
+}
+
+// ========== Livreurs ==========
+
+export interface Livreur {
+  id: string;
+  nom: string;
+  telephone: string;
+  email?: string;
+  photo?: string;
+  isActive: boolean;
+  isDelivering: boolean;
+  latitude?: number;
+  longitude?: number;
+  lastPositionAt?: string;
+  createdAt: string;
+}
+
+export interface CreateLivreurDto {
+  nom: string;
+  telephone: string;
+  email?: string;
+  password: string;
+  photo?: string;
+}
+
+export interface UpdateLivreurDto {
+  nom?: string;
+  telephone?: string;
+  email?: string;
+  password?: string;
+  photo?: string;
+  isActive?: boolean;
+}
+
+export interface LivreurLoginDto {
+  telephone: string;
+  password: string;
+  storeSlug: string;
+}
+
+export interface LivreurPosition {
+  latitude: number;
+  longitude: number;
+  lastPositionAt: string;
+}
+
+export interface OrderTracking {
+  livreur: {
+    id: string;
+    nom: string;
+    telephone: string;
+  };
+  position: LivreurPosition | null;
 }
