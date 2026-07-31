@@ -1,5 +1,5 @@
 // src/components/storefront/BottomNav.tsx
-import { Home, ShoppingBag, Package, User } from 'lucide-react';
+import { Home, ShoppingBag, Package, User, Truck } from 'lucide-react';
 import { useNavigate, useLocation, useParams } from 'react-router-dom';
 import { useCustomerAuth } from '@/contexts/CustomerAuthContext';
 import { useCartContext } from '@/contexts/CartContext';
@@ -36,6 +36,12 @@ export const BottomNav = () => {
       requiresAuth: true,
     },
     {
+      icon: Truck,
+      label: 'Livreur',
+      path: `/b/${slug}/livreur`,
+      active: location.pathname.startsWith(`/b/${slug}/livreur`),
+    },
+    {
       icon: User,
       label: 'Compte',
       path: isAuthenticated ? `/b/${slug}/profile` : '#',
@@ -61,7 +67,7 @@ export const BottomNav = () => {
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 safe-area-inset-bottom z-40 shadow-elevated md:hidden">
-      <div className="grid grid-cols-4 h-16">
+      <div className="grid grid-cols-5 h-16">
         {navItems.map((item) => {
           const Icon = item.icon;
           const isActive = item.active;

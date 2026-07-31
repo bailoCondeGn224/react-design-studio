@@ -8,7 +8,9 @@ import {
   useStartDelivery,
   useStopDelivery,
   useMarkOrderDelivered,
+  useOrderTracking,
 } from '@/hooks/useLivreurs';
+import { TrackingMap } from '@/components/storefront/TrackingMap';
 import { OnlineOrder, OnlineOrderStatut } from '@/types/customer';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -24,6 +26,12 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import {
   Truck,
   MapPin,
@@ -57,8 +65,18 @@ const LivreurDashboard = () => {
   const [confirmDeliveryId, setConfirmDeliveryId] = useState<string | null>(null);
   const [pendingDeliveryId, setPendingDeliveryId] = useState<string | null>(null);
 
+  // Map dialog state
+  const [mapDialogOpen, setMapDialogOpen] = useState(false);
+  const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
+
   const watchIdRef = useRef<number | null>(null);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  // Tracking data for the selected order (customer position)
+  const { data: trackingData, isLoading: trackingLoading } = useOrderTracking(
+    selectedOrderId || '',
+    mapDialogOpen && !!selectedOrderId
+  );
 
   // Rediriger si non connecté
   useEffect(() => {
@@ -369,20 +387,36 @@ const LivreurDashboard = () => {
                     <span>{order.total.toLocaleString('fr-FR')} F</span>
                   </div>
 
-                  {/* Action */}
+                  {/* Actions */}
                   {order.statut === OnlineOrderStatut.EN_LIVRAISON && (
-                    <Button
-                      className="w-full mt-2"
-                      onClick={() => setConfirmDeliveryId(order.id)}
-                      disabled={pendingDeliveryId === order.id}
-                    >
-                      {pendingDeliveryId === order.id ? (
-                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                      ) : (
-                        <CheckCircle2 className="h-4 w-4 mr-2" />
-                      )}
-                      Marquer comme livrée
-                    </Button>
+                    <div className="space-y-2 mt-2">
+                      {/* Voir position du client */}
+                      <Button
+                        variant="outline"
+                        className="w-full"
+                        onClick={() => {
+                          setSelectedOrderId(order.id);
+                          setMapDialogOpen(true);
+                        }}
+                      >
+                        <MapPin className="h-4 w-4 mr-2" />
+                        Voir position client
+                      </Button>
+
+                      {/* Marquer comme livrée */}
+                      <Button
+                        className="w-full"
+                        onClick={() => setConfirmDeliveryId(order.id)}
+                        disabled={pendingDeliveryId === order.id}
+                      >
+                        {pendingDeliveryId === order.id ? (
+                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                        ) : (
+                          <CheckCircle2 className="h-4 w-4 mr-2" />
+                        )}
+                        Marquer comme livrée
+                      </Button>
+                    </div>
                   )}
                 </CardContent>
               </Card>
@@ -440,6 +474,51 @@ const LivreurDashboard = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Map Dialog - Position du client */}
+      <Dialog open={mapDialogOpen} onOpenChange={setMapDialogOpen}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <MapPin className="h-5 w-5 text-green-600" />
+              Position du client
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            {trackingData?.customerPosition ? (
+              <>
+                <TrackingMap
+                  tracking={trackingData}
+                  isLoading={trackingLoading}
+                  height="300px"
+                  showCustomerPosition={true}
+                />
+                <div className="flex items-center gap-4 text-xs text-muted-foreground justify-center">
+                  <span className="flex items-center gap-1">
+                    <span className="w-3 h-3 rounded-full bg-blue-500" /> Vous
+                  </span>
+                  <span className="flex items-center gap-1">
+                    <span className="w-3 h-3 rounded-full bg-green-500" /> Client
+                  </span>
+                </div>
+                <p className="text-xs text-muted-foreground text-center">
+                  Position mise à jour toutes les 30 secondes
+                </p>
+              </>
+            ) : (
+              <div className="text-center py-8">
+                <MapPin className="h-12 w-12 text-muted-foreground mx-auto mb-3" />
+                <p className="text-sm text-muted-foreground">
+                  Le client n'a pas encore partagé sa position
+                </p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Utilisez l'adresse de livraison pour le trouver
+                </p>
+              </div>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

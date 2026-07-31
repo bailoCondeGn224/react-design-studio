@@ -192,4 +192,9 @@ export interface OrderTracking {
     telephone: string;
   };
   position: LivreurPosition | null;
+  customerPosition: {
+    latitude: number;
+    longitude: number;
+    lastPositionAt: string;
+  } | null;
 }

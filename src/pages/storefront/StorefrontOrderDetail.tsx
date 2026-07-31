@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { StorefrontLayout } from '@/components/storefront/StorefrontLayout';
 import { TrackingMap } from '@/components/storefront/TrackingMap';
+import { CustomerLocationShare } from '@/components/storefront/CustomerLocationShare';
 import { apiClient } from '@/lib/api-client';
 import { useOrderTracking } from '@/hooks/useLivreurs';
 import { Loader2, ArrowLeft, Package, MapPin, Phone, Truck } from 'lucide-react';
@@ -133,6 +134,12 @@ const StorefrontOrderDetail = () => {
               </p>
             </div>
           )}
+
+          {/* Partage de position client */}
+          <CustomerLocationShare
+            orderId={order.id}
+            isOrderEnLivraison={isEnLivraison}
+          />
 
           {/* Informations de livraison */}
           <div className="bg-white rounded-lg border border-gray-200 p-4">
