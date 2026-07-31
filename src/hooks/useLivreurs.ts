@@ -1,6 +1,6 @@
 // src/hooks/useLivreurs.ts
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import api from '@/lib/api';
+import { apiClient } from '@/lib/api-client';
 import { Livreur, CreateLivreurDto, UpdateLivreurDto } from '@/types';
 import { toast } from 'sonner';
 
@@ -10,7 +10,7 @@ export const useLivreurs = () => {
   return useQuery({
     queryKey: ['livreurs'],
     queryFn: async () => {
-      const { data } = await api.get<Livreur[]>('/livreurs');
+      const { data } = await apiClient.get<Livreur[]>('/livreurs');
       return data;
     },
   });
@@ -20,7 +20,7 @@ export const useActiveLivreurs = () => {
   return useQuery({
     queryKey: ['livreurs', 'active'],
     queryFn: async () => {
-      const { data } = await api.get<Livreur[]>('/livreurs/active');
+      const { data } = await apiClient.get<Livreur[]>('/livreurs/active');
       return data;
     },
   });
@@ -30,7 +30,7 @@ export const useLivreur = (id: string) => {
   return useQuery({
     queryKey: ['livreurs', id],
     queryFn: async () => {
-      const { data } = await api.get<Livreur>(`/livreurs/${id}`);
+      const { data } = await apiClient.get<Livreur>(`/livreurs/${id}`);
       return data;
     },
     enabled: !!id,
@@ -42,7 +42,7 @@ export const useCreateLivreur = () => {
 
   return useMutation({
     mutationFn: async (dto: CreateLivreurDto) => {
-      const { data } = await api.post<Livreur>('/livreurs', dto);
+      const { data } = await apiClient.post<Livreur>('/livreurs', dto);
       return data;
     },
     onSuccess: () => {
@@ -60,7 +60,7 @@ export const useUpdateLivreur = () => {
 
   return useMutation({
     mutationFn: async ({ id, dto }: { id: string; dto: UpdateLivreurDto }) => {
-      const { data } = await api.put<Livreur>(`/livreurs/${id}`, dto);
+      const { data } = await apiClient.put<Livreur>(`/livreurs/${id}`, dto);
       return data;
     },
     onSuccess: () => {
@@ -78,7 +78,7 @@ export const useDeleteLivreur = () => {
 
   return useMutation({
     mutationFn: async (id: string) => {
-      await api.delete(`/livreurs/${id}`);
+      await apiClient.delete(`/livreurs/${id}`);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['livreurs'] });
@@ -97,7 +97,7 @@ export const useDispatchOrder = () => {
 
   return useMutation({
     mutationFn: async ({ orderId, livreurId }: { orderId: string; livreurId: string }) => {
-      const { data } = await api.patch(`/online-orders/${orderId}/dispatch`, { livreurId });
+      const { data } = await apiClient.patch(`/online-orders/${orderId}/dispatch`, { livreurId });
       return data;
     },
     onSuccess: () => {
@@ -116,7 +116,7 @@ export const useOrderTracking = (orderId: string, enabled: boolean = true) => {
   return useQuery({
     queryKey: ['order-tracking', orderId],
     queryFn: async () => {
-      const { data } = await api.get(`/online-orders/${orderId}/tracking`);
+      const { data } = await apiClient.get(`/online-orders/${orderId}/tracking`);
       return data;
     },
     enabled: enabled && !!orderId,

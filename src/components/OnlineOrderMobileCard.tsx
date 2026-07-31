@@ -2,7 +2,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { OnlineOrder, OnlineOrderStatut } from "@/types";
-import { Package, MapPin, Phone, CheckCircle, Truck, XCircle, Clock, User, Calendar, MoreVertical } from "lucide-react";
+import { Package, MapPin, Phone, CheckCircle, Truck, XCircle, Clock, User, Calendar, MoreVertical, Navigation } from "lucide-react";
 
 interface OnlineOrderMobileCardProps {
   order: OnlineOrder;
@@ -37,6 +37,12 @@ const statutConfig: Record<OnlineOrderStatut, { label: string; icon: typeof Cloc
     icon: Package,
     className: 'text-green-700 dark:text-green-400',
     bgClassName: 'bg-green-100 dark:bg-green-900/30 border-green-300 dark:border-green-800'
+  },
+  [OnlineOrderStatut.EN_LIVRAISON]: {
+    label: 'En livraison',
+    icon: Navigation,
+    className: 'text-purple-700 dark:text-purple-400',
+    bgClassName: 'bg-purple-100 dark:bg-purple-900/30 border-purple-300 dark:border-purple-800'
   },
   [OnlineOrderStatut.LIVREE]: {
     label: 'Livrée',

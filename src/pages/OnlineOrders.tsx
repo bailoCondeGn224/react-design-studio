@@ -11,8 +11,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import OnlineOrderMobileCard from "@/components/OnlineOrderMobileCard";
 import { useOnlineOrders, useConfirmOrder, useMarkOrderReady, useMarkOrderDelivered, useCancelOrder, useOnlineOrderStats } from "@/hooks/useOnlineOrders";
+import { useActiveLivreurs, useDispatchOrder } from "@/hooks/useLivreurs";
 import { OnlineOrder, OnlineOrderStatut } from "@/types";
-import { Search, Package, Clock, CheckCircle, Truck, XCircle, Loader2 } from "lucide-react";
+import { Search, Package, Clock, CheckCircle, Truck, XCircle, Loader2, Navigation, Send } from "lucide-react";
 import { useDebounce } from "@/hooks/useDebounce";
 
 const formatPrix = (prix: number) => {
@@ -53,6 +54,11 @@ const OnlineOrders = () => {
   const [pendingReadyId, setPendingReadyId] = useState<string | null>(null);
   const [pendingDeliveredId, setPendingDeliveredId] = useState<string | null>(null);
 
+  // Dispatch dialog state
+  const [dispatchDialogOpen, setDispatchDialogOpen] = useState(false);
+  const [orderToDispatch, setOrderToDispatch] = useState<string | null>(null);
+  const [selectedLivreurId, setSelectedLivreurId] = useState<string>("");
+
   const debouncedSearch = useDebounce(search, 300);
 
   const { data: ordersData, isLoading } = useOnlineOrders({
@@ -63,11 +69,13 @@ const OnlineOrders = () => {
   });
 
   const { data: stats } = useOnlineOrderStats();
+  const { data: livreurs } = useActiveLivreurs();
 
   const confirmOrder = useConfirmOrder();
   const markReady = useMarkOrderReady();
   const markDelivered = useMarkOrderDelivered();
   const cancelOrder = useCancelOrder();
+  const dispatchOrder = useDispatchOrder();
 
   const orders = ordersData?.data || [];
   const meta = ordersData?.meta;
@@ -110,6 +118,27 @@ const OnlineOrders = () => {
   const handleViewDetails = (id: string) => {
     const order = orders.find(o => o.id === id);
     if (order) setSelectedOrder(order);
+  };
+
+  const handleDispatchClick = (id: string) => {
+    setOrderToDispatch(id);
+    setSelectedLivreurId("");
+    setDispatchDialogOpen(true);
+  };
+
+  const handleDispatchConfirm = () => {
+    if (orderToDispatch && selectedLivreurId) {
+      dispatchOrder.mutate(
+        { orderId: orderToDispatch, livreurId: selectedLivreurId },
+        {
+          onSuccess: () => {
+            setDispatchDialogOpen(false);
+            setOrderToDispatch(null);
+            setSelectedLivreurId("");
+          },
+        }
+      );
+    }
   };
 
   return (
@@ -204,6 +233,7 @@ const OnlineOrders = () => {
               <SelectItem value={OnlineOrderStatut.EN_ATTENTE}>En attente</SelectItem>
               <SelectItem value={OnlineOrderStatut.CONFIRMEE}>Confirmée</SelectItem>
               <SelectItem value={OnlineOrderStatut.PRETE}>Prête</SelectItem>
+              <SelectItem value={OnlineOrderStatut.EN_LIVRAISON}>En livraison</SelectItem>
               <SelectItem value={OnlineOrderStatut.LIVREE}>Livrée</SelectItem>
               <SelectItem value={OnlineOrderStatut.ANNULEE}>Annulée</SelectItem>
             </SelectContent>
@@ -299,7 +329,17 @@ const OnlineOrders = () => {
                               {pendingReadyId === order.id ? 'En cours...' : 'Prête'}
                             </Button>
                           )}
-                          {order.statut === OnlineOrderStatut.PRETE && (
+                          {order.statut === OnlineOrderStatut.PRETE && order.modeLivraison === 'LIVRAISON' && (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => handleDispatchClick(order.id)}
+                            >
+                              <Send className="h-4 w-4 mr-1" />
+                              Dispatcher
+                            </Button>
+                          )}
+                          {(order.statut === OnlineOrderStatut.PRETE || order.statut === OnlineOrderStatut.EN_LIVRAISON) && (
                             <Button
                               size="sm"
                               onClick={() => handleMarkDelivered(order.id)}
@@ -448,6 +488,57 @@ const OnlineOrders = () => {
               </div>
             </div>
           )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Dispatch Dialog */}
+      <Dialog open={dispatchDialogOpen} onOpenChange={setDispatchDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Send className="h-5 w-5 text-primary" />
+              Assigner un livreur
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <p className="text-sm text-muted-foreground">
+              Sélectionnez un livreur pour cette commande. Le livreur pourra voir la commande sur son interface et partager sa position en temps réel.
+            </p>
+            <div>
+              <Label htmlFor="livreur">Livreur *</Label>
+              <Select value={selectedLivreurId} onValueChange={setSelectedLivreurId}>
+                <SelectTrigger className="mt-1">
+                  <SelectValue placeholder="Choisir un livreur" />
+                </SelectTrigger>
+                <SelectContent>
+                  {livreurs?.map((livreur) => (
+                    <SelectItem key={livreur.id} value={livreur.id}>
+                      <div className="flex items-center gap-2">
+                        <span>{livreur.nom}</span>
+                        <span className="text-muted-foreground text-xs">({livreur.telephone})</span>
+                        {livreur.isDelivering && (
+                          <span className="text-purple-600 text-xs">(en livraison)</span>
+                        )}
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setDispatchDialogOpen(false)}>
+              Annuler
+            </Button>
+            <Button
+              onClick={handleDispatchConfirm}
+              disabled={!selectedLivreurId || dispatchOrder.isPending}
+            >
+              {dispatchOrder.isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+              <Navigation className="h-4 w-4 mr-2" />
+              Démarrer la livraison
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </AppLayout>
