@@ -5,7 +5,7 @@ import { StorefrontLayout } from '@/components/storefront/StorefrontLayout';
 import { TrackingMap } from '@/components/storefront/TrackingMap';
 import { CustomerLocationShare } from '@/components/storefront/CustomerLocationShare';
 import { apiClient } from '@/lib/api-client';
-import { useOrderTracking } from '@/hooks/useLivreurs';
+import { useCustomerOrderTracking } from '@/hooks/useLivreurs';
 import { Loader2, ArrowLeft, Package, MapPin, Phone, Truck } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { OnlineOrderStatut } from '@/types/customer';
@@ -61,7 +61,7 @@ const StorefrontOrderDetail = () => {
 
   // Suivi GPS du livreur (seulement si commande en livraison)
   const isEnLivraison = orderData?.statut === OnlineOrderStatut.EN_LIVRAISON;
-  const { data: tracking, isLoading: trackingLoading } = useOrderTracking(
+  const { data: tracking, isLoading: trackingLoading } = useCustomerOrderTracking(
     id || '',
     isEnLivraison && !!id
   );

@@ -110,13 +110,27 @@ export const useDispatchOrder = () => {
   });
 };
 
-// ========== Tracking Hook ==========
+// ========== Tracking Hooks ==========
 
+// Pour le backoffice (utilise le token admin)
 export const useOrderTracking = (orderId: string, enabled: boolean = true) => {
   return useQuery({
     queryKey: ['order-tracking', orderId],
     queryFn: async () => {
       const { data } = await apiClient.get(`/online-orders/${orderId}/tracking`);
+      return data;
+    },
+    enabled: enabled && !!orderId,
+    refetchInterval: 30000, // Polling every 30 seconds
+  });
+};
+
+// Pour les clients sur la vitrine (utilise le token client via /public/)
+export const useCustomerOrderTracking = (orderId: string, enabled: boolean = true) => {
+  return useQuery({
+    queryKey: ['customer-order-tracking', orderId],
+    queryFn: async () => {
+      const { data } = await apiClient.get(`/public/orders/${orderId}/tracking`);
       return data;
     },
     enabled: enabled && !!orderId,
@@ -154,7 +168,7 @@ export const useUpdateLivreurPosition = () => {
   return useMutation({
     mutationFn: async (position: { latitude: number; longitude: number }) => {
       const token = getLivreurToken();
-      const { data } = await apiClient.put('/livreur/position', position, {
+      const { data } = await apiClient.post('/livreur/position', position, {
         headers: { Authorization: `Bearer ${token}` },
       });
       return data;
