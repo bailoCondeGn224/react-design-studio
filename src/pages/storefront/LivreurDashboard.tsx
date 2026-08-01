@@ -1,524 +1,158 @@
-// src/pages/storefront/LivreurDashboard.tsx
-import { useState, useEffect, useCallback, useRef } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useEffect } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 import { useLivreurAuth } from '@/contexts/LivreurAuthContext';
 import {
   useLivreurOrders,
+  useMarkDelivered,
   useUpdateLivreurPosition,
-  useStartDelivery,
-  useStopDelivery,
-  useMarkOrderDelivered,
-  useOrderTracking,
-} from '@/hooks/useLivreurs';
-import { TrackingMap } from '@/components/storefront/TrackingMap';
-import { OnlineOrder, OnlineOrderStatut } from '@/types/customer';
+} from '@/hooks/useLivreurOrders';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Separator } from '@/components/ui/separator';
+import { Card, CardContent } from '@/components/ui/card';
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
-import {
-  Truck,
+  Loader2,
   MapPin,
   Phone,
   Package,
-  CheckCircle2,
   Navigation,
+  CheckCircle,
   LogOut,
-  Loader2,
-  RefreshCw,
-  AlertCircle,
-  Clock,
 } from 'lucide-react';
-import { toast } from 'sonner';
-import { formatDistanceToNow } from 'date-fns';
-import { fr } from 'date-fns/locale';
+
+const formatPrix = (prix: number) => {
+  return (
+    new Intl.NumberFormat('fr-GN', { style: 'decimal' }).format(prix) + ' GNF'
+  );
+};
 
 const LivreurDashboard = () => {
   const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
-  const { livreur, isAuthenticated, logout, refreshProfile } = useLivreurAuth();
-
-  const { data: orders, isLoading, refetch } = useLivreurOrders();
+  const { livreur, isAuthenticated, logout } = useLivreurAuth();
+  const { data: orders = [], isLoading } = useLivreurOrders();
+  const markDelivered = useMarkDelivered();
   const updatePosition = useUpdateLivreurPosition();
-  const startDelivery = useStartDelivery();
-  const stopDelivery = useStopDelivery();
-  const markDelivered = useMarkOrderDelivered();
 
-  const [isTracking, setIsTracking] = useState(false);
-  const [gpsError, setGpsError] = useState<string | null>(null);
-  const [confirmDeliveryId, setConfirmDeliveryId] = useState<string | null>(null);
-  const [pendingDeliveryId, setPendingDeliveryId] = useState<string | null>(null);
-
-  // Map dialog state
-  const [mapDialogOpen, setMapDialogOpen] = useState(false);
-  const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
-
-  const watchIdRef = useRef<number | null>(null);
-  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
-
-  // Tracking data for the selected order (customer position)
-  const { data: trackingData, isLoading: trackingLoading } = useOrderTracking(
-    selectedOrderId || '',
-    mapDialogOpen && !!selectedOrderId
-  );
-
-  // Rediriger si non connecté
   useEffect(() => {
     if (!isAuthenticated) {
       navigate(`/b/${slug}/livreur`);
     }
   }, [isAuthenticated, navigate, slug]);
 
-  // Initialiser l'état de suivi depuis le livreur
   useEffect(() => {
-    if (livreur?.isDelivering) {
-      setIsTracking(true);
-    }
-  }, [livreur]);
+    if (!navigator.geolocation) return;
 
-  // Fonction pour envoyer la position
-  const sendPosition = useCallback(
-    (position: GeolocationPosition) => {
-      const { latitude, longitude } = position.coords;
-      updatePosition.mutate({ latitude, longitude });
-    },
-    [updatePosition]
-  );
-
-  // Gérer le suivi GPS
-  const startGpsTracking = useCallback(() => {
-    if (!navigator.geolocation) {
-      setGpsError("La géolocalisation n'est pas supportée par votre navigateur");
-      return;
-    }
-
-    // Demander la position immédiatement
-    navigator.geolocation.getCurrentPosition(
+    const watchId = navigator.geolocation.watchPosition(
       (position) => {
-        sendPosition(position);
-        setGpsError(null);
+        updatePosition.mutate({
+          latitude: position.coords.latitude,
+          longitude: position.coords.longitude,
+        });
       },
-      (error) => {
-        switch (error.code) {
-          case error.PERMISSION_DENIED:
-            setGpsError('Vous devez autoriser la géolocalisation');
-            break;
-          case error.POSITION_UNAVAILABLE:
-            setGpsError('Position non disponible');
-            break;
-          case error.TIMEOUT:
-            setGpsError('Délai de localisation dépassé');
-            break;
-        }
-      },
-      { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+      () => {},
+      { enableHighAccuracy: true, maximumAge: 30000 },
     );
 
-    // Surveiller les changements de position
-    watchIdRef.current = navigator.geolocation.watchPosition(
-      (position) => {
-        sendPosition(position);
-        setGpsError(null);
-      },
-      (error) => {
-        console.error('GPS error:', error);
-      },
-      { enableHighAccuracy: true, timeout: 10000, maximumAge: 5000 }
-    );
-
-    // Envoyer la position toutes les 30 secondes
-    intervalRef.current = setInterval(() => {
-      navigator.geolocation.getCurrentPosition(
-        sendPosition,
-        (error) => console.error('GPS interval error:', error),
-        { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
-      );
-    }, 30000);
-  }, [sendPosition]);
-
-  const stopGpsTracking = useCallback(() => {
-    if (watchIdRef.current !== null) {
-      navigator.geolocation.clearWatch(watchIdRef.current);
-      watchIdRef.current = null;
-    }
-    if (intervalRef.current !== null) {
-      clearInterval(intervalRef.current);
-      intervalRef.current = null;
-    }
+    return () => navigator.geolocation.clearWatch(watchId);
   }, []);
 
-  // Nettoyer lors du démontage
-  useEffect(() => {
-    return () => {
-      stopGpsTracking();
-    };
-  }, [stopGpsTracking]);
-
-  const handleToggleTracking = async () => {
-    if (isTracking) {
-      // Arrêter le suivi
-      stopGpsTracking();
-      await stopDelivery.mutateAsync();
-      setIsTracking(false);
-    } else {
-      // Démarrer le suivi
-      try {
-        await startDelivery.mutateAsync();
-        startGpsTracking();
-        setIsTracking(true);
-      } catch (error) {
-        toast.error('Impossible de démarrer le suivi');
-      }
-    }
-  };
-
-  const handleMarkDelivered = async (orderId: string) => {
-    setPendingDeliveryId(orderId);
-    try {
-      await markDelivered.mutateAsync(orderId);
-      setConfirmDeliveryId(null);
-    } finally {
-      setPendingDeliveryId(null);
-    }
+  const handleNavigate = (address: string) => {
+    const url = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(address)}`;
+    window.open(url, '_blank');
   };
 
   const handleLogout = () => {
-    stopGpsTracking();
-    if (isTracking) {
-      stopDelivery.mutate();
-    }
     logout();
     navigate(`/b/${slug}/livreur`);
   };
 
-  const getStatusBadge = (statut: OnlineOrderStatut) => {
-    switch (statut) {
-      case OnlineOrderStatut.EN_LIVRAISON:
-        return <Badge className="bg-blue-500">En livraison</Badge>;
-      case OnlineOrderStatut.PRETE:
-        return <Badge className="bg-orange-500">Prête</Badge>;
-      case OnlineOrderStatut.LIVREE:
-        return <Badge className="bg-green-500">Livrée</Badge>;
-      default:
-        return <Badge variant="secondary">{statut}</Badge>;
-    }
-  };
-
-  if (!isAuthenticated || !livreur) {
-    return null;
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
+    );
   }
 
-  const activeOrders = orders?.filter(
-    (o: OnlineOrder) =>
-      o.statut === OnlineOrderStatut.EN_LIVRAISON || o.statut === OnlineOrderStatut.PRETE
-  ) || [];
-  const deliveredOrders = orders?.filter(
-    (o: OnlineOrder) => o.statut === OnlineOrderStatut.LIVREE
-  ) || [];
-
   return (
-    <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="sticky top-0 z-50 bg-primary text-primary-foreground shadow-lg">
-        <div className="p-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-primary-foreground/20 flex items-center justify-center">
-              <Truck className="h-5 w-5" />
-            </div>
-            <div>
-              <p className="font-semibold">{livreur.nom}</p>
-              <p className="text-xs opacity-80">{livreur.telephone}</p>
-            </div>
-          </div>
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={handleLogout}
-            className="text-primary-foreground hover:bg-primary-foreground/20"
-          >
-            <LogOut className="h-5 w-5" />
-          </Button>
+    <div className="min-h-screen bg-gray-50">
+      <div className="bg-white border-b px-4 py-3 flex items-center justify-between sticky top-0 z-10">
+        <div>
+          <p className="font-bold">{livreur?.nom}</p>
+          <p className="text-xs text-muted-foreground">
+            {orders.length} livraison(s) en cours
+          </p>
         </div>
-      </header>
-
-      {/* GPS Tracking Control */}
-      <div className="p-4">
-        <Card className={`${isTracking ? 'border-green-500 bg-green-50' : 'border-gray-200'}`}>
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div
-                  className={`w-12 h-12 rounded-full flex items-center justify-center ${
-                    isTracking ? 'bg-green-500 text-white' : 'bg-gray-100'
-                  }`}
-                >
-                  <Navigation className={`h-6 w-6 ${isTracking ? 'animate-pulse' : ''}`} />
-                </div>
-                <div>
-                  <p className="font-semibold">
-                    {isTracking ? 'Suivi GPS actif' : 'Suivi GPS inactif'}
-                  </p>
-                  <p className="text-sm text-muted-foreground">
-                    {isTracking
-                      ? 'Votre position est partagée'
-                      : 'Activez pour partager votre position'}
-                  </p>
-                </div>
-              </div>
-              <Button
-                onClick={handleToggleTracking}
-                variant={isTracking ? 'destructive' : 'default'}
-                disabled={startDelivery.isPending || stopDelivery.isPending}
-              >
-                {startDelivery.isPending || stopDelivery.isPending ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : isTracking ? (
-                  'Arrêter'
-                ) : (
-                  'Activer'
-                )}
-              </Button>
-            </div>
-            {gpsError && (
-              <div className="mt-3 flex items-center gap-2 text-sm text-destructive">
-                <AlertCircle className="h-4 w-4" />
-                {gpsError}
-              </div>
-            )}
-          </CardContent>
-        </Card>
+        <Button variant="ghost" size="sm" onClick={handleLogout}>
+          <LogOut className="h-4 w-4" />
+        </Button>
       </div>
 
-      {/* Orders List */}
       <div className="p-4 space-y-4">
-        <div className="flex items-center justify-between">
-          <h2 className="font-bold text-lg">Mes livraisons</h2>
-          <Button variant="ghost" size="sm" onClick={() => refetch()}>
-            <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
-          </Button>
-        </div>
-
-        {isLoading ? (
-          <div className="flex items-center justify-center py-8">
-            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        {orders.length === 0 ? (
+          <div className="text-center py-12">
+            <Package className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+            <p className="text-muted-foreground">Aucune livraison en cours</p>
           </div>
-        ) : activeOrders.length === 0 ? (
-          <Card>
-            <CardContent className="py-8 text-center">
-              <Package className="h-12 w-12 mx-auto text-muted-foreground mb-3" />
-              <p className="text-muted-foreground">Aucune livraison en cours</p>
-            </CardContent>
-          </Card>
         ) : (
-          <div className="space-y-3">
-            {activeOrders.map((order: OnlineOrder) => (
-              <Card key={order.id} className="overflow-hidden">
-                <CardHeader className="pb-2">
-                  <div className="flex items-center justify-between">
-                    <CardTitle className="text-base font-semibold">
-                      Commande #{order.numero}
-                    </CardTitle>
-                    {getStatusBadge(order.statut)}
-                  </div>
-                  <p className="text-xs text-muted-foreground flex items-center gap-1">
-                    <Clock className="h-3 w-3" />
-                    {formatDistanceToNow(new Date(order.createdAt), {
-                      addSuffix: true,
-                      locale: fr,
-                    })}
+          orders.map((order) => (
+            <Card key={order.id}>
+              <CardContent className="p-4 space-y-3">
+                <div className="flex items-center justify-between">
+                  <p className="font-bold">{order.numero}</p>
+                  <p className="text-lg font-bold text-primary">
+                    {formatPrix(order.total)}
                   </p>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  {/* Adresse */}
-                  <div className="flex items-start gap-2">
-                    <MapPin className="h-4 w-4 text-muted-foreground mt-0.5 flex-shrink-0" />
-                    <p className="text-sm">{order.adresseLivraison || 'Adresse non spécifiée'}</p>
-                  </div>
+                </div>
 
-                  {/* Téléphone */}
+                <div className="space-y-2 text-sm">
+                  <div className="flex items-center gap-2">
+                    <Package className="h-4 w-4 text-muted-foreground" />
+                    <span>{order.clientNom || 'Client'}</span>
+                  </div>
                   <div className="flex items-center gap-2">
                     <Phone className="h-4 w-4 text-muted-foreground" />
                     <a
-                      href={`tel:${order.telephoneLivraison || order.customerTelephone}`}
-                      className="text-sm text-primary hover:underline"
+                      href={`tel:${order.telephoneLivraison}`}
+                      className="text-primary"
                     >
-                      {order.telephoneLivraison || order.customerTelephone}
+                      {order.telephoneLivraison}
                     </a>
                   </div>
-
-                  <Separator />
-
-                  {/* Articles */}
-                  <div className="space-y-1">
-                    <p className="text-xs font-medium text-muted-foreground">Articles</p>
-                    {order.items.map((item) => (
-                      <div key={item.id} className="flex justify-between text-sm">
-                        <span>
-                          {item.quantite}x {item.articleNom}
-                        </span>
-                        <span className="text-muted-foreground">
-                          {item.sousTotal.toLocaleString('fr-FR')} F
-                        </span>
-                      </div>
-                    ))}
+                  <div className="flex items-start gap-2">
+                    <MapPin className="h-4 w-4 text-muted-foreground mt-0.5" />
+                    <span>{order.adresseLivraison}</span>
                   </div>
+                </div>
 
-                  <Separator />
-
-                  {/* Total */}
-                  <div className="flex justify-between font-semibold">
-                    <span>Total</span>
-                    <span>{order.total.toLocaleString('fr-FR')} F</span>
-                  </div>
-
-                  {/* Actions */}
-                  {order.statut === OnlineOrderStatut.EN_LIVRAISON && (
-                    <div className="space-y-2 mt-2">
-                      {/* Voir position du client */}
-                      <Button
-                        variant="outline"
-                        className="w-full"
-                        onClick={() => {
-                          setSelectedOrderId(order.id);
-                          setMapDialogOpen(true);
-                        }}
-                      >
-                        <MapPin className="h-4 w-4 mr-2" />
-                        Voir position client
-                      </Button>
-
-                      {/* Marquer comme livrée */}
-                      <Button
-                        className="w-full"
-                        onClick={() => setConfirmDeliveryId(order.id)}
-                        disabled={pendingDeliveryId === order.id}
-                      >
-                        {pendingDeliveryId === order.id ? (
-                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                        ) : (
-                          <CheckCircle2 className="h-4 w-4 mr-2" />
-                        )}
-                        Marquer comme livrée
-                      </Button>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        )}
-
-        {/* Historique des livraisons */}
-        {deliveredOrders.length > 0 && (
-          <>
-            <h3 className="font-semibold text-muted-foreground mt-6">
-              Livrées aujourd'hui ({deliveredOrders.length})
-            </h3>
-            <div className="space-y-2">
-              {deliveredOrders.slice(0, 5).map((order: OnlineOrder) => (
-                <Card key={order.id} className="opacity-70">
-                  <CardContent className="py-3 flex items-center justify-between">
-                    <div>
-                      <p className="font-medium text-sm">#{order.numero}</p>
-                      <p className="text-xs text-muted-foreground">
-                        {order.total.toLocaleString('fr-FR')} F
-                      </p>
-                    </div>
-                    <Badge variant="secondary" className="bg-green-100 text-green-700">
-                      <CheckCircle2 className="h-3 w-3 mr-1" />
-                      Livrée
-                    </Badge>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          </>
+                <div className="grid grid-cols-2 gap-2 pt-2">
+                  <Button
+                    variant="outline"
+                    className="h-12"
+                    onClick={() => handleNavigate(order.adresseLivraison || '')}
+                  >
+                    <Navigation className="h-4 w-4 mr-2" />
+                    Naviguer
+                  </Button>
+                  <Button
+                    className="h-12"
+                    onClick={() => markDelivered.mutate(order.id)}
+                    disabled={markDelivered.isPending}
+                  >
+                    {markDelivered.isPending ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <>
+                        <CheckCircle className="h-4 w-4 mr-2" />
+                        Livrée
+                      </>
+                    )}
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          ))
         )}
       </div>
-
-      {/* Confirmation Dialog */}
-      <AlertDialog
-        open={!!confirmDeliveryId}
-        onOpenChange={() => setConfirmDeliveryId(null)}
-      >
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Confirmer la livraison</AlertDialogTitle>
-            <AlertDialogDescription>
-              Êtes-vous sûr que cette commande a été livrée au client ?
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Annuler</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={() => confirmDeliveryId && handleMarkDelivered(confirmDeliveryId)}
-            >
-              Confirmer
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-
-      {/* Map Dialog - Position du client */}
-      <Dialog open={mapDialogOpen} onOpenChange={setMapDialogOpen}>
-        <DialogContent className="max-w-lg">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <MapPin className="h-5 w-5 text-green-600" />
-              Position du client
-            </DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4">
-            {trackingData?.customerPosition ? (
-              <>
-                <TrackingMap
-                  tracking={trackingData}
-                  isLoading={trackingLoading}
-                  height="300px"
-                  showCustomerPosition={true}
-                />
-                <div className="flex items-center gap-4 text-xs text-muted-foreground justify-center">
-                  <span className="flex items-center gap-1">
-                    <span className="w-3 h-3 rounded-full bg-blue-500" /> Vous
-                  </span>
-                  <span className="flex items-center gap-1">
-                    <span className="w-3 h-3 rounded-full bg-green-500" /> Client
-                  </span>
-                </div>
-                <p className="text-xs text-muted-foreground text-center">
-                  Position mise à jour toutes les 30 secondes
-                </p>
-              </>
-            ) : (
-              <div className="text-center py-8">
-                <MapPin className="h-12 w-12 text-muted-foreground mx-auto mb-3" />
-                <p className="text-sm text-muted-foreground">
-                  Le client n'a pas encore partagé sa position
-                </p>
-                <p className="text-xs text-muted-foreground mt-1">
-                  Utilisez l'adresse de livraison pour le trouver
-                </p>
-              </div>
-            )}
-          </div>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 };
