@@ -2,13 +2,12 @@
 import { useNavigate, useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { StorefrontLayout } from '@/components/storefront/StorefrontLayout';
-import { TrackingMap } from '@/components/storefront/TrackingMap';
-import { CustomerLocationShare } from '@/components/storefront/CustomerLocationShare';
 import { apiClient } from '@/lib/api-client';
-import { useCustomerOrderTracking } from '@/hooks/useLivreurs';
 import { Loader2, ArrowLeft, Package, MapPin, Phone, Truck } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { OnlineOrderStatut } from '@/types/customer';
+import { useOrderTracking } from '@/hooks/useOrderTracking';
+import { TrackingMap } from '@/components/storefront/TrackingMap';
 
 const formatPrix = (prix: number) => {
   return new Intl.NumberFormat('fr-GN', { style: 'decimal' }).format(prix) + ' GNF';
@@ -59,12 +58,7 @@ const StorefrontOrderDetail = () => {
     enabled: !!id,
   });
 
-  // Suivi GPS du livreur (seulement si commande en livraison)
-  const isEnLivraison = orderData?.statut === OnlineOrderStatut.EN_LIVRAISON;
-  const { data: tracking, isLoading: trackingLoading } = useCustomerOrderTracking(
-    id || '',
-    isEnLivraison && !!id
-  );
+  const { data: tracking } = useOrderTracking(id || '');
 
   if (isLoading) {
     return (
@@ -92,6 +86,7 @@ const StorefrontOrderDetail = () => {
 
   const order = orderData;
   const badge = getStatutBadge(order.statut);
+  const isEnLivraison = order.statut === OnlineOrderStatut.EN_LIVRAISON;
 
   return (
     <StorefrontLayout>
@@ -117,29 +112,25 @@ const StorefrontOrderDetail = () => {
 
         {/* Content */}
         <div className="p-4 space-y-4">
-          {/* Suivi GPS du livreur */}
+          {/* Info livraison en cours */}
           {isEnLivraison && (
-            <div className="bg-white rounded-lg border border-purple-200 p-4">
-              <div className="flex items-center gap-2 mb-3">
+            <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
+              <div className="flex items-center gap-2">
                 <Truck className="h-5 w-5 text-purple-600" />
-                <h2 className="font-semibold text-base text-purple-800">Suivi en temps réel</h2>
+                <p className="text-sm text-purple-800 font-medium">
+                  Votre commande est en cours de livraison
+                </p>
               </div>
-              <TrackingMap
-                tracking={tracking}
-                isLoading={trackingLoading}
-                height="250px"
-              />
-              <p className="text-xs text-gray-500 mt-2 text-center">
-                La position est mise à jour toutes les 30 secondes
-              </p>
             </div>
           )}
 
-          {/* Partage de position client */}
-          <CustomerLocationShare
-            orderId={order.id}
-            isOrderEnLivraison={isEnLivraison}
-          />
+          {/* Tracking map */}
+          {isEnLivraison && tracking && (
+            <div className="bg-white rounded-lg border border-gray-200 p-4">
+              <h2 className="font-semibold text-base mb-3">Position du livreur</h2>
+              <TrackingMap tracking={tracking} />
+            </div>
+          )}
 
           {/* Informations de livraison */}
           <div className="bg-white rounded-lg border border-gray-200 p-4">
@@ -246,9 +237,6 @@ const StorefrontOrderDetail = () => {
                     <div>
                       <p className="text-sm font-medium">En livraison</p>
                       <p className="text-xs text-gray-500">{formatDate(order.expedieeLe)}</p>
-                      {order.livreurNom && (
-                        <p className="text-xs text-gray-600 mt-1">Livreur: {order.livreurNom}</p>
-                      )}
                     </div>
                   </div>
                 )}
