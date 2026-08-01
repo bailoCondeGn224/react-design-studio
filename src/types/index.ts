@@ -1163,3 +1163,4 @@ export interface DepenseStats {
 }
 
 export * from './customer';
+export * from './livreur';

@@ -1,246 +1,66 @@
-// src/hooks/useLivreurs.ts
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '@/lib/api-client';
-import { Livreur, CreateLivreurDto, UpdateLivreurDto } from '@/types';
+import { Livreur, CreateLivreurDto, UpdateLivreurDto } from '@/types/livreur';
 import { toast } from 'sonner';
 
-// ========== Backoffice Hooks ==========
-
 export const useLivreurs = () => {
-  return useQuery({
+  return useQuery<Livreur[]>({
     queryKey: ['livreurs'],
-    queryFn: async () => {
-      const { data } = await apiClient.get<Livreur[]>('/livreurs');
-      return data;
-    },
-  });
-};
-
-export const useActiveLivreurs = () => {
-  return useQuery({
-    queryKey: ['livreurs', 'active'],
-    queryFn: async () => {
-      const { data } = await apiClient.get<Livreur[]>('/livreurs/active');
-      return data;
-    },
-  });
-};
-
-export const useLivreur = (id: string) => {
-  return useQuery({
-    queryKey: ['livreurs', id],
-    queryFn: async () => {
-      const { data } = await apiClient.get<Livreur>(`/livreurs/${id}`);
-      return data;
-    },
-    enabled: !!id,
+    queryFn: () => apiClient.get('/livreurs').then((res) => res.data),
   });
 };
 
 export const useCreateLivreur = () => {
   const queryClient = useQueryClient();
-
   return useMutation({
-    mutationFn: async (dto: CreateLivreurDto) => {
-      const { data } = await apiClient.post<Livreur>('/livreurs', dto);
-      return data;
-    },
+    mutationFn: (data: CreateLivreurDto) => apiClient.post('/livreurs', data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['livreurs'] });
-      toast.success('Livreur créé avec succès');
+      toast.success('Livreur créé');
     },
-    onError: (error: any) => {
-      toast.error(error.response?.data?.message || 'Erreur lors de la création');
-    },
+    onError: () => toast.error('Erreur lors de la création'),
   });
 };
 
 export const useUpdateLivreur = () => {
   const queryClient = useQueryClient();
-
   return useMutation({
-    mutationFn: async ({ id, dto }: { id: string; dto: UpdateLivreurDto }) => {
-      const { data } = await apiClient.put<Livreur>(`/livreurs/${id}`, dto);
-      return data;
-    },
+    mutationFn: ({ id, data }: { id: string; data: UpdateLivreurDto }) =>
+      apiClient.put(`/livreurs/${id}`, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['livreurs'] });
-      toast.success('Livreur modifié avec succès');
+      toast.success('Livreur modifié');
     },
-    onError: (error: any) => {
-      toast.error(error.response?.data?.message || 'Erreur lors de la modification');
-    },
+    onError: () => toast.error('Erreur lors de la modification'),
   });
 };
 
 export const useDeleteLivreur = () => {
   const queryClient = useQueryClient();
-
   return useMutation({
-    mutationFn: async (id: string) => {
-      await apiClient.delete(`/livreurs/${id}`);
-    },
+    mutationFn: (id: string) => apiClient.delete(`/livreurs/${id}`),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['livreurs'] });
       toast.success('Livreur supprimé');
     },
-    onError: (error: any) => {
-      toast.error(error.response?.data?.message || 'Erreur lors de la suppression');
-    },
+    onError: () => toast.error('Erreur lors de la suppression'),
   });
 };
-
-// ========== Dispatch Hook ==========
 
 export const useDispatchOrder = () => {
   const queryClient = useQueryClient();
-
   return useMutation({
-    mutationFn: async ({ orderId, livreurId }: { orderId: string; livreurId: string }) => {
-      const { data } = await apiClient.patch(`/online-orders/${orderId}/dispatch`, { livreurId });
-      return data;
-    },
+    mutationFn: ({
+      orderId,
+      livreurId,
+    }: {
+      orderId: string;
+      livreurId: string;
+    }) => apiClient.put(`/online-orders/${orderId}/dispatch/${livreurId}`),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['online-orders'] });
-      toast.success('Livreur assigné, commande en livraison');
+      toast.success('Commande assignée au livreur');
     },
-    onError: (error: any) => {
-      toast.error(error.response?.data?.message || 'Erreur lors du dispatch');
-    },
-  });
-};
-
-// ========== Tracking Hooks ==========
-
-// Pour le backoffice (utilise le token admin)
-export const useOrderTracking = (orderId: string, enabled: boolean = true) => {
-  return useQuery({
-    queryKey: ['order-tracking', orderId],
-    queryFn: async () => {
-      const { data } = await apiClient.get(`/online-orders/${orderId}/tracking`);
-      return data;
-    },
-    enabled: enabled && !!orderId,
-    refetchInterval: 30000, // Polling every 30 seconds
-  });
-};
-
-// Pour les clients sur la vitrine (utilise le token client via /public/)
-export const useCustomerOrderTracking = (orderId: string, enabled: boolean = true) => {
-  return useQuery({
-    queryKey: ['customer-order-tracking', orderId],
-    queryFn: async () => {
-      const { data } = await apiClient.get(`/public/orders/${orderId}/tracking`);
-      return data;
-    },
-    enabled: enabled && !!orderId,
-    refetchInterval: 30000, // Polling every 30 seconds
-  });
-};
-
-// ========== Livreur App Hooks (for authenticated livreur on storefront) ==========
-
-const LIVREUR_TOKEN_KEY = 'livreur_token';
-
-const getLivreurToken = () => localStorage.getItem(LIVREUR_TOKEN_KEY);
-
-// Hook pour récupérer les commandes assignées au livreur connecté
-export const useLivreurOrders = () => {
-  const token = getLivreurToken();
-
-  return useQuery({
-    queryKey: ['livreur-orders'],
-    queryFn: async () => {
-      const { data } = await apiClient.get('/livreur/orders', {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      return data;
-    },
-    enabled: !!token,
-    refetchInterval: 30000, // Polling every 30 seconds
-  });
-};
-
-// Hook pour mettre à jour la position GPS du livreur
-export const useUpdateLivreurPosition = () => {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: async (position: { latitude: number; longitude: number }) => {
-      const token = getLivreurToken();
-      const { data } = await apiClient.post('/livreur/position', position, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      return data;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['livreur-orders'] });
-    },
-  });
-};
-
-// Hook pour démarrer la livraison (activer le suivi GPS)
-export const useStartDelivery = () => {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: async () => {
-      const token = getLivreurToken();
-      const { data } = await apiClient.post('/livreur/start-delivery', {}, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      return data;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['livreur-orders'] });
-      toast.success('Suivi GPS activé');
-    },
-    onError: (error: any) => {
-      toast.error(error.response?.data?.message || 'Erreur lors de l\'activation du suivi');
-    },
-  });
-};
-
-// Hook pour arrêter la livraison (désactiver le suivi GPS)
-export const useStopDelivery = () => {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: async () => {
-      const token = getLivreurToken();
-      const { data } = await apiClient.post('/livreur/stop-delivery', {}, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      return data;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['livreur-orders'] });
-      toast.success('Suivi GPS désactivé');
-    },
-    onError: (error: any) => {
-      toast.error(error.response?.data?.message || 'Erreur lors de la désactivation du suivi');
-    },
-  });
-};
-
-// Hook pour marquer une commande comme livrée (par le livreur)
-export const useMarkOrderDelivered = () => {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: async (orderId: string) => {
-      const token = getLivreurToken();
-      const { data } = await apiClient.patch(`/livreur/orders/${orderId}/delivered`, {}, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      return data;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['livreur-orders'] });
-      toast.success('Commande marquée comme livrée');
-    },
-    onError: (error: any) => {
-      toast.error(error.response?.data?.message || 'Erreur lors de la mise à jour');
-    },
+    onError: () => toast.error("Erreur lors de l'assignation"),
   });
 };
