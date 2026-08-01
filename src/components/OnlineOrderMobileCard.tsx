@@ -1,8 +1,8 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
-import { OnlineOrder, OnlineOrderStatut } from "@/types";
-import { Package, MapPin, Phone, CheckCircle, Truck, XCircle, Clock, User, Calendar, MoreVertical, Navigation } from "lucide-react";
+import { OnlineOrder, OnlineOrderStatut, ModeLivraison } from "@/types";
+import { Package, MapPin, Phone, CheckCircle, Truck, XCircle, Clock, User, Calendar, MoreVertical } from "lucide-react";
 
 interface OnlineOrderMobileCardProps {
   order: OnlineOrder;
@@ -11,6 +11,7 @@ interface OnlineOrderMobileCardProps {
   onMarkDelivered: (id: string) => void;
   onCancel: (id: string) => void;
   onViewDetails: (id: string) => void;
+  onDispatch?: (id: string) => void;
   formatPrix: (prix: number) => string;
   formatDate: (date: string) => string;
   isConfirming?: boolean;
@@ -40,7 +41,7 @@ const statutConfig: Record<OnlineOrderStatut, { label: string; icon: typeof Cloc
   },
   [OnlineOrderStatut.EN_LIVRAISON]: {
     label: 'En livraison',
-    icon: Navigation,
+    icon: Truck,
     className: 'text-purple-700 dark:text-purple-400',
     bgClassName: 'bg-purple-100 dark:bg-purple-900/30 border-purple-300 dark:border-purple-800'
   },
@@ -65,6 +66,7 @@ const OnlineOrderMobileCard = ({
   onMarkDelivered,
   onCancel,
   onViewDetails,
+  onDispatch,
   formatPrix,
   formatDate,
   isConfirming = false,
@@ -124,7 +126,7 @@ const OnlineOrderMobileCard = ({
           <div className="flex items-center gap-2">
             <MapPin className="w-4 h-4 text-muted-foreground" />
             <span className="text-xs text-muted-foreground">
-              {order.modeLivraison === 'LIVRAISON'
+              {order.modeLivraison === ModeLivraison.LIVRAISON
                 ? order.adresseLivraison || 'Livraison'
                 : 'Retrait en boutique'}
             </span>
@@ -245,6 +247,20 @@ const OnlineOrderMobileCard = ({
                     {isMarkingDelivered ? 'Marquage...' : 'Marquer livrée'}
                   </Button>
                 )}
+
+                {order.statut === OnlineOrderStatut.PRETE &&
+                  order.modeLivraison === ModeLivraison.LIVRAISON &&
+                  onDispatch && (
+                    <Button
+                      variant="default"
+                      size="lg"
+                      className="w-full h-14 justify-start text-left text-base"
+                      onClick={() => onDispatch(order.id)}
+                    >
+                      <Truck className="w-5 h-5 mr-3" />
+                      Dispatcher à un livreur
+                    </Button>
+                  )}
 
                 <Button
                   variant="outline"
