@@ -1,5 +1,6 @@
 // src/components/storefront/CustomerAuthModal.tsx
 import { useState } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 import { useCustomerAuth } from '@/contexts/CustomerAuthContext';
 import {
   Dialog,
@@ -11,7 +12,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Truck } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface CustomerAuthModalProps {
@@ -26,6 +27,8 @@ export const CustomerAuthModal = ({
   defaultTab = 'login'
 }: CustomerAuthModalProps) => {
   const { login, register, isLoading } = useCustomerAuth();
+  const navigate = useNavigate();
+  const { slug } = useParams<{ slug: string }>();
   const [activeTab, setActiveTab] = useState<'login' | 'register'>(defaultTab);
 
   // Login form state
@@ -287,6 +290,21 @@ export const CustomerAuthModal = ({
             </form>
           </TabsContent>
         </Tabs>
+
+        {/* Lien Espace Livreur */}
+        <div className="mt-4 pt-4 border-t border-border">
+          <button
+            type="button"
+            onClick={() => {
+              onOpenChange(false);
+              navigate(`/b/${slug}/livreur`);
+            }}
+            className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-lg bg-muted hover:bg-muted/80 transition-colors text-sm text-muted-foreground hover:text-foreground"
+          >
+            <Truck className="h-4 w-4" />
+            <span>Vous êtes livreur ? <span className="font-medium text-primary">Connectez-vous ici</span></span>
+          </button>
+        </div>
       </DialogContent>
     </Dialog>
   );

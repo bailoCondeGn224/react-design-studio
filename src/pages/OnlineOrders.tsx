@@ -12,8 +12,10 @@ import { Label } from "@/components/ui/label";
 import OnlineOrderMobileCard from "@/components/OnlineOrderMobileCard";
 import { DispatchDialog } from "@/components/DispatchDialog";
 import { useOnlineOrders, useConfirmOrder, useMarkOrderReady, useMarkOrderDelivered, useCancelOrder, useOnlineOrderStats } from "@/hooks/useOnlineOrders";
+import { useLivreurs } from "@/hooks/useLivreurs";
 import { OnlineOrder, OnlineOrderStatut, ModeLivraison } from "@/types";
-import { Search, Package, Clock, CheckCircle, Truck, XCircle, Loader2 } from "lucide-react";
+import { Search, Package, Clock, CheckCircle, Truck, XCircle, Loader2, Map, ChevronDown, ChevronUp } from "lucide-react";
+import { LivreursTrackingMap } from "@/components/LivreursTrackingMap";
 import { useDebounce } from "@/hooks/useDebounce";
 
 const formatPrix = (prix: number) => {
@@ -49,6 +51,7 @@ const OnlineOrders = () => {
   const [cancelMotif, setCancelMotif] = useState("");
   const [orderToCancel, setOrderToCancel] = useState<string | null>(null);
   const [dispatchOrder, setDispatchOrder] = useState<OnlineOrder | null>(null);
+  const [showTrackingMap, setShowTrackingMap] = useState(false);
 
   // Track which order is being acted upon
   const [pendingConfirmId, setPendingConfirmId] = useState<string | null>(null);
@@ -65,6 +68,7 @@ const OnlineOrders = () => {
   });
 
   const { data: stats } = useOnlineOrderStats();
+  const { data: livreurs = [] } = useLivreurs();
 
   const confirmOrder = useConfirmOrder();
   const markReady = useMarkOrderReady();
@@ -189,6 +193,42 @@ const OnlineOrders = () => {
               </CardContent>
             </Card>
           </div>
+        )}
+
+        {/* Section Carte de Suivi des Livreurs */}
+        {orders.some(o => o.statut === OnlineOrderStatut.EN_LIVRAISON) && (
+          <Card>
+            <CardContent className="p-4">
+              <button
+                onClick={() => setShowTrackingMap(!showTrackingMap)}
+                className="w-full flex items-center justify-between"
+              >
+                <div className="flex items-center gap-2">
+                  <Map className="h-5 w-5 text-primary" />
+                  <div className="text-left">
+                    <p className="font-semibold">Suivi des livraisons en cours</p>
+                    <p className="text-xs text-muted-foreground">
+                      {orders.filter(o => o.statut === OnlineOrderStatut.EN_LIVRAISON).length} commande(s) en livraison
+                    </p>
+                  </div>
+                </div>
+                {showTrackingMap ? (
+                  <ChevronUp className="h-5 w-5 text-muted-foreground" />
+                ) : (
+                  <ChevronDown className="h-5 w-5 text-muted-foreground" />
+                )}
+              </button>
+
+              {showTrackingMap && (
+                <div className="mt-4">
+                  <LivreursTrackingMap
+                    livreurs={livreurs}
+                    ordersEnLivraison={orders.filter(o => o.statut === OnlineOrderStatut.EN_LIVRAISON)}
+                  />
+                </div>
+              )}
+            </CardContent>
+          </Card>
         )}
 
         {/* Filtres */}

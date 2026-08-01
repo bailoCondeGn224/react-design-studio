@@ -13,17 +13,24 @@ export const BottomNav = () => {
   const { itemCount } = useCartContext();
   const { openCart, isOpen: isCartOpen } = useCartDrawer();
 
+  const isActive = (path: string, exact = false) => {
+    if (exact) {
+      return location.pathname === path || location.pathname === `${path}/`;
+    }
+    return location.pathname.startsWith(path);
+  };
+
   const navItems = [
     {
       icon: Home,
       label: 'Accueil',
       path: `/b/${slug}`,
-      active: location.pathname === `/b/${slug}`,
+      active: isActive(`/b/${slug}`, true),
     },
     {
       icon: ShoppingBag,
       label: 'Panier',
-      path: '#',
+      path: '#cart',
       active: isCartOpen,
       badge: itemCount > 0 ? itemCount : undefined,
       isCart: true,
@@ -32,68 +39,85 @@ export const BottomNav = () => {
       icon: Package,
       label: 'Commandes',
       path: `/b/${slug}/orders`,
-      active: location.pathname.startsWith(`/b/${slug}/orders`),
+      active: isActive(`/b/${slug}/orders`),
       requiresAuth: true,
     },
     {
       icon: User,
       label: 'Compte',
-      path: isAuthenticated ? `/b/${slug}/profile` : '#',
-      active: location.pathname === `/b/${slug}/profile`,
+      path: `/b/${slug}/profile`,
+      active: isActive(`/b/${slug}/profile`),
       requiresAuth: true,
     },
   ];
 
-  const handleNavClick = (item: typeof navItems[0] & { isCart?: boolean }) => {
-    // Si c'est le panier, ouvrir le CartDrawer
+  const handleNavClick = (item: typeof navItems[0]) => {
     if (item.isCart) {
       openCart();
       return;
     }
 
     if (item.requiresAuth && !isAuthenticated) {
-      // Déclencher l'ouverture du modal d'authentification
       window.dispatchEvent(new CustomEvent('customer-auth-required'));
       return;
     }
+
     navigate(item.path);
   };
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 safe-area-inset-bottom z-40 shadow-elevated md:hidden">
-      <div className="grid grid-cols-4 h-16">
+    <nav className="fixed bottom-0 left-0 right-0 z-50 md:hidden safe-area-inset-bottom">
+      {/* Background */}
+      <div className="absolute inset-0 bg-white border-t border-border shadow-elevated" />
+
+      <div className="relative grid grid-cols-4 h-16">
         {navItems.map((item) => {
           const Icon = item.icon;
-          const isActive = item.active;
 
           return (
             <button
               key={item.label}
               onClick={() => handleNavClick(item)}
-              className={`flex flex-col items-center justify-center gap-1 transition-all duration-200 relative ${
-                isActive
-                  ? 'text-primary'
-                  : 'text-gray-500 active:text-primary active:scale-95'
-              }`}
+              className="relative flex flex-col items-center justify-center gap-0.5 transition-all duration-200 active:scale-95"
             >
+              {/* Indicateur actif en haut */}
+              {item.active && (
+                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-10 h-1 bg-primary rounded-b-full" />
+              )}
+
+              {/* Conteneur icône */}
               <div className="relative">
-                <Icon className={`h-5 w-5 transition-transform ${isActive ? 'scale-110' : ''}`} />
+                <div
+                  className={`flex items-center justify-center w-10 h-10 rounded-lg transition-colors duration-200 ${
+                    item.active ? 'bg-primary/10' : ''
+                  }`}
+                >
+                  <Icon
+                    className={`h-5 w-5 transition-colors duration-200 ${
+                      item.active ? 'text-primary' : 'text-muted-foreground'
+                    }`}
+                    strokeWidth={item.active ? 2.5 : 2}
+                  />
+                </div>
+
+                {/* Badge panier */}
                 {item.badge && (
-                  <span className="absolute -top-2 -right-2 h-4 w-4 bg-primary text-white text-[10px] font-semibold rounded-full flex items-center justify-center">
-                    {item.badge > 9 ? '9+' : item.badge}
+                  <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 bg-primary text-primary-foreground text-[10px] font-bold rounded-full flex items-center justify-center">
+                    {item.badge > 99 ? '99+' : item.badge}
                   </span>
                 )}
               </div>
+
+              {/* Label */}
               <span
-                className={`text-[10px] font-medium transition-all ${
-                  isActive ? 'font-semibold' : ''
+                className={`text-[10px] transition-colors duration-200 ${
+                  item.active
+                    ? 'text-primary font-semibold'
+                    : 'text-muted-foreground font-medium'
                 }`}
               >
                 {item.label}
               </span>
-              {isActive && (
-                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-12 h-0.5 bg-primary rounded-full" />
-              )}
             </button>
           );
         })}

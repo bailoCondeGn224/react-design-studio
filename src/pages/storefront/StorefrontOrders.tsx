@@ -6,7 +6,7 @@ import { useCustomerAuth } from '@/contexts/CustomerAuthContext';
 import { useCustomerNotifications } from '@/hooks/useCustomerNotifications';
 import { StorefrontLayout } from '@/components/storefront/StorefrontLayout';
 import { apiClient } from '@/lib/api-client';
-import { Loader2, Package, ChevronRight } from 'lucide-react';
+import { Loader2, Package, ChevronRight, MapPin, Truck } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 const formatPrix = (prix: number) => {
@@ -26,6 +26,7 @@ const getStatutBadge = (statut: string) => {
     EN_ATTENTE: 'bg-yellow-100 text-yellow-800',
     CONFIRMEE: 'bg-blue-100 text-blue-800',
     PRETE: 'bg-green-100 text-green-800',
+    EN_LIVRAISON: 'bg-purple-100 text-purple-800',
     LIVREE: 'bg-green-600 text-white',
     ANNULEE: 'bg-red-100 text-red-800',
   };
@@ -34,6 +35,7 @@ const getStatutBadge = (statut: string) => {
     EN_ATTENTE: 'En attente',
     CONFIRMEE: 'Confirmée',
     PRETE: 'Prête',
+    EN_LIVRAISON: 'En livraison',
     LIVREE: 'Livrée',
     ANNULEE: 'Annulée',
   };
@@ -100,35 +102,56 @@ const StorefrontOrders = () => {
           ) : (
             orders.map((order: any) => {
               const badge = getStatutBadge(order.statut);
+              const isEnLivraison = order.statut === 'EN_LIVRAISON';
+
               return (
                 <div
                   key={order.id}
-                  onClick={() => navigate(`/b/${slug}/orders/${order.id}`)}
-                  className="bg-white rounded-lg border border-gray-200 p-4 active:bg-gray-50 transition-colors cursor-pointer"
+                  className="bg-white rounded-lg border border-border shadow-card overflow-hidden"
                 >
-                  <div className="flex items-start justify-between mb-2">
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-1">
-                        <Package className="h-4 w-4 text-gray-400 shrink-0" />
-                        <p className="font-semibold text-sm truncate">
-                          Commande {order.numero}
+                  {/* En-tête cliquable */}
+                  <div
+                    onClick={() => navigate(`/b/${slug}/orders/${order.id}`)}
+                    className="p-4 active:bg-gray-50 transition-colors cursor-pointer"
+                  >
+                    <div className="flex items-start justify-between mb-2">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-1">
+                          <Package className="h-4 w-4 text-muted-foreground shrink-0" />
+                          <p className="font-semibold text-sm truncate">
+                            Commande {order.numero}
+                          </p>
+                        </div>
+                        <p className="text-xs text-muted-foreground">
+                          {formatDate(order.createdAt)}
                         </p>
                       </div>
-                      <p className="text-xs text-gray-500">
-                        {formatDate(order.createdAt)}
-                      </p>
+                      <ChevronRight className="h-5 w-5 text-muted-foreground shrink-0" />
                     </div>
-                    <ChevronRight className="h-5 w-5 text-gray-400 shrink-0" />
+
+                    <div className="flex items-center justify-between mt-3">
+                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${badge.className}`}>
+                        {badge.label}
+                      </span>
+                      <span className="font-bold text-sm">
+                        {formatPrix(order.total)}
+                      </span>
+                    </div>
                   </div>
 
-                  <div className="flex items-center justify-between mt-3">
-                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${badge.className}`}>
-                      {badge.label}
-                    </span>
-                    <span className="font-bold text-sm">
-                      {formatPrix(order.total)}
-                    </span>
-                  </div>
+                  {/* Bouton Suivre ma livraison - visible uniquement pour EN_LIVRAISON */}
+                  {isEnLivraison && (
+                    <div className="border-t border-border bg-purple-50 p-3">
+                      <Button
+                        onClick={() => navigate(`/b/${slug}/orders/${order.id}`)}
+                        className="w-full bg-purple-600 hover:bg-purple-700 text-white"
+                        size="sm"
+                      >
+                        <MapPin className="h-4 w-4 mr-2" />
+                        Suivre ma livraison
+                      </Button>
+                    </div>
+                  )}
                 </div>
               );
             })
