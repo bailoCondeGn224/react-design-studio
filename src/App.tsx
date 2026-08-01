@@ -10,6 +10,7 @@ import LoadingFallback from "./components/LoadingFallback.tsx";
 import { SidebarProvider } from "./contexts/SidebarContext";
 import { AuthProvider } from "./contexts/AuthContext";
 import { CustomerAuthProvider } from "./contexts/CustomerAuthContext";
+import { LivreurAuthProvider } from "./contexts/LivreurAuthContext";
 import { CustomerProtectedRoute } from "./components/customer/CustomerProtectedRoute";
 import { InstallPWA } from "./components/InstallPWA";
 import { PWAUpdateNotification, OfflineIndicator } from "./components/PWAUpdateNotification";
@@ -68,6 +69,9 @@ const CustomerRegister = lazy(() => import("./pages/customer/CustomerRegister.ts
 const CustomerOrders = lazy(() => import("./pages/customer/CustomerOrders.tsx"));
 const CustomerOrderDetail = lazy(() => import("./pages/customer/CustomerOrderDetail.tsx"));
 const CustomerProfile = lazy(() => import("./pages/customer/CustomerProfile.tsx"));
+// Livreur pages
+const LivreurLogin = lazy(() => import("./pages/storefront/LivreurLogin.tsx"));
+const LivreurDashboard = lazy(() => import("./pages/storefront/LivreurDashboard.tsx"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -395,6 +399,23 @@ const App = () => (
                     <CustomerProtectedRoute>
                       <CustomerProfile />
                     </CustomerProtectedRoute>
+                  }
+                />
+                {/* Livreur routes */}
+                <Route
+                  path="/b/:slug/livreur"
+                  element={
+                    <LivreurAuthProvider>
+                      <LivreurLogin />
+                    </LivreurAuthProvider>
+                  }
+                />
+                <Route
+                  path="/b/:slug/livreur/dashboard"
+                  element={
+                    <LivreurAuthProvider>
+                      <LivreurDashboard />
+                    </LivreurAuthProvider>
                   }
                 />
               </Route>
