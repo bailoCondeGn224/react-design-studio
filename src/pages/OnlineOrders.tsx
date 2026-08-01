@@ -307,14 +307,34 @@ const OnlineOrders = () => {
                               {pendingReadyId === order.id ? 'En cours...' : 'Prête'}
                             </Button>
                           )}
-                          {order.statut === OnlineOrderStatut.PRETE && (
+                          {/* PRETE + RETRAIT_BOUTIQUE: Marquer livrée directement */}
+                          {order.statut === OnlineOrderStatut.PRETE &&
+                            order.modeLivraison === ModeLivraison.RETRAIT_BOUTIQUE && (
                             <Button
                               size="sm"
                               onClick={() => handleMarkDelivered(order.id)}
                               disabled={pendingDeliveredId === order.id}
                             >
-                              {pendingDeliveredId === order.id ? 'En cours...' : 'Livrée'}
+                              {pendingDeliveredId === order.id ? 'En cours...' : 'Récupérée'}
                             </Button>
+                          )}
+                          {/* PRETE + LIVRAISON: Dispatcher à un livreur */}
+                          {order.statut === OnlineOrderStatut.PRETE &&
+                            order.modeLivraison === ModeLivraison.LIVRAISON && (
+                            <Button
+                              size="sm"
+                              variant="default"
+                              className="bg-blue-600 hover:bg-blue-700"
+                              onClick={() => handleDispatch(order.id)}
+                            >
+                              Dispatcher
+                            </Button>
+                          )}
+                          {/* EN_LIVRAISON: Le livreur est en route */}
+                          {order.statut === OnlineOrderStatut.EN_LIVRAISON && (
+                            <span className="text-xs text-blue-600 font-medium">
+                              En route: {order.livreur?.nom || 'Livreur'}
+                            </span>
                           )}
                           {(order.statut === OnlineOrderStatut.EN_ATTENTE || order.statut === OnlineOrderStatut.CONFIRMEE) && (
                             <Button
