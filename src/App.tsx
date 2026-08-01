@@ -11,8 +11,6 @@ import { SidebarProvider } from "./contexts/SidebarContext";
 import { AuthProvider } from "./contexts/AuthContext";
 import { CustomerAuthProvider } from "./contexts/CustomerAuthContext";
 import { CustomerProtectedRoute } from "./components/customer/CustomerProtectedRoute";
-import { LivreurAuthProvider } from "./contexts/LivreurAuthContext";
-import { LivreurProtectedRoute } from "./components/storefront/LivreurProtectedRoute";
 import { InstallPWA } from "./components/InstallPWA";
 import { PWAUpdateNotification, OfflineIndicator } from "./components/PWAUpdateNotification";
 
@@ -52,10 +50,10 @@ const Zakat = lazy(() => import("./pages/Zakat.tsx"));
 const ZakatSettings = lazy(() => import("./pages/ZakatSettings.tsx"));
 // Page Online Orders (back-office)
 const OnlineOrders = lazy(() => import("./pages/OnlineOrders.tsx"));
-// Page Livreurs (back-office)
-const Livreurs = lazy(() => import("./pages/Livreurs.tsx"));
 // Page Storefront Settings (back-office)
 const StorefrontSettings = lazy(() => import("./pages/StorefrontSettings.tsx"));
+// Page Livreurs
+const Livreurs = lazy(() => import("./pages/Livreurs.tsx"));
 // Storefront pages (public)
 const StorefrontHome = lazy(() => import("./pages/storefront/StorefrontHome.tsx"));
 const StorefrontProduct = lazy(() => import("./pages/storefront/StorefrontProduct.tsx"));
@@ -70,9 +68,6 @@ const CustomerRegister = lazy(() => import("./pages/customer/CustomerRegister.ts
 const CustomerOrders = lazy(() => import("./pages/customer/CustomerOrders.tsx"));
 const CustomerOrderDetail = lazy(() => import("./pages/customer/CustomerOrderDetail.tsx"));
 const CustomerProfile = lazy(() => import("./pages/customer/CustomerProfile.tsx"));
-// Livreur pages
-const LivreurLogin = lazy(() => import("./pages/storefront/LivreurLogin.tsx"));
-const LivreurDashboard = lazy(() => import("./pages/storefront/LivreurDashboard.tsx"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -323,7 +318,7 @@ const App = () => (
                   </ProtectedRoute>
                 }
               />
-              {/* Route Livreurs (back-office) */}
+              {/* Route Livreurs (Deliveries) */}
               <Route
                 path="/livreurs"
                 element={
@@ -400,18 +395,6 @@ const App = () => (
                     <CustomerProtectedRoute>
                       <CustomerProfile />
                     </CustomerProtectedRoute>
-                  }
-                />
-              </Route>
-              {/* Routes Livreur - with LivreurAuthProvider */}
-              <Route element={<LivreurAuthProvider />}>
-                <Route path="/b/:slug/livreur" element={<LivreurLogin />} />
-                <Route
-                  path="/b/:slug/livreur/dashboard"
-                  element={
-                    <LivreurProtectedRoute>
-                      <LivreurDashboard />
-                    </LivreurProtectedRoute>
                   }
                 />
               </Route>
