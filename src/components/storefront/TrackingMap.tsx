@@ -1,252 +1,79 @@
-// src/components/storefront/TrackingMap.tsx
-import { useEffect, useRef, useState } from 'react';
-import { Loader2, Navigation, AlertCircle, Phone, MapPin } from 'lucide-react';
-import { OrderTracking } from '@/types/customer';
-
-declare global {
-  interface Window {
-    google: typeof google;
-  }
-}
+import { useEffect, useRef } from 'react';
+import L from 'leaflet';
+import 'leaflet/dist/leaflet.css';
+import { TrackingInfo } from '@/types/livreur';
+import { Phone, User } from 'lucide-react';
 
 interface TrackingMapProps {
-  tracking: OrderTracking | null;
-  isLoading?: boolean;
-  height?: string;
-  showCustomerPosition?: boolean; // Pour le livreur, afficher la position du client
+  tracking: TrackingInfo;
 }
 
-export const TrackingMap = ({
-  tracking,
-  isLoading,
-  height = '300px',
-  showCustomerPosition = false,
-}: TrackingMapProps) => {
+export const TrackingMap = ({ tracking }: TrackingMapProps) => {
   const mapRef = useRef<HTMLDivElement>(null);
-  const mapInstanceRef = useRef<google.maps.Map | null>(null);
-  const livreurMarkerRef = useRef<google.maps.Marker | null>(null);
-  const customerMarkerRef = useRef<google.maps.Marker | null>(null);
-  const [mapLoaded, setMapLoaded] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const mapInstanceRef = useRef<L.Map | null>(null);
+  const markerRef = useRef<L.Marker | null>(null);
 
-  // Récupérer la clé API depuis les variables d'environnement
-  const googleMapsApiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
-
-  // Charger le script Google Maps
   useEffect(() => {
-    if (window.google?.maps) {
-      setMapLoaded(true);
-      return;
-    }
+    if (!mapRef.current || mapInstanceRef.current) return;
 
-    if (!googleMapsApiKey) {
-      setError('Clé API Google Maps non configurée dans .env');
-      return;
-    }
+    mapInstanceRef.current = L.map(mapRef.current).setView(
+      [tracking.latitude, tracking.longitude],
+      15,
+    );
 
-    const existingScript = document.getElementById('google-maps-script');
-    if (existingScript) {
-      existingScript.addEventListener('load', () => setMapLoaded(true));
-      return;
-    }
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© OpenStreetMap',
+    }).addTo(mapInstanceRef.current);
 
-    const script = document.createElement('script');
-    script.id = 'google-maps-script';
-    script.src = `https://maps.googleapis.com/maps/api/js?key=${googleMapsApiKey}`;
-    script.async = true;
-    script.defer = true;
-    script.onload = () => setMapLoaded(true);
-    script.onerror = () => setError('Erreur de chargement de Google Maps');
-    document.head.appendChild(script);
-  }, [googleMapsApiKey]);
+    const icon = L.divIcon({
+      className: 'custom-marker',
+      html: `<div style="background: #3b82f6; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 3px solid white; box-shadow: 0 2px 8px rgba(0,0,0,0.3);">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+          <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
+          <circle cx="9" cy="7" r="4"/>
+        </svg>
+      </div>`,
+      iconSize: [32, 32],
+      iconAnchor: [16, 16],
+    });
 
-  // Initialiser et mettre à jour la carte
+    markerRef.current = L.marker([tracking.latitude, tracking.longitude], {
+      icon,
+    }).addTo(mapInstanceRef.current);
+
+    return () => {
+      mapInstanceRef.current?.remove();
+      mapInstanceRef.current = null;
+    };
+  }, []);
+
   useEffect(() => {
-    if (!mapLoaded || !mapRef.current) return;
-
-    // Déterminer le centre de la carte
-    const livreurPos = tracking?.position;
-    const customerPos = tracking?.customerPosition;
-
-    // Si aucune position disponible, ne pas initialiser
-    if (!livreurPos && !customerPos) return;
-
-    const centerLat = livreurPos?.latitude || customerPos?.latitude || 0;
-    const centerLng = livreurPos?.longitude || customerPos?.longitude || 0;
-
-    // Créer la carte si elle n'existe pas
-    if (!mapInstanceRef.current) {
-      mapInstanceRef.current = new window.google.maps.Map(mapRef.current, {
-        center: { lat: centerLat, lng: centerLng },
-        zoom: 15,
-        mapTypeControl: false,
-        streetViewControl: false,
-        fullscreenControl: true,
-        zoomControl: true,
-      });
+    if (markerRef.current && mapInstanceRef.current) {
+      markerRef.current.setLatLng([tracking.latitude, tracking.longitude]);
+      mapInstanceRef.current.panTo([tracking.latitude, tracking.longitude]);
     }
-
-    // Marqueur du livreur (bleu)
-    if (livreurPos) {
-      if (livreurMarkerRef.current) {
-        livreurMarkerRef.current.setPosition({ lat: livreurPos.latitude, lng: livreurPos.longitude });
-      } else {
-        livreurMarkerRef.current = new window.google.maps.Marker({
-          position: { lat: livreurPos.latitude, lng: livreurPos.longitude },
-          map: mapInstanceRef.current,
-          title: tracking?.livreur.nom || 'Livreur',
-          icon: {
-            path: window.google.maps.SymbolPath.CIRCLE,
-            scale: 12,
-            fillColor: '#3B82F6',
-            fillOpacity: 1,
-            strokeColor: '#FFFFFF',
-            strokeWeight: 3,
-          },
-        });
-
-        const livreurInfoWindow = new window.google.maps.InfoWindow({
-          content: `
-            <div style="padding: 8px; font-family: system-ui, sans-serif;">
-              <p style="font-weight: 600; margin: 0 0 4px 0;">${tracking?.livreur.nom || 'Livreur'}</p>
-              <p style="margin: 0; color: #666; font-size: 12px;">${showCustomerPosition ? 'Livreur' : 'En route vers vous'}</p>
-            </div>
-          `,
-        });
-
-        livreurMarkerRef.current.addListener('click', () => {
-          livreurInfoWindow.open(mapInstanceRef.current, livreurMarkerRef.current);
-        });
-      }
-    }
-
-    // Marqueur du client (vert) - seulement si showCustomerPosition est true
-    if (showCustomerPosition && customerPos) {
-      if (customerMarkerRef.current) {
-        customerMarkerRef.current.setPosition({ lat: customerPos.latitude, lng: customerPos.longitude });
-      } else {
-        customerMarkerRef.current = new window.google.maps.Marker({
-          position: { lat: customerPos.latitude, lng: customerPos.longitude },
-          map: mapInstanceRef.current,
-          title: 'Client',
-          icon: {
-            path: window.google.maps.SymbolPath.CIRCLE,
-            scale: 12,
-            fillColor: '#22C55E',
-            fillOpacity: 1,
-            strokeColor: '#FFFFFF',
-            strokeWeight: 3,
-          },
-        });
-
-        const customerInfoWindow = new window.google.maps.InfoWindow({
-          content: `
-            <div style="padding: 8px; font-family: system-ui, sans-serif;">
-              <p style="font-weight: 600; margin: 0 0 4px 0;">Client</p>
-              <p style="margin: 0; color: #666; font-size: 12px;">Destination</p>
-            </div>
-          `,
-        });
-
-        customerMarkerRef.current.addListener('click', () => {
-          customerInfoWindow.open(mapInstanceRef.current, customerMarkerRef.current);
-        });
-      }
-    }
-
-    // Ajuster les limites pour montrer les deux marqueurs si présents
-    if (showCustomerPosition && livreurPos && customerPos) {
-      const bounds = new window.google.maps.LatLngBounds();
-      bounds.extend({ lat: livreurPos.latitude, lng: livreurPos.longitude });
-      bounds.extend({ lat: customerPos.latitude, lng: customerPos.longitude });
-      mapInstanceRef.current.fitBounds(bounds, 50);
-    } else if (livreurPos) {
-      mapInstanceRef.current.panTo({ lat: livreurPos.latitude, lng: livreurPos.longitude });
-    }
-  }, [mapLoaded, tracking, showCustomerPosition]);
-
-  // Affichage du chargement
-  if (isLoading) {
-    return (
-      <div
-        className="flex items-center justify-center bg-muted/50 rounded-lg"
-        style={{ height }}
-      >
-        <div className="text-center">
-          <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto mb-2" />
-          <p className="text-sm text-muted-foreground">Chargement...</p>
-        </div>
-      </div>
-    );
-  }
-
-  // Erreur de configuration
-  if (error) {
-    return (
-      <div
-        className="flex items-center justify-center bg-muted/50 rounded-lg"
-        style={{ height }}
-      >
-        <div className="text-center p-4">
-          <AlertCircle className="h-8 w-8 text-destructive mx-auto mb-2" />
-          <p className="text-sm text-destructive">{error}</p>
-        </div>
-      </div>
-    );
-  }
-
-  // Pas de position disponible
-  if (!tracking?.position) {
-    return (
-      <div
-        className="flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 rounded-lg"
-        style={{ height }}
-      >
-        <div className="text-center p-4">
-          <Navigation className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
-          <p className="text-sm text-muted-foreground">
-            Position du livreur non disponible
-          </p>
-          <p className="text-xs text-muted-foreground mt-1">
-            Le livreur n'a pas encore activé son GPS
-          </p>
-        </div>
-      </div>
-    );
-  }
+  }, [tracking.latitude, tracking.longitude]);
 
   return (
-    <div className="space-y-2">
-      {/* Infos livreur */}
-      <div className="flex items-center gap-2 px-1">
-        <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center">
-          <Navigation className="h-4 w-4 text-primary-foreground animate-pulse" />
+    <div className="space-y-3">
+      <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center">
+            <User className="w-5 h-5 text-white" />
+          </div>
+          <div className="flex-1">
+            <p className="font-semibold text-blue-900">{tracking.livreurNom}</p>
+            <a
+              href={`tel:${tracking.livreurTelephone}`}
+              className="flex items-center gap-1 text-sm text-blue-700"
+            >
+              <Phone className="w-3 h-3" />
+              {tracking.livreurTelephone}
+            </a>
+          </div>
         </div>
-        <div className="flex-1">
-          <p className="text-sm font-medium">{tracking.livreur.nom}</p>
-          <p className="text-xs text-muted-foreground">
-            Mise à jour:{' '}
-            {new Date(tracking.position.lastPositionAt).toLocaleTimeString('fr-FR', {
-              hour: '2-digit',
-              minute: '2-digit',
-            })}
-          </p>
-        </div>
-        <a
-          href={`tel:${tracking.livreur.telephone}`}
-          className="flex items-center gap-1 text-sm text-primary hover:underline"
-        >
-          <Phone className="h-3 w-3" />
-          Appeler
-        </a>
       </div>
-
-      {/* Carte Google Maps */}
-      <div
-        ref={mapRef}
-        className="rounded-lg overflow-hidden border"
-        style={{ height }}
-      />
+      <div ref={mapRef} className="h-64 rounded-lg overflow-hidden border" />
     </div>
   );
 };
