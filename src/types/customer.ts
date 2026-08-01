@@ -68,6 +68,8 @@ export interface OnlineOrder {
   modeLivraison: ModeLivraison;
   adresseLivraison?: string;
   telephoneLivraison?: string;
+  latitudeLivraison?: number;
+  longitudeLivraison?: number;
   fraisLivraison: number;
   sousTotal: number;
   total: number;
@@ -77,6 +79,13 @@ export interface OnlineOrder {
   customerTelephone?: string;
   clientNom?: string;
   clientTelephone?: string;
+  // Livreur assigné
+  livreurId?: string;
+  livreur?: {
+    id: string;
+    nom: string;
+    telephone: string;
+  };
   motifAnnulation?: string;
   confirmeePar?: string;
   confirmeeLe?: string;
@@ -84,9 +93,6 @@ export interface OnlineOrder {
   livreeLe?: string;
   annuleeLe?: string;
   expedieeLe?: string;
-  livreurId?: string;
-  livreurNom?: string;
-  livreurTelephone?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -140,61 +146,3 @@ export interface OnlineOrderFilterParams {
   search?: string;
 }
 
-// ========== Livreurs ==========
-
-export interface Livreur {
-  id: string;
-  nom: string;
-  telephone: string;
-  email?: string;
-  photo?: string;
-  isActive: boolean;
-  isDelivering: boolean;
-  latitude?: number;
-  longitude?: number;
-  lastPositionAt?: string;
-  createdAt: string;
-}
-
-export interface CreateLivreurDto {
-  nom: string;
-  telephone: string;
-  email?: string;
-  password: string;
-  photo?: string;
-}
-
-export interface UpdateLivreurDto {
-  nom?: string;
-  telephone?: string;
-  email?: string;
-  password?: string;
-  photo?: string;
-  isActive?: boolean;
-}
-
-export interface LivreurLoginDto {
-  telephone: string;
-  password: string;
-  storeSlug: string;
-}
-
-export interface LivreurPosition {
-  latitude: number;
-  longitude: number;
-  lastPositionAt: string;
-}
-
-export interface OrderTracking {
-  livreur: {
-    id: string;
-    nom: string;
-    telephone: string;
-  };
-  position: LivreurPosition | null;
-  customerPosition: {
-    latitude: number;
-    longitude: number;
-    lastPositionAt: string;
-  } | null;
-}

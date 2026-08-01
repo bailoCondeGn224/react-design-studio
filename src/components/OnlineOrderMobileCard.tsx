@@ -235,32 +235,47 @@ const OnlineOrderMobileCard = ({
                   </Button>
                 )}
 
-                {order.statut === OnlineOrderStatut.PRETE && (
+                {/* PRETE + RETRAIT_BOUTIQUE: Client récupère en boutique */}
+                {order.statut === OnlineOrderStatut.PRETE &&
+                  order.modeLivraison === ModeLivraison.RETRAIT_BOUTIQUE && (
                   <Button
                     variant="default"
                     size="lg"
-                    className="w-full h-14 justify-start text-left text-base"
+                    className="w-full h-14 justify-start text-left text-base bg-green-600 hover:bg-green-700"
                     onClick={() => onMarkDelivered(order.id)}
                     disabled={isMarkingDelivered}
                   >
-                    <Truck className="w-5 h-5 mr-3" />
-                    {isMarkingDelivered ? 'Marquage...' : 'Marquer livrée'}
+                    <Package className="w-5 h-5 mr-3" />
+                    {isMarkingDelivered ? 'Marquage...' : 'Client a récupéré'}
                   </Button>
                 )}
 
+                {/* PRETE + LIVRAISON: Dispatcher à un livreur */}
                 {order.statut === OnlineOrderStatut.PRETE &&
                   order.modeLivraison === ModeLivraison.LIVRAISON &&
                   onDispatch && (
                     <Button
                       variant="default"
                       size="lg"
-                      className="w-full h-14 justify-start text-left text-base"
+                      className="w-full h-14 justify-start text-left text-base bg-blue-600 hover:bg-blue-700"
                       onClick={() => onDispatch(order.id)}
                     >
                       <Truck className="w-5 h-5 mr-3" />
                       Dispatcher à un livreur
                     </Button>
                   )}
+
+                {/* EN_LIVRAISON: Info - Le livreur marque comme livrée */}
+                {order.statut === OnlineOrderStatut.EN_LIVRAISON && (
+                  <div className="w-full p-3 bg-blue-50 border border-blue-200 rounded-lg text-center">
+                    <p className="text-sm text-blue-700">
+                      🚚 En cours de livraison par <strong>{order.livreur?.nom || 'le livreur'}</strong>
+                    </p>
+                    <p className="text-xs text-blue-600 mt-1">
+                      Le livreur marquera la commande comme livrée
+                    </p>
+                  </div>
+                )}
 
                 <Button
                   variant="outline"
