@@ -1,73 +1,55 @@
-// src/contexts/LivreurAuthContext.tsx
-import { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
-import { Outlet } from 'react-router-dom';
+import {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  ReactNode,
+} from 'react';
 import { apiClient } from '@/lib/api-client';
-import { Livreur } from '@/types';
+import { LivreurLoginDto, LivreurAuthResponse } from '@/types/livreur';
 
 interface LivreurAuthContextType {
-  livreur: Livreur | null;
+  livreur: LivreurAuthResponse['livreur'] | null;
   isAuthenticated: boolean;
   isLoading: boolean;
-  login: (telephone: string, password: string, storeSlug: string) => Promise<void>;
+  login: (dto: LivreurLoginDto) => Promise<void>;
   logout: () => void;
-  refreshProfile: () => Promise<void>;
 }
 
-const LivreurAuthContext = createContext<LivreurAuthContextType | undefined>(undefined);
+const LivreurAuthContext = createContext<LivreurAuthContextType | null>(null);
 
-const LIVREUR_TOKEN_KEY = 'livreur_token';
-const LIVREUR_DATA_KEY = 'livreur_data';
+const STORAGE_KEY = 'livreur_token';
+const LIVREUR_KEY = 'livreur_data';
 
-export const LivreurAuthProvider = ({ children }: { children?: ReactNode }) => {
-  const [livreur, setLivreur] = useState<Livreur | null>(null);
+export const LivreurAuthProvider = ({ children }: { children: ReactNode }) => {
+  const [livreur, setLivreur] = useState<LivreurAuthResponse['livreur'] | null>(
+    null,
+  );
   const [isLoading, setIsLoading] = useState(true);
 
-  // Charger le livreur depuis le localStorage au démarrage
   useEffect(() => {
-    const token = localStorage.getItem(LIVREUR_TOKEN_KEY);
-    const savedLivreur = localStorage.getItem(LIVREUR_DATA_KEY);
-
+    const token = localStorage.getItem(STORAGE_KEY);
+    const savedLivreur = localStorage.getItem(LIVREUR_KEY);
     if (token && savedLivreur) {
-      try {
-        setLivreur(JSON.parse(savedLivreur));
-      } catch {
-        localStorage.removeItem(LIVREUR_TOKEN_KEY);
-        localStorage.removeItem(LIVREUR_DATA_KEY);
-      }
+      setLivreur(JSON.parse(savedLivreur));
     }
     setIsLoading(false);
   }, []);
 
-  const login = async (telephone: string, password: string, storeSlug: string) => {
-    const { data } = await apiClient.post<{ token: string; livreur: Livreur }>(
-      '/public/livreurs/login',
-      { telephone, password, storeSlug }
+  const login = async (dto: LivreurLoginDto) => {
+    const res = await apiClient.post<LivreurAuthResponse>(
+      '/public/livreur/login',
+      dto,
     );
-
-    localStorage.setItem(LIVREUR_TOKEN_KEY, data.token);
-    localStorage.setItem(LIVREUR_DATA_KEY, JSON.stringify(data.livreur));
-    setLivreur(data.livreur);
+    localStorage.setItem(STORAGE_KEY, res.data.access_token);
+    localStorage.setItem(LIVREUR_KEY, JSON.stringify(res.data.livreur));
+    setLivreur(res.data.livreur);
   };
 
-  const logout = useCallback(() => {
-    localStorage.removeItem(LIVREUR_TOKEN_KEY);
-    localStorage.removeItem(LIVREUR_DATA_KEY);
+  const logout = () => {
+    localStorage.removeItem(STORAGE_KEY);
+    localStorage.removeItem(LIVREUR_KEY);
     setLivreur(null);
-  }, []);
-
-  const refreshProfile = async () => {
-    const token = localStorage.getItem(LIVREUR_TOKEN_KEY);
-    if (!token) return;
-
-    try {
-      const { data } = await apiClient.get<Livreur>('/livreur/me', {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      localStorage.setItem(LIVREUR_DATA_KEY, JSON.stringify(data));
-      setLivreur(data);
-    } catch {
-      logout();
-    }
   };
 
   return (
@@ -78,38 +60,16 @@ export const LivreurAuthProvider = ({ children }: { children?: ReactNode }) => {
         isLoading,
         login,
         logout,
-        refreshProfile,
       }}
     >
-      {children ?? <Outlet />}
+      {children}
     </LivreurAuthContext.Provider>
   );
 };
 
 export const useLivreurAuth = () => {
-  const context = useContext(LivreurAuthContext);
-  if (!context) {
+  const ctx = useContext(LivreurAuthContext);
+  if (!ctx)
     throw new Error('useLivreurAuth must be used within LivreurAuthProvider');
-  }
-  return context;
-};
-
-// Hook pour les appels API authentifiés livreur
-export const useLivreurApi = () => {
-  const getToken = () => localStorage.getItem(LIVREUR_TOKEN_KEY);
-
-  const authFetch = async <T,>(url: string, options: RequestInit = {}): Promise<T> => {
-    const token = getToken();
-    const response = await apiClient.request<T>({
-      url,
-      ...options,
-      headers: {
-        ...options.headers,
-        Authorization: token ? `Bearer ${token}` : '',
-      },
-    });
-    return response.data;
-  };
-
-  return { authFetch, getToken };
+  return ctx;
 };
