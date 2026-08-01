@@ -3,14 +3,16 @@ import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { CartMobileItem } from './CartMobileItem';
-import { CartItem } from '@/types';
-import { ShoppingBag, ChevronLeft, Loader2, CheckCircle, ArrowRight, MessageCircle, User } from 'lucide-react';
+import { CartItem, ModeLivraison } from '@/types';
+import { ShoppingBag, ChevronLeft, Loader2, CheckCircle, ArrowRight, MessageCircle, User, Truck, Store, MapPin, Navigation } from 'lucide-react';
 import { apiClient } from '@/lib/api-client';
 import { toast } from 'sonner';
 import { useCartContext } from '@/contexts/CartContext';
 import { useCustomerAuth } from '@/contexts/CustomerAuthContext';
 import { CustomerAuthModal } from './CustomerAuthModal';
 import { Button } from '@/components/ui/button';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Label } from '@/components/ui/label';
 
 interface CartDrawerProps {
   open: boolean;
@@ -119,9 +121,58 @@ export const CartDrawer = ({
     nomClient: customer?.nom || '',
     telephone: customer?.telephone || '',
     adresseLivraison: '',
-    notes: ''
+    notes: '',
+    modeLivraison: ModeLivraison.LIVRAISON
   });
   const [savedOrderData, setSavedOrderData] = useState<OrderData | null>(null);
+
+  // GPS state
+  const [gpsCoords, setGpsCoords] = useState<{ latitude: number; longitude: number } | null>(null);
+  const [isCapturingGps, setIsCapturingGps] = useState(false);
+  const [gpsError, setGpsError] = useState<string | null>(null);
+
+  // Capture GPS coordinates
+  const captureGpsLocation = () => {
+    if (!navigator.geolocation) {
+      setGpsError('Géolocalisation non supportée par votre navigateur');
+      return;
+    }
+
+    setIsCapturingGps(true);
+    setGpsError(null);
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        setGpsCoords({
+          latitude: position.coords.latitude,
+          longitude: position.coords.longitude
+        });
+        setIsCapturingGps(false);
+        toast.success('Position GPS capturée!');
+      },
+      (error) => {
+        setIsCapturingGps(false);
+        switch (error.code) {
+          case error.PERMISSION_DENIED:
+            setGpsError('Accès à la localisation refusé. Activez la géolocalisation.');
+            break;
+          case error.POSITION_UNAVAILABLE:
+            setGpsError('Position indisponible. Vérifiez votre GPS.');
+            break;
+          case error.TIMEOUT:
+            setGpsError('Délai dépassé. Réessayez.');
+            break;
+          default:
+            setGpsError('Erreur de géolocalisation.');
+        }
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 15000,
+        maximumAge: 0
+      }
+    );
+  };
 
   // Update formData when customer changes
   useEffect(() => {
@@ -134,7 +185,9 @@ export const CartDrawer = ({
     }
   }, [customer]);
 
-  const total = subtotal + fraisLivraison;
+  // Frais de livraison conditionnels selon le mode
+  const fraisEffectifs = formData.modeLivraison === ModeLivraison.LIVRAISON ? fraisLivraison : 0;
+  const total = subtotal + fraisEffectifs;
 
   const handleCloseDrawer = () => {
     onOpenChange(false);
@@ -145,9 +198,12 @@ export const CartDrawer = ({
         nomClient: '',
         telephone: '',
         adresseLivraison: '',
-        notes: ''
+        notes: '',
+        modeLivraison: ModeLivraison.LIVRAISON
       });
       setSavedOrderData(null);
+      setGpsCoords(null);
+      setGpsError(null);
     }, 300);
   };
 
@@ -176,13 +232,27 @@ export const CartDrawer = ({
       return;
     }
 
+    if (formData.modeLivraison === ModeLivraison.LIVRAISON && !formData.adresseLivraison.trim()) {
+      toast.error('Veuillez remplir l\'adresse de livraison');
+      return;
+    }
+
     setIsSubmitting(true);
 
     try {
       const orderData = {
         nomClient: formData.nomClient.trim(),
         telephone: formData.telephone.trim(),
-        adresseLivraison: formData.adresseLivraison.trim() || undefined,
+        modeLivraison: formData.modeLivraison,
+        adresseLivraison: formData.modeLivraison === ModeLivraison.LIVRAISON
+          ? formData.adresseLivraison.trim() || undefined
+          : undefined,
+        latitudeLivraison: formData.modeLivraison === ModeLivraison.LIVRAISON && gpsCoords
+          ? gpsCoords.latitude
+          : undefined,
+        longitudeLivraison: formData.modeLivraison === ModeLivraison.LIVRAISON && gpsCoords
+          ? gpsCoords.longitude
+          : undefined,
         notes: formData.notes.trim() || undefined,
         articles: items.map(item => ({
           articleId: item.articleId,
@@ -199,9 +269,11 @@ export const CartDrawer = ({
         nomClient: formData.nomClient,
         items: items,
         subtotal: subtotal,
-        fraisLivraison: fraisLivraison,
+        fraisLivraison: fraisEffectifs,
         total: total,
-        adresseLivraison: formData.adresseLivraison,
+        adresseLivraison: formData.modeLivraison === ModeLivraison.LIVRAISON
+          ? formData.adresseLivraison
+          : 'Retrait en boutique',
         telephone: formData.telephone
       });
 
@@ -276,15 +348,13 @@ export const CartDrawer = ({
                       <span className="text-gray-600">Sous-total</span>
                       <span className="font-medium">{formatPrix(subtotal)}</span>
                     </div>
-                    {fraisLivraison > 0 && (
-                      <div className="flex justify-between text-sm">
-                        <span className="text-gray-600">Livraison</span>
-                        <span className="font-medium">{formatPrix(fraisLivraison)}</span>
-                      </div>
-                    )}
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-600">Livraison</span>
+                      <span className="font-medium">{fraisLivraison > 0 ? formatPrix(fraisLivraison) : 'Gratuit'}</span>
+                    </div>
                     <div className="flex justify-between text-base font-bold pt-2 border-t">
                       <span>Total</span>
-                      <span className="text-primary text-xl">{formatPrix(total)}</span>
+                      <span className="text-primary text-xl">{formatPrix(subtotal + fraisLivraison)}</span>
                     </div>
                   </div>
 
@@ -322,6 +392,54 @@ export const CartDrawer = ({
                 <>
                   <div className="flex-1 overflow-y-auto px-4 py-4">
                     <form id="checkout-form" onSubmit={handleSubmitOrder} className="space-y-4">
+                      {/* Mode de livraison */}
+                      <div className="bg-gray-50 rounded-lg p-4">
+                        <label className="block text-sm font-semibold text-gray-700 mb-3">
+                          Mode de livraison <span className="text-red-500">*</span>
+                        </label>
+                        <RadioGroup
+                          value={formData.modeLivraison}
+                          onValueChange={(value) => setFormData(prev => ({
+                            ...prev,
+                            modeLivraison: value as ModeLivraison
+                          }))}
+                          className="space-y-3"
+                        >
+                          <div className={`flex items-center space-x-3 p-3 rounded-lg border-2 transition-all cursor-pointer ${
+                            formData.modeLivraison === ModeLivraison.LIVRAISON
+                              ? 'border-primary bg-primary/5'
+                              : 'border-gray-200 hover:border-gray-300'
+                          }`}>
+                            <RadioGroupItem value={ModeLivraison.LIVRAISON} id="livraison" />
+                            <Label htmlFor="livraison" className="flex items-center gap-2 cursor-pointer flex-1">
+                              <Truck className="h-5 w-5 text-primary" />
+                              <div>
+                                <span className="font-medium">Livraison à domicile</span>
+                                {fraisLivraison > 0 && (
+                                  <span className="text-xs text-gray-500 ml-2">
+                                    (+{formatPrix(fraisLivraison)})
+                                  </span>
+                                )}
+                              </div>
+                            </Label>
+                          </div>
+                          <div className={`flex items-center space-x-3 p-3 rounded-lg border-2 transition-all cursor-pointer ${
+                            formData.modeLivraison === ModeLivraison.RETRAIT_BOUTIQUE
+                              ? 'border-primary bg-primary/5'
+                              : 'border-gray-200 hover:border-gray-300'
+                          }`}>
+                            <RadioGroupItem value={ModeLivraison.RETRAIT_BOUTIQUE} id="retrait" />
+                            <Label htmlFor="retrait" className="flex items-center gap-2 cursor-pointer flex-1">
+                              <Store className="h-5 w-5 text-green-600" />
+                              <div>
+                                <span className="font-medium">Retrait en boutique</span>
+                                <span className="text-xs text-green-600 ml-2">(Gratuit)</span>
+                              </div>
+                            </Label>
+                          </div>
+                        </RadioGroup>
+                      </div>
+
                       {/* Name */}
                       <div>
                         <label className="block text-sm font-semibold text-gray-700 mb-2">
@@ -352,19 +470,75 @@ export const CartDrawer = ({
                         />
                       </div>
 
-                      {/* Address */}
-                      <div>
-                        <label className="block text-sm font-semibold text-gray-700 mb-2">
-                          Adresse de livraison
-                        </label>
-                        <input
-                          type="text"
-                          value={formData.adresseLivraison}
-                          onChange={(e) => setFormData(prev => ({ ...prev, adresseLivraison: e.target.value }))}
-                          placeholder="Entrez votre adresse (optionnel)"
-                          className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
-                        />
-                      </div>
+                      {/* Address - Only show for LIVRAISON mode */}
+                      {formData.modeLivraison === ModeLivraison.LIVRAISON && (
+                        <>
+                          <div>
+                            <label className="block text-sm font-semibold text-gray-700 mb-2">
+                              Adresse de livraison <span className="text-red-500">*</span>
+                            </label>
+                            <input
+                              type="text"
+                              value={formData.adresseLivraison}
+                              onChange={(e) => setFormData(prev => ({ ...prev, adresseLivraison: e.target.value }))}
+                              placeholder="Entrez votre adresse de livraison"
+                              required
+                              className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                            />
+                          </div>
+
+                          {/* GPS Location Capture */}
+                          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                            <div className="flex items-start gap-3">
+                              <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
+                                <MapPin className="w-5 h-5 text-blue-600" />
+                              </div>
+                              <div className="flex-1">
+                                <p className="text-sm font-medium text-blue-900 mb-1">
+                                  Position GPS pour le suivi
+                                </p>
+                                <p className="text-xs text-blue-700 mb-3">
+                                  Êtes-vous actuellement à l'adresse de livraison? Partagez votre position pour permettre au livreur de vous localiser facilement.
+                                </p>
+
+                                {gpsCoords ? (
+                                  <div className="flex items-center gap-2 bg-green-100 text-green-800 px-3 py-2 rounded-lg">
+                                    <Navigation className="w-4 h-4" />
+                                    <span className="text-xs font-medium">Position capturée avec succès!</span>
+                                  </div>
+                                ) : (
+                                  <button
+                                    type="button"
+                                    onClick={captureGpsLocation}
+                                    disabled={isCapturingGps}
+                                    className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 active:scale-95 transition-all disabled:opacity-50"
+                                  >
+                                    {isCapturingGps ? (
+                                      <>
+                                        <Loader2 className="w-4 h-4 animate-spin" />
+                                        <span>Localisation...</span>
+                                      </>
+                                    ) : (
+                                      <>
+                                        <Navigation className="w-4 h-4" />
+                                        <span>Partager ma position</span>
+                                      </>
+                                    )}
+                                  </button>
+                                )}
+
+                                {gpsError && (
+                                  <p className="text-xs text-red-600 mt-2">{gpsError}</p>
+                                )}
+
+                                <p className="text-[10px] text-blue-600 mt-2">
+                                  Optionnel - La livraison reste possible sans GPS
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+                        </>
+                      )}
 
                       {/* Notes */}
                       <div>
@@ -387,12 +561,14 @@ export const CartDrawer = ({
                           <span className="text-gray-600">{items.length} article{items.length > 1 ? 's' : ''}</span>
                           <span className="font-medium">{formatPrix(subtotal)}</span>
                         </div>
-                        {fraisLivraison > 0 && (
-                          <div className="flex justify-between text-sm">
-                            <span className="text-gray-600">Livraison</span>
-                            <span className="font-medium">{formatPrix(fraisLivraison)}</span>
-                          </div>
-                        )}
+                        <div className="flex justify-between text-sm">
+                          <span className="text-gray-600">
+                            {formData.modeLivraison === ModeLivraison.LIVRAISON ? 'Livraison' : 'Retrait boutique'}
+                          </span>
+                          <span className={`font-medium ${formData.modeLivraison === ModeLivraison.RETRAIT_BOUTIQUE ? 'text-green-600' : ''}`}>
+                            {fraisEffectifs > 0 ? formatPrix(fraisEffectifs) : 'Gratuit'}
+                          </span>
+                        </div>
                         <div className="flex justify-between font-bold pt-2 border-t border-gray-200">
                           <span>Total</span>
                           <span className="text-primary text-lg">{formatPrix(total)}</span>

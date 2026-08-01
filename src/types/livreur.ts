@@ -44,4 +44,8 @@ export interface TrackingInfo {
   longitude: number;
   livreurNom: string;
   livreurTelephone: string;
+  // Destination coordinates (optional)
+  destinationLatitude?: number;
+  destinationLongitude?: number;
+  destinationAdresse?: string;
 }
