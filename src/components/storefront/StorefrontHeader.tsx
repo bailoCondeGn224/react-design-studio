@@ -1,5 +1,5 @@
 // src/components/storefront/StorefrontHeader.tsx
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { User, ShoppingCart, MapPin, Clock, Phone, Truck } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { StoreFront } from '@/types';
@@ -24,6 +24,20 @@ export const StorefrontHeader = ({ storefront, cartCount, onCartClick }: Storefr
   const { isAuthenticated } = useCustomerAuth();
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const [accountMenuOpen, setAccountMenuOpen] = useState(false);
+
+  // Écouter les demandes d'authentification (depuis BottomNav ou api-client)
+  useEffect(() => {
+    const handleAuthRequired = () => {
+      if (!isAuthenticated) {
+        setAuthModalOpen(true);
+      }
+    };
+
+    window.addEventListener('customer-auth-required', handleAuthRequired);
+    return () => {
+      window.removeEventListener('customer-auth-required', handleAuthRequired);
+    };
+  }, [isAuthenticated]);
 
   return (
     <header className="sticky top-0 z-50 bg-white border-b border-gray-200 shadow-sm">
