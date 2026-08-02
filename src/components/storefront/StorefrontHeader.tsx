@@ -40,7 +40,7 @@ export const StorefrontHeader = ({ storefront, cartCount, onCartClick }: Storefr
   }, [isAuthenticated]);
 
   return (
-    <header className="sticky top-0 z-50 bg-white border-b border-gray-200 shadow-sm">
+    <header className="sticky top-0 z-50 bg-card border-b border-border shadow-sm">
       {/* Header principal avec logo et panier */}
       <div className="flex items-center justify-between h-16 px-4 bg-gradient-to-r from-primary/5 to-primary/10">
         {/* Account Button */}
@@ -61,7 +61,7 @@ export const StorefrontHeader = ({ storefront, cartCount, onCartClick }: Storefr
 
         {/* Nom de la boutique */}
         <div className="flex-1 flex items-center justify-center px-2">
-          <h1 className="text-base font-bold text-gray-900 truncate max-w-[220px]">
+          <h1 className="text-base font-bold text-foreground truncate max-w-[220px]">
             {storefront.organizationNom}
           </h1>
         </div>
@@ -84,21 +84,21 @@ export const StorefrontHeader = ({ storefront, cartCount, onCartClick }: Storefr
       </div>
 
       {/* Barre d'informations rapides sous le header */}
-      <div className="bg-white border-t border-gray-100">
+      <div className="bg-card border-t border-border/50">
         <div className="px-4 py-2 flex items-center justify-between gap-2 overflow-x-auto">
           {/* Horaires */}
           {storefront.horaires && (
-            <div className="flex items-center gap-1.5 px-2 py-1 bg-gray-50 rounded-md shrink-0">
-              <Clock className="w-3 h-3 text-gray-500" />
-              <span className="text-[10px] text-gray-600 font-medium whitespace-nowrap">{storefront.horaires}</span>
+            <div className="flex items-center gap-1.5 px-2 py-1 bg-muted rounded-md shrink-0">
+              <Clock className="w-3 h-3 text-muted-foreground" />
+              <span className="text-[10px] text-muted-foreground font-medium whitespace-nowrap">{storefront.horaires}</span>
             </div>
           )}
 
           {/* Adresse */}
           {storefront.adresse && (
-            <div className="flex items-center gap-1.5 px-2 py-1 bg-gray-50 rounded-md shrink-0">
-              <MapPin className="w-3 h-3 text-gray-500" />
-              <span className="text-[10px] text-gray-600 font-medium truncate max-w-[120px]">{storefront.adresse}</span>
+            <div className="flex items-center gap-1.5 px-2 py-1 bg-muted rounded-md shrink-0">
+              <MapPin className="w-3 h-3 text-muted-foreground" />
+              <span className="text-[10px] text-muted-foreground font-medium truncate max-w-[120px]">{storefront.adresse}</span>
             </div>
           )}
 

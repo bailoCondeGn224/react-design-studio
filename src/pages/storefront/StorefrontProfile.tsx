@@ -50,7 +50,7 @@ const StorefrontProfile = () => {
     return (
       <StorefrontLayout>
         <div className="min-h-screen flex items-center justify-center p-4">
-          <p className="text-gray-500">Veuillez vous connecter</p>
+          <p className="text-muted-foreground">Veuillez vous connecter</p>
         </div>
       </StorefrontLayout>
     );
@@ -58,17 +58,17 @@ const StorefrontProfile = () => {
 
   return (
     <StorefrontLayout>
-      <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white pb-24 md:pb-4">
+      <div className="min-h-screen bg-background pb-24 md:pb-4">
         {/* Header */}
-        <div className="bg-white border-b border-gray-100 sticky top-0 z-10">
+        <div className="bg-card border-b border-border sticky top-0 z-10">
           <div className="px-4 py-3 flex items-center gap-3">
             <button
               onClick={() => navigate(-1)}
-              className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+              className="p-2 hover:bg-muted rounded-full transition-colors"
             >
-              <ArrowLeft className="h-5 w-5 text-gray-700" />
+              <ArrowLeft className="h-5 w-5 text-foreground" />
             </button>
-            <h1 className="text-lg font-semibold text-gray-900 flex-1">Mon compte</h1>
+            <h1 className="text-lg font-semibold text-foreground flex-1">Mon compte</h1>
             {!isEditing && (
               <button
                 onClick={() => setIsEditing(true)}
@@ -87,20 +87,20 @@ const StorefrontProfile = () => {
             <div className="w-24 h-24 rounded-full bg-gradient-to-br from-primary/20 to-primary/40 flex items-center justify-center mb-3">
               <User className="h-12 w-12 text-primary" />
             </div>
-            <h2 className="text-xl font-semibold text-gray-900">{customer.nom}</h2>
-            <p className="text-sm text-gray-500 mt-1">Membre depuis {new Date(customer.createdAt).toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' })}</p>
+            <h2 className="text-xl font-semibold text-foreground">{customer.nom}</h2>
+            <p className="text-sm text-muted-foreground mt-1">Membre depuis {new Date(customer.createdAt).toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' })}</p>
           </div>
 
           {/* Profile Form */}
-          <div className="bg-white rounded-xl shadow-card border border-gray-100 overflow-hidden">
-            <div className="px-4 py-3 bg-gray-50 border-b border-gray-100">
-              <h3 className="font-semibold text-gray-900">Informations personnelles</h3>
+          <div className="bg-card rounded-xl shadow-card border border-border overflow-hidden">
+            <div className="px-4 py-3 bg-muted/50 border-b border-border">
+              <h3 className="font-semibold text-foreground">Informations personnelles</h3>
             </div>
 
             <div className="p-4 space-y-4">
               {/* Nom */}
               <div>
-                <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
+                <label className="flex items-center gap-2 text-sm font-medium text-foreground mb-2">
                   <User className="h-4 w-4" />
                   Nom complet
                 </label>
@@ -109,11 +109,11 @@ const StorefrontProfile = () => {
                     type="text"
                     value={formData.nom}
                     onChange={(e) => setFormData({ ...formData, nom: e.target.value })}
-                    className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:bg-white transition-all"
+                    className="w-full px-4 py-3 bg-muted border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-ring focus:bg-card text-foreground transition-all"
                     placeholder="Votre nom complet"
                   />
                 ) : (
-                  <div className="px-4 py-3 bg-gray-50 rounded-lg text-gray-900">
+                  <div className="px-4 py-3 bg-muted rounded-lg text-foreground">
                     {customer.nom}
                   </div>
                 )}
@@ -121,19 +121,19 @@ const StorefrontProfile = () => {
 
               {/* Téléphone */}
               <div>
-                <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
+                <label className="flex items-center gap-2 text-sm font-medium text-foreground mb-2">
                   <Phone className="h-4 w-4" />
                   Téléphone
                 </label>
-                <div className="px-4 py-3 bg-gray-100 rounded-lg text-gray-500 flex items-center justify-between">
+                <div className="px-4 py-3 bg-muted rounded-lg text-muted-foreground flex items-center justify-between">
                   <span>{customer.telephone}</span>
-                  <span className="text-xs text-gray-400">Non modifiable</span>
+                  <span className="text-xs text-muted-foreground/70">Non modifiable</span>
                 </div>
               </div>
 
               {/* Email */}
               <div>
-                <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
+                <label className="flex items-center gap-2 text-sm font-medium text-foreground mb-2">
                   <Mail className="h-4 w-4" />
                   Email
                 </label>
@@ -142,11 +142,11 @@ const StorefrontProfile = () => {
                     type="email"
                     value={formData.email}
                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                    className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:bg-white transition-all"
+                    className="w-full px-4 py-3 bg-muted border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-ring focus:bg-card text-foreground transition-all"
                     placeholder="votre@email.com"
                   />
                 ) : (
-                  <div className="px-4 py-3 bg-gray-50 rounded-lg text-gray-900">
+                  <div className="px-4 py-3 bg-muted rounded-lg text-foreground">
                     {customer.email || 'Non renseigné'}
                   </div>
                 )}
@@ -159,7 +159,7 @@ const StorefrontProfile = () => {
                 <button
                   onClick={handleSave}
                   disabled={isLoading}
-                  className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-primary text-white rounded-lg font-medium hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-primary text-primary-foreground rounded-lg font-medium hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                 >
                   <Save className="h-4 w-4" />
                   Enregistrer
@@ -167,7 +167,7 @@ const StorefrontProfile = () => {
                 <button
                   onClick={handleCancel}
                   disabled={isLoading}
-                  className="px-4 py-3 bg-gray-100 text-gray-700 rounded-lg font-medium hover:bg-gray-200 disabled:opacity-50 transition-colors"
+                  className="px-4 py-3 bg-muted text-foreground rounded-lg font-medium hover:bg-muted/80 disabled:opacity-50 transition-colors"
                 >
                   <X className="h-4 w-4" />
                 </button>
@@ -178,7 +178,7 @@ const StorefrontProfile = () => {
           {/* Logout Button */}
           <button
             onClick={handleLogout}
-            className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-red-50 text-red-600 rounded-xl font-medium hover:bg-red-100 transition-colors border border-red-100"
+            className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-destructive/10 text-destructive rounded-xl font-medium hover:bg-destructive/20 transition-colors border border-destructive/20"
           >
             <LogOut className="h-5 w-5" />
             Se déconnecter

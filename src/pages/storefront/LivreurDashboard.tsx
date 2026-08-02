@@ -74,10 +74,10 @@ const LivreurDashboard = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="bg-white border-b px-4 py-3 flex items-center justify-between sticky top-0 z-10">
+    <div className="min-h-screen bg-background">
+      <div className="bg-card border-b border-border px-4 py-3 flex items-center justify-between sticky top-0 z-10">
         <div>
-          <p className="font-bold">{livreur?.nom}</p>
+          <p className="font-bold text-foreground">{livreur?.nom}</p>
           <p className="text-xs text-muted-foreground">
             {orders.length} livraison(s) en cours
           </p>
@@ -90,7 +90,7 @@ const LivreurDashboard = () => {
       <div className="p-4 space-y-4">
         {orders.length === 0 ? (
           <div className="text-center py-12">
-            <Package className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+            <Package className="h-12 w-12 mx-auto text-muted-foreground/50 mb-4" />
             <p className="text-muted-foreground">Aucune livraison en cours</p>
           </div>
         ) : (

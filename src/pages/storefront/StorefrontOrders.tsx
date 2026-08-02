@@ -77,11 +77,11 @@ const StorefrontOrders = () => {
 
   return (
     <StorefrontLayout>
-      <div className="min-h-screen bg-gray-50 pb-20">
+      <div className="min-h-screen bg-background pb-20">
         {/* Header */}
-        <div className="bg-white border-b border-gray-200 px-4 py-4">
-          <h1 className="text-xl font-bold">Mes commandes</h1>
-          <p className="text-sm text-gray-600 mt-1">
+        <div className="bg-card border-b border-border px-4 py-4">
+          <h1 className="text-xl font-bold text-foreground">Mes commandes</h1>
+          <p className="text-sm text-muted-foreground mt-1">
             {orders.length} {orders.length > 1 ? 'commandes' : 'commande'}
           </p>
         </div>
@@ -90,9 +90,9 @@ const StorefrontOrders = () => {
         <div className="p-4 space-y-3">
           {orders.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-12 px-4">
-              <Package className="h-16 w-16 text-gray-300 mb-4" />
-              <h3 className="font-semibold text-lg mb-2">Aucune commande</h3>
-              <p className="text-sm text-gray-600 text-center mb-4">
+              <Package className="h-16 w-16 text-muted-foreground/30 mb-4" />
+              <h3 className="font-semibold text-lg text-foreground mb-2">Aucune commande</h3>
+              <p className="text-sm text-muted-foreground text-center mb-4">
                 Vous n'avez pas encore passé de commande
               </p>
               <Button onClick={() => navigate(`/b/${slug}`)}>
@@ -107,18 +107,18 @@ const StorefrontOrders = () => {
               return (
                 <div
                   key={order.id}
-                  className="bg-white rounded-lg border border-border shadow-card overflow-hidden"
+                  className="bg-card rounded-lg border border-border shadow-card overflow-hidden"
                 >
                   {/* En-tête cliquable */}
                   <div
                     onClick={() => navigate(`/b/${slug}/orders/${order.id}`)}
-                    className="p-4 active:bg-gray-50 transition-colors cursor-pointer"
+                    className="p-4 active:bg-muted/50 transition-colors cursor-pointer"
                   >
                     <div className="flex items-start justify-between mb-2">
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-1">
                           <Package className="h-4 w-4 text-muted-foreground shrink-0" />
-                          <p className="font-semibold text-sm truncate">
+                          <p className="font-semibold text-sm text-foreground truncate">
                             Commande {order.numero}
                           </p>
                         </div>
@@ -133,7 +133,7 @@ const StorefrontOrders = () => {
                       <span className={`px-2 py-1 rounded-full text-xs font-medium ${badge.className}`}>
                         {badge.label}
                       </span>
-                      <span className="font-bold text-sm">
+                      <span className="font-bold text-sm text-foreground">
                         {formatPrix(order.total)}
                       </span>
                     </div>
@@ -141,10 +141,10 @@ const StorefrontOrders = () => {
 
                   {/* Bouton Suivre ma livraison - visible uniquement pour EN_LIVRAISON */}
                   {isEnLivraison && (
-                    <div className="border-t border-border bg-purple-50 p-3">
+                    <div className="border-t border-border bg-primary/5 p-3">
                       <Button
                         onClick={() => navigate(`/b/${slug}/orders/${order.id}`)}
-                        className="w-full bg-purple-600 hover:bg-purple-700 text-white"
+                        className="w-full"
                         size="sm"
                       >
                         <MapPin className="h-4 w-4 mr-2" />

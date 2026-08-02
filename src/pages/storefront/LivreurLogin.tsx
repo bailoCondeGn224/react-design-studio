@@ -30,13 +30,13 @@ const LivreurLogin = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
+    <div className="min-h-screen flex items-center justify-center bg-background px-4">
       <div className="w-full max-w-sm">
         <div className="text-center mb-8">
           <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-primary/10 flex items-center justify-center">
             <Truck className="w-8 h-8 text-primary" />
           </div>
-          <h1 className="text-2xl font-bold">Espace Livreur</h1>
+          <h1 className="text-2xl font-bold text-foreground">Espace Livreur</h1>
           <p className="text-muted-foreground mt-2">
             Connectez-vous pour voir vos livraisons
           </p>
