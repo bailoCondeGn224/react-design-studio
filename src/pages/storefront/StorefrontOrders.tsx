@@ -6,7 +6,7 @@ import { useCustomerAuth } from '@/contexts/CustomerAuthContext';
 import { useCustomerNotifications } from '@/hooks/useCustomerNotifications';
 import { StorefrontLayout } from '@/components/storefront/StorefrontLayout';
 import { apiClient } from '@/lib/api-client';
-import { Loader2, Package, ChevronRight, MapPin, Truck } from 'lucide-react';
+import { Loader2, Package, ChevronRight, MapPin, Truck, ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 const formatPrix = (prix: number) => {
@@ -79,11 +79,21 @@ const StorefrontOrders = () => {
     <StorefrontLayout>
       <div className="min-h-screen bg-background pb-20">
         {/* Header */}
-        <div className="bg-card border-b border-border px-4 py-4">
-          <h1 className="text-xl font-bold text-foreground">Mes commandes</h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            {orders.length} {orders.length > 1 ? 'commandes' : 'commande'}
-          </p>
+        <div className="bg-card border-b border-border px-4 py-3">
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => navigate(`/b/${slug}`)}
+              className="p-2 hover:bg-muted rounded-full transition-colors"
+            >
+              <ArrowLeft className="h-5 w-5 text-foreground" />
+            </button>
+            <div className="flex-1">
+              <h1 className="text-lg font-bold text-foreground">Mes commandes</h1>
+              <p className="text-xs text-muted-foreground">
+                {orders.length} {orders.length > 1 ? 'commandes' : 'commande'}
+              </p>
+            </div>
+          </div>
         </div>
 
         {/* Orders List */}
