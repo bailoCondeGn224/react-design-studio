@@ -57,12 +57,12 @@ export const ProductDetailDialog = ({
     <>
       {/* Backdrop */}
       <div
-        className="fixed inset-0 bg-black/60 z-50 animate-in fade-in duration-300"
+        className="fixed inset-0 bg-black/60 z-[60] animate-in fade-in duration-300"
         onClick={onClose}
       />
 
-      {/* Dialog - Bottom sheet mobile-first */}
-      <div className="fixed inset-x-0 bottom-0 z-50 bg-white rounded-t-2xl shadow-2xl max-h-[85vh] flex flex-col animate-in slide-in-from-bottom duration-300 ease-out">
+      {/* Dialog - Bottom sheet mobile-first (z-[60] : au-dessus de la BottomNav z-50) */}
+      <div className="fixed inset-x-0 bottom-0 z-[60] bg-white rounded-t-2xl shadow-2xl max-h-[85vh] flex flex-col animate-in slide-in-from-bottom duration-300 ease-out">
         {/* Drag handle indicator */}
         <div className="flex justify-center pt-3 pb-2">
           <div className="w-12 h-1 bg-gray-300 rounded-full" />
@@ -199,7 +199,7 @@ export const ProductDetailDialog = ({
 
         {/* Fixed Bottom CTA - Always visible, no scroll needed */}
         {!isOutOfStock && (
-          <div className="border-t border-gray-200 bg-white p-4 shadow-[0_-2px_10px_rgba(0,0,0,0.05)]">
+          <div className="border-t border-gray-200 bg-white p-4 pb-[calc(1rem+env(safe-area-inset-bottom))] shadow-[0_-2px_10px_rgba(0,0,0,0.05)]">
             <div className="flex items-stretch gap-2">
               {/* Compact quantity selector */}
               <div className="flex items-center bg-gray-100 rounded-lg overflow-hidden">
