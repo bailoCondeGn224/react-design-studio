@@ -144,7 +144,7 @@ const Ventes = () => {
         nomComplet: organization.nom,
         nomCourt: organization.nomCourt || organization.nom,
         slogan: organization.slogan || '',
-        logo: organization.logo ? `${import.meta.env.VITE_API_URL}/organizations/logo/${organization.id}` : undefined,
+        logo: organization.logo ? `${import.meta.env.VITE_API_BASE_URL}/organizations/logo/${organization.id}` : undefined,
         email: organization.email || '',
         telephone: organization.telephone || '',
         adresse: organization.adresse || '',

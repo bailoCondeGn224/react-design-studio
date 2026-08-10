@@ -11,7 +11,7 @@ import {
 } from '@/types';
 
 // URL de base de l'API (pour les endpoints publics)
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000';
 
 // Obtenir toutes les organizations (SUPER_ADMIN only)
 export const getAllOrganizations = async (

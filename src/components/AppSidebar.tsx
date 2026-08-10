@@ -182,7 +182,7 @@ const SidebarContent = ({ collapsed, setCollapsed, onItemClick }: { collapsed: b
         {!isSuperAdmin && organization?.logo ? (
           <div className="w-9 h-9 rounded-lg overflow-hidden flex items-center justify-center flex-shrink-0 bg-sidebar-accent/30">
             <img
-              src={`${import.meta.env.VITE_API_URL}/organizations/logo/${organization.id}`}
+              src={`${import.meta.env.VITE_API_BASE_URL}/organizations/logo/${organization.id}`}
               alt="Logo"
               className="w-full h-full object-contain"
             />

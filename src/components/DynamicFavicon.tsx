@@ -9,7 +9,7 @@ const DynamicFavicon = () => {
     // Si on a une organization et un logo
     if (organization?.logo && organization?.id) {
       // Récupérer l'URL du logo depuis organization
-      const logoUrl = `${import.meta.env.VITE_API_URL}/organizations/logo/${organization.id}`;
+      const logoUrl = `${import.meta.env.VITE_API_BASE_URL}/organizations/logo/${organization.id}`;
 
       // Chercher l'élément link existant pour le favicon
       let link = document.querySelector("link[rel*='icon']") as HTMLLinkElement;
