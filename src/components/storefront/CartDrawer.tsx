@@ -10,6 +10,9 @@ import { toast } from 'sonner';
 import { useCartContext } from '@/contexts/CartContext';
 import { useCustomerAuth } from '@/contexts/CustomerAuthContext';
 import { CustomerAuthModal } from './CustomerAuthModal';
+import { GpsAccuracyBadge } from './GpsAccuracyBadge';
+import { PositionPicker } from './PositionPicker';
+import { useAccuratePosition } from '@/hooks/useAccuratePosition';
 import { Button } from '@/components/ui/button';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
@@ -126,53 +129,17 @@ export const CartDrawer = ({
   });
   const [savedOrderData, setSavedOrderData] = useState<OrderData | null>(null);
 
-  // GPS state
-  const [gpsCoords, setGpsCoords] = useState<{ latitude: number; longitude: number } | null>(null);
-  const [isCapturingGps, setIsCapturingGps] = useState(false);
-  const [gpsError, setGpsError] = useState<string | null>(null);
+  // GPS: capture affinée sur plusieurs relevés (voir useAccuratePosition)
+  const {
+    position: gpsCoords,
+    status: gpsStatus,
+    error: gpsError,
+    capture: captureGpsLocation,
+    setManualPosition,
+    reset: resetGps,
+  } = useAccuratePosition();
 
-  // Capture GPS coordinates
-  const captureGpsLocation = () => {
-    if (!navigator.geolocation) {
-      setGpsError('Géolocalisation non supportée par votre navigateur');
-      return;
-    }
-
-    setIsCapturingGps(true);
-    setGpsError(null);
-
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        setGpsCoords({
-          latitude: position.coords.latitude,
-          longitude: position.coords.longitude
-        });
-        setIsCapturingGps(false);
-        toast.success('Position GPS capturée!');
-      },
-      (error) => {
-        setIsCapturingGps(false);
-        switch (error.code) {
-          case error.PERMISSION_DENIED:
-            setGpsError('Accès à la localisation refusé. Activez la géolocalisation.');
-            break;
-          case error.POSITION_UNAVAILABLE:
-            setGpsError('Position indisponible. Vérifiez votre GPS.');
-            break;
-          case error.TIMEOUT:
-            setGpsError('Délai dépassé. Réessayez.');
-            break;
-          default:
-            setGpsError('Erreur de géolocalisation.');
-        }
-      },
-      {
-        enableHighAccuracy: true,
-        timeout: 15000,
-        maximumAge: 0
-      }
-    );
-  };
+  const isCapturingGps = gpsStatus === 'capturing';
 
   // Update formData when customer changes
   useEffect(() => {
@@ -202,8 +169,7 @@ export const CartDrawer = ({
         modeLivraison: ModeLivraison.LIVRAISON
       });
       setSavedOrderData(null);
-      setGpsCoords(null);
-      setGpsError(null);
+      resetGps();
     }, 300);
   };
 
@@ -252,6 +218,12 @@ export const CartDrawer = ({
           : undefined,
         longitudeLivraison: formData.modeLivraison === ModeLivraison.LIVRAISON && gpsCoords
           ? gpsCoords.longitude
+          : undefined,
+        // Uniquement pour un point mesuré: un repère placé à la main n'a pas
+        // d'incertitude de mesure à déclarer.
+        precisionLivraison: formData.modeLivraison === ModeLivraison.LIVRAISON
+          && gpsCoords?.source === 'gps' && gpsCoords.accuracy != null
+          ? Math.round(gpsCoords.accuracy)
           : undefined,
         notes: formData.notes.trim() || undefined,
         articles: items.map(item => ({
@@ -502,9 +474,32 @@ export const CartDrawer = ({
                                 </p>
 
                                 {gpsCoords ? (
-                                  <div className="flex items-center gap-2 bg-green-100 text-green-800 px-3 py-2 rounded-lg">
-                                    <Navigation className="w-4 h-4" />
-                                    <span className="text-xs font-medium">Position capturée avec succès!</span>
+                                  <div className="space-y-2">
+                                    <GpsAccuracyBadge position={gpsCoords} isRefining={isCapturingGps} />
+
+                                    <PositionPicker
+                                      position={gpsCoords}
+                                      onChange={setManualPosition}
+                                    />
+
+                                    <button
+                                      type="button"
+                                      onClick={captureGpsLocation}
+                                      disabled={isCapturingGps}
+                                      className="flex items-center gap-2 text-xs text-blue-700 underline disabled:opacity-50"
+                                    >
+                                      {isCapturingGps ? (
+                                        <>
+                                          <Loader2 className="w-3 h-3 animate-spin" />
+                                          <span>Affinage en cours…</span>
+                                        </>
+                                      ) : (
+                                        <>
+                                          <Navigation className="w-3 h-3" />
+                                          <span>Relancer la localisation</span>
+                                        </>
+                                      )}
+                                    </button>
                                   </div>
                                 ) : (
                                   <button
@@ -516,7 +511,7 @@ export const CartDrawer = ({
                                     {isCapturingGps ? (
                                       <>
                                         <Loader2 className="w-4 h-4 animate-spin" />
-                                        <span>Localisation...</span>
+                                        <span>Localisation…</span>
                                       </>
                                     ) : (
                                       <>

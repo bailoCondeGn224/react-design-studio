@@ -3,10 +3,20 @@ import { apiClient } from '@/lib/api-client';
 import { Livreur, CreateLivreurDto, UpdateLivreurDto } from '@/types/livreur';
 import { toast } from 'sonner';
 
-export const useLivreurs = () => {
+interface UseLivreursOptions {
+  /**
+   * Intervalle de rafraîchissement en ms. À n'activer que lorsque la carte de
+   * suivi est visible : sans ça les positions restent figées jusqu'au rechargement
+   * de la page.
+   */
+  refetchInterval?: number | false;
+}
+
+export const useLivreurs = (options?: UseLivreursOptions) => {
   return useQuery<Livreur[]>({
     queryKey: ['livreurs'],
     queryFn: () => apiClient.get('/livreurs').then((res) => res.data),
+    refetchInterval: options?.refetchInterval ?? false,
   });
 };
 

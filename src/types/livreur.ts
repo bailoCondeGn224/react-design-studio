@@ -40,12 +40,16 @@ export interface LivreurAuthResponse {
 }
 
 export interface TrackingInfo {
-  latitude: number;
-  longitude: number;
+  // null tant que le livreur n'a pas partagé sa position (GPS coupé, app fermée)
+  latitude: number | null;
+  longitude: number | null;
+  lastPositionAt: string | null;
   livreurNom: string;
   livreurTelephone: string;
   // Destination coordinates (optional)
   destinationLatitude?: number;
   destinationLongitude?: number;
+  /** Rayon d'incertitude en mètres du point de livraison. */
+  destinationPrecision?: number;
   destinationAdresse?: string;
 }

@@ -15,7 +15,7 @@ import { useOnlineOrders, useConfirmOrder, useMarkOrderReady, useMarkOrderDelive
 import { useLivreurs } from "@/hooks/useLivreurs";
 import { OnlineOrder, OnlineOrderStatut, ModeLivraison } from "@/types";
 import { Search, Package, Clock, CheckCircle, Truck, XCircle, Loader2, Map, ChevronDown, ChevronUp } from "lucide-react";
-import { LivreursTrackingMap } from "@/components/LivreursTrackingMap";
+import { SuiviLivraisons } from "@/components/SuiviLivraisons";
 import { useDebounce } from "@/hooks/useDebounce";
 
 const formatPrix = (prix: number) => {
@@ -68,7 +68,10 @@ const OnlineOrders = () => {
   });
 
   const { data: stats } = useOnlineOrderStats();
-  const { data: livreurs = [] } = useLivreurs();
+  // On ne rafraîchit les positions que si la carte est ouverte
+  const { data: livreurs = [] } = useLivreurs({
+    refetchInterval: showTrackingMap ? 15000 : false,
+  });
 
   const confirmOrder = useConfirmOrder();
   const markReady = useMarkOrderReady();
@@ -221,7 +224,7 @@ const OnlineOrders = () => {
 
               {showTrackingMap && (
                 <div className="mt-4">
-                  <LivreursTrackingMap
+                  <SuiviLivraisons
                     livreurs={livreurs}
                     ordersEnLivraison={orders.filter(o => o.statut === OnlineOrderStatut.EN_LIVRAISON)}
                   />

@@ -1,11 +1,36 @@
-import { defineConfig } from "vite";
+import { defineConfig, loadEnv } from "vite";
 import react from "@vitejs/plugin-react-swc";
 import path from "path";
 import { componentTagger } from "lovable-tagger";
 import { VitePWA } from 'vite-plugin-pwa';
 
+const DEFAULT_TILE_URL = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
+const DEFAULT_TILE_PATTERN =
+  /^https:\/\/([a-z0-9-]+\.)*tile\.openstreetmap\.org\/.*/i;
+
+/**
+ * Motif d'URL des tuiles, dérivé du fournisseur configuré.
+ *
+ * Le service worker est généré au build: le motif doit donc suivre
+ * VITE_TILE_URL, sinon un changement de fournisseur désactiverait
+ * silencieusement le cache et la carte redeviendrait grise hors réseau.
+ */
+const buildTilePattern = (tileUrl: string): RegExp => {
+  try {
+    const host = new URL(tileUrl.replace('{s}.', '')).hostname;
+    const escaped = host.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    return new RegExp(`^https://([a-z0-9-]+\\.)*${escaped}/.*`, 'i');
+  } catch {
+    return DEFAULT_TILE_PATTERN;
+  }
+};
+
 // https://vitejs.dev/config/
-export default defineConfig(({ mode }) => ({
+export default defineConfig(({ mode }) => {
+  const env = loadEnv(mode, process.cwd(), '');
+  const TILE_HOST_PATTERN = buildTilePattern(env.VITE_TILE_URL || DEFAULT_TILE_URL);
+
+  return ({
   server: {
     host: "::",
     port: 8080,
@@ -97,6 +122,39 @@ export default defineConfig(({ mode }) => ({
               },
               networkTimeoutSeconds: 10
             }
+          },
+          {
+            // Tuiles de carte: indispensables au suivi de livraison, et
+            // rejouées en boucle sur les mêmes quartiers. Sans ce cache, la
+            // carte est grise dès que le réseau faiblit.
+            // Élargir ce motif si VITE_TILE_URL pointe ailleurs qu'OSM.
+            urlPattern: TILE_HOST_PATTERN,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'map-tiles-cache',
+              expiration: {
+                // ~800 tuiles: de quoi couvrir largement une ville comme Conakry
+                maxEntries: 800,
+                maxAgeSeconds: 60 * 60 * 24 * 30 // 30 jours
+              },
+              cacheableResponse: {
+                statuses: [0, 200]
+              }
+            }
+          },
+          {
+            // Itinéraires: un même trajet est recalculé à chaque relevé GPS
+            // quantifié. Le réseau reste prioritaire, le cache sert de filet.
+            urlPattern: /^https:\/\/router\.project-osrm\.org\/.*/i,
+            handler: 'NetworkFirst',
+            options: {
+              cacheName: 'routing-cache',
+              expiration: {
+                maxEntries: 50,
+                maxAgeSeconds: 60 * 30 // 30 minutes
+              },
+              networkTimeoutSeconds: 8
+            }
           }
         ],
         cleanupOutdatedCaches: true,
@@ -116,4 +174,5 @@ export default defineConfig(({ mode }) => ({
     },
     dedupe: ["react", "react-dom", "react/jsx-runtime", "react/jsx-dev-runtime", "@tanstack/react-query", "@tanstack/query-core"],
   },
-}));
+  });
+});

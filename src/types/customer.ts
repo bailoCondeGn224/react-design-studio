@@ -70,6 +70,8 @@ export interface OnlineOrder {
   telephoneLivraison?: string;
   latitudeLivraison?: number;
   longitudeLivraison?: number;
+  /** Rayon d'incertitude en mètres du point de livraison. */
+  precisionLivraison?: number;
   fraisLivraison: number;
   sousTotal: number;
   total: number;

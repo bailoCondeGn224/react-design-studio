@@ -1,13 +1,17 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useLivreurAuth } from '@/contexts/LivreurAuthContext';
+import { useLivreurOrders, useMarkDelivered } from '@/hooks/useLivreurOrders';
 import {
-  useLivreurOrders,
-  useMarkDelivered,
-  useUpdateLivreurPosition,
-} from '@/hooks/useLivreurOrders';
+  GeoStatus,
+  useLivreurPositionTracking,
+} from '@/hooks/useLivreurPositionTracking';
+import { LivreurRouteMap } from '@/components/storefront/LivreurRouteMap';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import { buildDirectionsUrl } from '@/lib/geo';
+import { formatPositionAge } from '@/lib/position-freshness';
+import { OnlineOrder } from '@/types';
 import {
   Loader2,
   MapPin,
@@ -16,11 +20,60 @@ import {
   Navigation,
   CheckCircle,
   LogOut,
+  AlertTriangle,
 } from 'lucide-react';
 
 const formatPrix = (prix: number) => {
   return (
     new Intl.NumberFormat('fr-GN', { style: 'decimal' }).format(prix) + ' GNF'
+  );
+};
+
+const GpsBanner = ({
+  status,
+  lastSentAt,
+}: {
+  status: GeoStatus;
+  lastSentAt: Date | null;
+}) => {
+  if (status === 'active') {
+    const age = lastSentAt ? formatPositionAge(lastSentAt.toISOString()) : null;
+    return (
+      <div className="bg-green-50 border-b border-green-200 px-4 py-2 flex items-center gap-2">
+        <span className="relative flex h-2 w-2">
+          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-500 opacity-75" />
+          <span className="relative inline-flex rounded-full h-2 w-2 bg-green-600" />
+        </span>
+        <p className="text-xs text-green-800">
+          Position partagée{age ? ` · envoyée ${age}` : ''}
+        </p>
+      </div>
+    );
+  }
+
+  if (status === 'starting') {
+    return (
+      <div className="bg-muted border-b border-border px-4 py-2 flex items-center gap-2">
+        <Loader2 className="h-3.5 w-3.5 animate-spin text-muted-foreground" />
+        <p className="text-xs text-muted-foreground">Recherche du signal GPS…</p>
+      </div>
+    );
+  }
+
+  const messages: Record<Exclude<GeoStatus, 'active' | 'starting'>, string> = {
+    denied:
+      "Localisation refusée. Le client ne peut pas suivre sa livraison. Autorisez la localisation dans les réglages de votre navigateur.",
+    unavailable:
+      "Position GPS indisponible. Vérifiez que la localisation de votre téléphone est activée.",
+    unsupported:
+      "Ce navigateur ne gère pas la localisation. Le suivi en direct est désactivé.",
+  };
+
+  return (
+    <div className="bg-destructive/10 border-b border-destructive/30 px-4 py-3 flex items-start gap-2">
+      <AlertTriangle className="h-4 w-4 text-destructive shrink-0 mt-0.5" />
+      <p className="text-xs text-destructive font-medium">{messages[status]}</p>
+    </div>
   );
 };
 
@@ -30,7 +83,22 @@ const LivreurDashboard = () => {
   const { livreur, isAuthenticated, logout } = useLivreurAuth();
   const { data: orders = [], isLoading } = useLivreurOrders();
   const markDelivered = useMarkDelivered();
-  const updatePosition = useUpdateLivreurPosition();
+  const {
+    status: gpsStatus,
+    lastSentAt,
+    position,
+  } = useLivreurPositionTracking(isAuthenticated);
+
+  const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
+
+  // Par défaut on trace vers la première course, et on ne laisse jamais
+  // la sélection pointer sur une commande qui vient d'être livrée.
+  useEffect(() => {
+    const stillExists = orders.some((o) => o.id === selectedOrderId);
+    if (!stillExists) {
+      setSelectedOrderId(orders[0]?.id ?? null);
+    }
+  }, [orders, selectedOrderId]);
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -38,26 +106,13 @@ const LivreurDashboard = () => {
     }
   }, [isAuthenticated, navigate, slug]);
 
-  useEffect(() => {
-    if (!navigator.geolocation) return;
-
-    const watchId = navigator.geolocation.watchPosition(
-      (position) => {
-        updatePosition.mutate({
-          latitude: position.coords.latitude,
-          longitude: position.coords.longitude,
-        });
-      },
-      () => {},
-      { enableHighAccuracy: true, maximumAge: 30000 },
-    );
-
-    return () => navigator.geolocation.clearWatch(watchId);
-  }, []);
-
-  const handleNavigate = (address: string) => {
-    const url = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(address)}`;
-    window.open(url, '_blank');
+  const handleNavigate = (order: OnlineOrder) => {
+    const url = buildDirectionsUrl({
+      latitude: order.latitudeLivraison,
+      longitude: order.longitudeLivraison,
+      adresse: order.adresseLivraison,
+    });
+    if (url) window.open(url, '_blank');
   };
 
   const handleLogout = () => {
@@ -87,18 +142,44 @@ const LivreurDashboard = () => {
         </Button>
       </div>
 
+      <GpsBanner status={gpsStatus} lastSentAt={lastSentAt} />
+
       <div className="p-4 space-y-4">
+        {orders.length > 0 && (
+          <LivreurRouteMap
+            orders={orders}
+            selectedOrderId={selectedOrderId}
+            onSelectOrder={setSelectedOrderId}
+            position={position}
+          />
+        )}
+
         {orders.length === 0 ? (
           <div className="text-center py-12">
             <Package className="h-12 w-12 mx-auto text-muted-foreground/50 mb-4" />
             <p className="text-muted-foreground">Aucune livraison en cours</p>
           </div>
         ) : (
-          orders.map((order) => (
-            <Card key={order.id}>
+          orders.map((order, index) => (
+            <Card
+              key={order.id}
+              onClick={() => setSelectedOrderId(order.id)}
+              className={
+                order.id === selectedOrderId && orders.length > 1
+                  ? 'border-primary ring-1 ring-primary'
+                  : undefined
+              }
+            >
               <CardContent className="p-4 space-y-3">
                 <div className="flex items-center justify-between">
-                  <p className="font-bold">{order.numero}</p>
+                  <div className="flex items-center gap-2">
+                    {orders.length > 1 && (
+                      <span className="w-6 h-6 rounded-full bg-primary text-primary-foreground text-xs font-bold flex items-center justify-center shrink-0">
+                        {index + 1}
+                      </span>
+                    )}
+                    <p className="font-bold">{order.numero}</p>
+                  </div>
                   <p className="text-lg font-bold text-primary">
                     {formatPrix(order.total)}
                   </p>
@@ -120,7 +201,15 @@ const LivreurDashboard = () => {
                   </div>
                   <div className="flex items-start gap-2">
                     <MapPin className="h-4 w-4 text-muted-foreground mt-0.5" />
-                    <span>{order.adresseLivraison}</span>
+                    <div>
+                      <span>{order.adresseLivraison || 'Adresse non précisée'}</span>
+                      {order.latitudeLivraison != null &&
+                        order.longitudeLivraison != null && (
+                          <p className="text-xs text-green-700">
+                            Point GPS fourni par le client
+                          </p>
+                        )}
+                    </div>
                   </div>
                 </div>
 
@@ -128,7 +217,14 @@ const LivreurDashboard = () => {
                   <Button
                     variant="outline"
                     className="h-12"
-                    onClick={() => handleNavigate(order.adresseLivraison || '')}
+                    disabled={
+                      !buildDirectionsUrl({
+                        latitude: order.latitudeLivraison,
+                        longitude: order.longitudeLivraison,
+                        adresse: order.adresseLivraison,
+                      })
+                    }
+                    onClick={() => handleNavigate(order)}
                   >
                     <Navigation className="h-4 w-4 mr-2" />
                     Naviguer
