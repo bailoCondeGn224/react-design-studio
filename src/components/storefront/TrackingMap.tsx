@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { TrackingInfo } from '@/types/livreur';
-import { Phone, Truck, AlertCircle, Clock, BellRing } from 'lucide-react';
+import { Phone, Truck, AlertCircle, Clock, BellRing, Crosshair } from 'lucide-react';
 import { formatDistance, formatDuration } from '@/lib/geo';
 import { useRoute } from '@/hooks/useRoute';
 import {
@@ -15,6 +15,13 @@ import {
   TileHealth,
 } from '@/lib/map-icons';
 import { MapTileWarning } from '@/components/MapTileWarning';
+import {
+  animateMarkerTo,
+  applyBearing,
+  computeBearing,
+  setIconPreservingBearing,
+} from '@/lib/marker-animation';
+import { createMapFollower, MapFollower } from '@/lib/map-follow';
 import {
   FRESHNESS_COLORS,
   FRESHNESS_LABELS,
@@ -34,11 +41,12 @@ export const TrackingMap = ({ tracking }: TrackingMapProps) => {
   const uncertaintyCircleRef = useRef<L.Circle | null>(null);
   const boutiqueMarkerRef = useRef<L.Marker | null>(null);
   const routeLineRef = useRef<L.Polyline | null>(null);
+  const followerRef = useRef<MapFollower | null>(null);
+  const [isFollowing, setIsFollowing] = useState(true);
   const hasFittedRef = useRef(false);
 
   const [tileHealth, setTileHealth] = useState<TileHealth>('loading');
 
-  // Fait vieillir l'affichage même si le serveur ne renvoie rien de neuf
   const [now, setNow] = useState(() => Date.now());
   useEffect(() => {
     const id = setInterval(() => setNow(Date.now()), 30000);
@@ -59,7 +67,6 @@ export const TrackingMap = ({ tracking }: TrackingMapProps) => {
       : null,
   );
 
-  // Création de la carte dès qu'on a une position
   useEffect(() => {
     if (!mapRef.current || mapInstanceRef.current || !hasPosition) return;
 
@@ -69,7 +76,12 @@ export const TrackingMap = ({ tracking }: TrackingMapProps) => {
     );
     addTileLayer(mapInstanceRef.current, setTileHealth);
 
+    followerRef.current = createMapFollower(mapInstanceRef.current);
+    followerRef.current.onChange(setIsFollowing);
+
     return () => {
+      followerRef.current?.destroy();
+      followerRef.current = null;
       mapInstanceRef.current?.remove();
       mapInstanceRef.current = null;
       livreurMarkerRef.current = null;
@@ -77,12 +89,9 @@ export const TrackingMap = ({ tracking }: TrackingMapProps) => {
       routeLineRef.current = null;
       hasFittedRef.current = false;
     };
-    // La carte n'est créée qu'une fois, avec la première position reçue.
-    // Les positions suivantes sont appliquées au marqueur par l'effet ci-dessous.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [hasPosition]);
 
-  // Marqueur livreur: position + couleur selon la fraîcheur
   useEffect(() => {
     const map = mapInstanceRef.current;
     if (!map || !hasPosition) return;
@@ -91,8 +100,13 @@ export const TrackingMap = ({ tracking }: TrackingMapProps) => {
     const icon = buildLivreurIcon(freshness, { size: 40 });
 
     if (livreurMarkerRef.current) {
-      livreurMarkerRef.current.setLatLng(position);
-      livreurMarkerRef.current.setIcon(icon);
+      const previous = livreurMarkerRef.current.getLatLng();
+      const bearing = computeBearing([previous.lat, previous.lng], position);
+
+      setIconPreservingBearing(livreurMarkerRef.current, icon);
+      animateMarkerTo(livreurMarkerRef.current, position);
+
+      if (bearing !== null) applyBearing(livreurMarkerRef.current, bearing);
     } else {
       livreurMarkerRef.current = L.marker(position, { icon }).addTo(map);
     }
@@ -101,9 +115,7 @@ export const TrackingMap = ({ tracking }: TrackingMapProps) => {
       `<b>${tracking.livreurNom}</b><br/>${FRESHNESS_LABELS[freshness]}${age ? ` · ${age}` : ''}`,
     );
 
-    if (!hasDestination) {
-      map.panTo(position);
-    }
+    followerRef.current?.followTo(position);
   }, [
     hasPosition,
     hasDestination,
@@ -114,8 +126,6 @@ export const TrackingMap = ({ tracking }: TrackingMapProps) => {
     age,
   ]);
 
-  // Marqueur destination.
-  // Effet séparé: la destination peut arriver après le premier rendu.
   useEffect(() => {
     const map = mapInstanceRef.current;
     if (!map || !hasDestination) return;
@@ -137,7 +147,6 @@ export const TrackingMap = ({ tracking }: TrackingMapProps) => {
         );
     }
 
-    // Cercle d'incertitude si le point n'est pas fiable au mètre près
     uncertaintyCircleRef.current?.remove();
     uncertaintyCircleRef.current = null;
 
@@ -158,7 +167,6 @@ export const TrackingMap = ({ tracking }: TrackingMapProps) => {
     tracking.destinationAdresse,
   ]);
 
-  // Marqueur boutique: situe le point de départ de la course
   useEffect(() => {
     const map = mapInstanceRef.current;
     if (!map) return;
@@ -186,7 +194,6 @@ export const TrackingMap = ({ tracking }: TrackingMapProps) => {
     }
   }, [tracking.boutiqueLatitude, tracking.boutiqueLongitude]);
 
-  // Tracé de l'itinéraire
   useEffect(() => {
     const map = mapInstanceRef.current;
     if (!map || !route) return;
@@ -205,9 +212,11 @@ export const TrackingMap = ({ tracking }: TrackingMapProps) => {
       }).addTo(map);
     }
 
-    // Un seul recadrage: après, le client doit pouvoir zoomer librement
     if (!hasFittedRef.current) {
-      map.fitBounds(routeLineRef.current.getBounds(), { padding: [50, 50] });
+      const bounds = routeLineRef.current.getBounds();
+      followerRef.current?.runProgrammatic(() =>
+        map.fitBounds(bounds, { padding: [50, 50] }),
+      );
       hasFittedRef.current = true;
     }
   }, [route, isApproximate]);
@@ -293,6 +302,22 @@ export const TrackingMap = ({ tracking }: TrackingMapProps) => {
               ref={mapRef}
               className="h-72 rounded-lg overflow-hidden border shadow-inner"
             />
+
+            {!isFollowing && hasPosition && (
+              <button
+                type="button"
+                onClick={() =>
+                  followerRef.current?.recenterOn([
+                    tracking.latitude!,
+                    tracking.longitude!,
+                  ])
+                }
+                aria-label="Recentrer sur le livreur"
+                className="absolute bottom-3 right-3 z-[500] rounded-full bg-white p-2.5 shadow-lg border border-gray-200 active:scale-95 transition-transform"
+              >
+                <Crosshair className="h-5 w-5 text-blue-600" />
+              </button>
+            )}
           </div>
 
           {/* Légende */}

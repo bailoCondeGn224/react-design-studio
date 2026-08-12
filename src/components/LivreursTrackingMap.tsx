@@ -18,6 +18,12 @@ import {
 } from '@/lib/map-icons';
 import { MapTileWarning } from '@/components/MapTileWarning';
 import {
+  animateMarkerTo,
+  applyBearing,
+  computeBearing,
+  setIconPreservingBearing,
+} from '@/lib/marker-animation';
+import {
   FRESHNESS_COLORS,
   FRESHNESS_LABELS,
   PositionFreshness,
@@ -28,10 +34,8 @@ import {
 interface LivreursTrackingMapProps {
   livreurs: Livreur[];
   ordersEnLivraison?: OnlineOrder[];
-  /** Livraison mise en avant: son itinéraire réel est tracé et la carte s'y recadre. */
   selectedOrderId?: string | null;
   onSelectOrder?: (orderId: string) => void;
-  /** Position de la boutique, point de départ des courses. */
   boutique?: { latitude: number; longitude: number; nom?: string } | null;
 }
 
@@ -101,10 +105,7 @@ export const LivreursTrackingMap = ({
   const selectedRouteRef = useRef<L.Polyline | null>(null);
   const boutiqueMarkerRef = useRef<L.Marker | null>(null);
   const boutiqueRouteRef = useRef<L.Polyline | null>(null);
-  // Clé du dernier recadrage global: on ne recadre que quand la liste des points
-  // change, jamais sur un simple déplacement — sinon impossible de naviguer.
   const fittedKeyRef = useRef<string | null>(null);
-  /** Livraison pour laquelle la carte a déjà été recadrée. */
   const fittedSelectionRef = useRef<string | null>(null);
 
   const onSelectRef = useRef(onSelectOrder);
@@ -112,7 +113,6 @@ export const LivreursTrackingMap = ({
 
   const [tileHealth, setTileHealth] = useState<TileHealth>('loading');
 
-  // Ticker: fait vieillir les positions à l'écran même sans nouvelle réponse serveur.
   const [now, setNow] = useState(() => Date.now());
   useEffect(() => {
     const id = setInterval(() => setNow(Date.now()), 30000);
@@ -131,8 +131,6 @@ export const LivreursTrackingMap = ({
 
   const hasAnything = livreursWithPosition.length > 0 || destinations.length > 0;
 
-  // Itinéraire réel de la livraison sélectionnée uniquement: un appel de routage
-  // par livraison affichée serait disproportionné pour une vue d'ensemble.
   const selectedOrder = useMemo(
     () => destinations.find((o) => o.id === selectedOrderId) ?? null,
     [destinations, selectedOrderId],
@@ -155,8 +153,6 @@ export const LivreursTrackingMap = ({
       : null,
   );
 
-  // Course complète depuis la boutique: montre le trajet à couvrir, alors que
-  // l'itinéraire du livreur ne montre que ce qu'il lui reste à faire.
   const { route: boutiqueRoute } = useRoute(
     boutique ? { lat: boutique.latitude, lng: boutique.longitude } : null,
     selectedOrder
@@ -176,7 +172,6 @@ export const LivreursTrackingMap = ({
     return counts;
   }, [livreursWithPosition, now]);
 
-  // Initialisation de la carte (une seule fois)
   useEffect(() => {
     if (!mapRef.current || mapInstanceRef.current || !hasAnything) return;
 
@@ -203,7 +198,6 @@ export const LivreursTrackingMap = ({
     };
   }, [hasAnything]);
 
-  // Synchronisation des marqueurs et des liaisons livreur → destination
   useEffect(() => {
     const map = mapInstanceRef.current;
     if (!map) return;
@@ -211,7 +205,6 @@ export const LivreursTrackingMap = ({
     const livreurIds = new Set(livreursWithPosition.map((l) => l.id));
     const destinationIds = new Set(destinations.map((o) => o.id));
 
-    // Retirer ce qui a disparu
     markersRef.current.forEach((marker, id) => {
       if (!livreurIds.has(id)) {
         marker.remove();
@@ -237,7 +230,6 @@ export const LivreursTrackingMap = ({
       }
     });
 
-    // Destinations
     destinations.forEach((order) => {
       const coords: [number, number] = [
         order.latitudeLivraison!,
@@ -261,7 +253,6 @@ export const LivreursTrackingMap = ({
         destinationMarkersRef.current.set(order.id, marker);
       }
 
-      // Zone d'incertitude du point client
       uncertaintyCirclesRef.current.get(order.id)?.remove();
       uncertaintyCirclesRef.current.delete(order.id);
 
@@ -276,7 +267,6 @@ export const LivreursTrackingMap = ({
       }
     });
 
-    // Livreurs
     livreursWithPosition.forEach((livreur) => {
       const order = ordersEnLivraison.find((o) => o.livreurId === livreur.id);
       const freshness = getPositionFreshness(livreur.lastPositionAt, now);
@@ -296,9 +286,14 @@ export const LivreursTrackingMap = ({
       const existing = markersRef.current.get(livreur.id);
 
       if (existing) {
-        existing.setLatLng(position);
-        existing.setIcon(buildLivreurIcon(freshness));
+        const previous = existing.getLatLng();
+        const bearing = computeBearing([previous.lat, previous.lng], position);
+
+        setIconPreservingBearing(existing, buildLivreurIcon(freshness));
+        animateMarkerTo(existing, position);
         existing.setPopupContent(popup);
+
+        if (bearing !== null) applyBearing(existing, bearing);
       } else {
         const marker = L.marker(position, { icon: buildLivreurIcon(freshness) })
           .addTo(map)
@@ -307,8 +302,6 @@ export const LivreursTrackingMap = ({
         markersRef.current.set(livreur.id, marker);
       }
 
-      // Liaison d'ensemble livreur → destination. La sélection a son propre
-      // tracé routier, on masque donc son trait droit pour éviter le doublon.
       if (order && hasDestination(order)) {
         const isSelected = order.id === selectedOrderId;
         const path: [number, number][] = [
@@ -334,8 +327,6 @@ export const LivreursTrackingMap = ({
       }
     });
 
-    // Recadrage global uniquement quand l'ensemble des points change,
-    // et seulement si aucune livraison n'est mise en avant.
     const fitKey = [
       ...livreursWithPosition.map((l) => `l:${l.id}`),
       ...destinations.map((o) => `d:${o.id}`),
@@ -359,7 +350,6 @@ export const LivreursTrackingMap = ({
     }
   }, [livreursWithPosition, destinations, ordersEnLivraison, selectedOrderId, now]);
 
-  // Marqueur boutique: point de départ des courses
   useEffect(() => {
     const map = mapInstanceRef.current;
     if (!map) return;
@@ -381,8 +371,6 @@ export const LivreursTrackingMap = ({
     }
   }, [boutique]);
 
-  // Tracé boutique -> client: la course complète, alors que l'itinéraire du
-  // livreur ne montre que ce qu'il lui reste à parcourir.
   useEffect(() => {
     const map = mapInstanceRef.current;
     if (!map) return;
@@ -396,7 +384,6 @@ export const LivreursTrackingMap = ({
     if (boutiqueRouteRef.current) {
       boutiqueRouteRef.current.setLatLngs(boutiqueRoute.coordinates);
     } else {
-      // Trait discret: c'est le contexte de la course, pas la position live
       boutiqueRouteRef.current = L.polyline(boutiqueRoute.coordinates, {
         color: '#7c3aed',
         weight: 3,
@@ -405,7 +392,6 @@ export const LivreursTrackingMap = ({
     }
   }, [boutiqueRoute]);
 
-  // Tracé routier de la livraison sélectionnée
   useEffect(() => {
     const map = mapInstanceRef.current;
     if (!map) return;

@@ -53,7 +53,6 @@ export const SuiviLivraisons = ({
     [livreurs],
   );
 
-  // Ne jamais laisser la sélection pointer une livraison terminée
   useEffect(() => {
     const stillExists = ordersEnLivraison.some((o) => o.id === selectedOrderId);
     if (!stillExists) {
@@ -66,7 +65,6 @@ export const SuiviLivraisons = ({
     ? livreurById.get(selectedOrder.livreurId) ?? null
     : null;
 
-  // Même clé que dans la carte: react-query mutualise la requête de routage.
   const { route: selectedRoute, isApproximate } = useRoute(
     selectedLivreur?.latitude != null && selectedLivreur?.longitude != null
       ? { lat: selectedLivreur.latitude, lng: selectedLivreur.longitude }
@@ -91,8 +89,6 @@ export const SuiviLivraisons = ({
           const hasLivreurPosition =
             livreur?.latitude != null && livreur?.longitude != null;
 
-          // Distance à vol d'oiseau pour toutes les lignes; l'itinéraire réel
-          // n'est calculé que pour la livraison sélectionnée.
           const straightLine =
             hasDestination && hasLivreurPosition
               ? distanceInMeters(
@@ -147,8 +143,6 @@ export const SuiviLivraisons = ({
                       <p className="text-xs font-semibold text-muted-foreground">
                         ~{formatDistance(straightLine)}
                       </p>
-                      {/* Sans cette mention, la distance se lit comme une
-                          distance routière alors qu'elle la sous-estime. */}
                       <p className="text-[10px] text-muted-foreground/80">
                         à vol d'oiseau
                       </p>

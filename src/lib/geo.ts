@@ -1,4 +1,3 @@
-/** Distance à vol d'oiseau entre deux points GPS, en mètres (formule de Haversine). */
 export const distanceInMeters = (
   lat1: number,
   lon1: number,
@@ -18,13 +17,11 @@ export const distanceInMeters = (
   return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 };
 
-/** « 350 m » ou « 2,4 km ». */
 export const formatDistance = (meters: number): string => {
   if (meters < 1000) return `${Math.round(meters)} m`;
   return `${(meters / 1000).toFixed(1).replace('.', ',')} km`;
 };
 
-/** « 4 min » ou « 1 h 12 ». */
 export const formatDuration = (seconds: number): string => {
   const minutes = Math.max(1, Math.round(seconds / 60));
   if (minutes < 60) return `${minutes} min`;
@@ -34,7 +31,6 @@ export const formatDuration = (seconds: number): string => {
   return rest === 0 ? `${hours} h` : `${hours} h ${rest}`;
 };
 
-/** Lien d'itinéraire Google Maps: coordonnées GPS si on les a, adresse sinon. */
 export const buildDirectionsUrl = (params: {
   latitude?: number | null;
   longitude?: number | null;

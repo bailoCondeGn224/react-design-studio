@@ -10,11 +10,6 @@ interface PositionPickerProps {
   onChange: (latitude: number, longitude: number) => void;
 }
 
-/**
- * Mini-carte de confirmation: le client voit où son point est tombé et peut le
- * corriger en déplaçant le repère. En Guinée l'adresse texte guide mal un
- * livreur, c'est ce point qui fait foi.
- */
 export const PositionPicker = ({ position, onChange }: PositionPickerProps) => {
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<L.Map | null>(null);
@@ -26,7 +21,6 @@ export const PositionPicker = ({ position, onChange }: PositionPickerProps) => {
   const onChangeRef = useRef(onChange);
   onChangeRef.current = onChange;
 
-  // Création de la carte
   useEffect(() => {
     if (!mapRef.current || mapInstanceRef.current) return;
 
@@ -61,12 +55,9 @@ export const PositionPicker = ({ position, onChange }: PositionPickerProps) => {
       markerRef.current = null;
       circleRef.current = null;
     };
-    // Créée une seule fois, avec la première position; les suivantes déplacent
-    // le repère via l'effet ci-dessous.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Suivi de la position pendant l'affinage du GPS
   useEffect(() => {
     const map = mapInstanceRef.current;
     const marker = markerRef.current;
@@ -74,13 +65,11 @@ export const PositionPicker = ({ position, onChange }: PositionPickerProps) => {
 
     const coords: [number, number] = [position.latitude, position.longitude];
 
-    // Ne pas contrarier un déplacement manuel en cours
     if (position.source === 'gps') {
       marker.setLatLng(coords);
       map.setView(coords, map.getZoom());
     }
 
-    // Cercle d'incertitude: montre honnêtement ce que vaut le point
     circleRef.current?.remove();
     circleRef.current = null;
 

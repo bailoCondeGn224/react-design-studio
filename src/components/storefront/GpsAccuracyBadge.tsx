@@ -7,15 +7,8 @@ interface GpsAccuracyBadgeProps {
   isRefining: boolean;
 }
 
-/** Seuil en dessous duquel le point est exploitable tel quel par un livreur. */
 const GOOD_ACCURACY_M = 20;
 
-/**
- * Annonce la qualité réelle du point.
- *
- * L'ancien message « Position capturée avec succès ! » était affiché avec la
- * même assurance pour un point à 5 m et pour une triangulation Wi-Fi à 2 km.
- */
 export const GpsAccuracyBadge = ({ position, isRefining }: GpsAccuracyBadgeProps) => {
   if (position.source === 'manual') {
     return (

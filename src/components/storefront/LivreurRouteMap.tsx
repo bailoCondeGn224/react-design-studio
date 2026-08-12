@@ -14,6 +14,8 @@ import {
   TileHealth,
 } from '@/lib/map-icons';
 import { MapTileWarning } from '@/components/MapTileWarning';
+import { animateMarkerTo, applyBearing, computeBearing } from '@/lib/marker-animation';
+import { createMapFollower, MapFollower } from '@/lib/map-follow';
 import { Navigation, Route as RouteIcon, Loader2 } from 'lucide-react';
 
 interface LivreurRouteMapProps {
@@ -38,14 +40,13 @@ export const LivreurRouteMap = ({
   const destinationMarkersRef = useRef<Map<string, L.Marker>>(new Map());
   const uncertaintyCirclesRef = useRef<Map<string, L.Circle>>(new Map());
   const routeLineRef = useRef<L.Polyline | null>(null);
-  /** Id de la course pour laquelle la carte a déjà été recadrée. */
   const fittedForRef = useRef<string | null>(null);
 
-  // Callback dans une ref: évite de recréer les marqueurs à chaque rendu du parent
   const onSelectRef = useRef(onSelectOrder);
   onSelectRef.current = onSelectOrder;
 
   const [tileHealth, setTileHealth] = useState<TileHealth>('loading');
+  const followerRef = useRef<MapFollower | null>(null);
 
   const deliverableOrders = useMemo(() => orders.filter(hasCoords), [orders]);
 
@@ -61,7 +62,6 @@ export const LivreurRouteMap = ({
       : null,
   );
 
-  // Création de la carte
   useEffect(() => {
     if (!mapRef.current || mapInstanceRef.current) return;
 
@@ -75,7 +75,11 @@ export const LivreurRouteMap = ({
 
     addTileLayer(mapInstanceRef.current, setTileHealth);
 
+    followerRef.current = createMapFollower(mapInstanceRef.current);
+
     return () => {
+      followerRef.current?.destroy();
+      followerRef.current = null;
       mapInstanceRef.current?.remove();
       mapInstanceRef.current = null;
       selfMarkerRef.current = null;
@@ -86,7 +90,6 @@ export const LivreurRouteMap = ({
     };
   }, []);
 
-  // Marqueur « vous »
   useEffect(() => {
     const map = mapInstanceRef.current;
     if (!map || !position) return;
@@ -94,7 +97,13 @@ export const LivreurRouteMap = ({
     const coords: [number, number] = [position.latitude, position.longitude];
 
     if (selfMarkerRef.current) {
-      selfMarkerRef.current.setLatLng(coords);
+      const previous = selfMarkerRef.current.getLatLng();
+      const bearing = computeBearing([previous.lat, previous.lng], coords);
+
+      animateMarkerTo(selfMarkerRef.current, coords);
+      if (bearing !== null) applyBearing(selfMarkerRef.current, bearing);
+
+      followerRef.current?.followTo(coords);
     } else {
       selfMarkerRef.current = L.marker(coords, { icon: buildSelfIcon() })
         .addTo(map)
@@ -102,7 +111,6 @@ export const LivreurRouteMap = ({
     }
   }, [position]);
 
-  // Marqueurs destinations
   useEffect(() => {
     const map = mapInstanceRef.current;
     if (!map) return;
@@ -129,8 +137,6 @@ export const LivreurRouteMap = ({
         order.longitudeLivraison!,
       ];
       const isSelected = order.id === selectedOrderId;
-      // Numéro calculé sur la liste complète: le marqueur doit porter le même
-      // numéro que la fiche correspondante, même si certaines courses n'ont pas de GPS.
       const icon = buildDestinationIcon({
         label:
           orders.length > 1
@@ -152,8 +158,6 @@ export const LivreurRouteMap = ({
         destinationMarkersRef.current.set(order.id, marker);
       }
 
-      // Zone d'incertitude: le livreur doit savoir quand le point n'est
-      // fiable qu'à 300 m près, plutôt que de tourner autour d'une adresse.
       const existingCircle = uncertaintyCirclesRef.current.get(order.id);
       const needsCircle =
         order.precisionLivraison != null &&
@@ -173,7 +177,6 @@ export const LivreurRouteMap = ({
     });
   }, [deliverableOrders, selectedOrderId, orders]);
 
-  // Tracé vers la course sélectionnée
   useEffect(() => {
     const map = mapInstanceRef.current;
     if (!map) return;
@@ -196,11 +199,11 @@ export const LivreurRouteMap = ({
       }).addTo(map);
     }
 
-    // Recadrer une fois par course. Comparer l'id plutôt qu'un booléen remis à
-    // zéro dans un autre effet: l'itinéraire peut arriver du cache dans le même
-    // rendu que le changement de sélection.
     if (fittedForRef.current !== selectedOrderId) {
-      map.fitBounds(routeLineRef.current.getBounds(), { padding: [40, 40] });
+      const bounds = routeLineRef.current.getBounds();
+      followerRef.current?.runProgrammatic(() =>
+        map.fitBounds(bounds, { padding: [40, 40] }),
+      );
       fittedForRef.current = selectedOrderId;
     }
   }, [route, isApproximate, selectedOrderId]);
@@ -209,10 +212,13 @@ export const LivreurRouteMap = ({
     const map = mapInstanceRef.current;
     if (!map) return;
 
-    if (routeLineRef.current) {
-      map.fitBounds(routeLineRef.current.getBounds(), { padding: [40, 40] });
-    } else if (position) {
-      map.setView([position.latitude, position.longitude], 15);
+    if (position) {
+      followerRef.current?.recenterOn([position.latitude, position.longitude]);
+    } else if (routeLineRef.current) {
+      const bounds = routeLineRef.current.getBounds();
+      followerRef.current?.runProgrammatic(() =>
+        map.fitBounds(bounds, { padding: [40, 40] }),
+      );
     }
   };
 

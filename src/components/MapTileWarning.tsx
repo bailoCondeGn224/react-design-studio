@@ -6,12 +6,6 @@ interface MapTileWarningProps {
   health: TileHealth;
 }
 
-/**
- * Superposition affichée quand le fond de carte ne charge pas.
- *
- * Les repères et le tracé restent exploitables sans les tuiles: le message doit
- * donc rassurer sur ce qui fonctionne encore, pas masquer la carte.
- */
 export const MapTileWarning = ({ health }: MapTileWarningProps) => {
   const [isOffline, setIsOffline] = useState(() => !navigator.onLine);
 

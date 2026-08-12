@@ -9,18 +9,9 @@ interface BoutiquePositionFieldProps {
   latitude?: number;
   longitude?: number;
   onChange: (position: { latitude: number; longitude: number }) => void;
-  /** Masque le rappel d'usage sur les écrans déjà chargés en explications. */
   compact?: boolean;
 }
 
-/**
- * Saisie de la position de la boutique.
- *
- * Composition distincte de celle du panier client: le commerçant est sur place
- * une seule fois, à l'inscription, et la position ne bouge plus ensuite. On
- * réutilise les mêmes briques (capture affinée, badge de précision, repère
- * déplaçable) sans toucher au parcours de commande.
- */
 export const BoutiquePositionField = ({
   latitude,
   longitude,
@@ -30,17 +21,13 @@ export const BoutiquePositionField = ({
   const { position, status, error, capture, setManualPosition } =
     useAccuratePosition();
 
-  // Remonte au parent chaque point retenu, qu'il vienne du GPS ou du repère
   useEffect(() => {
     if (position) {
       onChange({ latitude: position.latitude, longitude: position.longitude });
     }
-    // onChange est souvent recréé à chaque rendu du parent: le suivre ferait
-    // boucler l'effet.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [position?.latitude, position?.longitude]);
 
-  // Position déjà enregistrée et pas encore retouchée dans cette session
   const displayed =
     position ??
     (latitude != null && longitude != null
