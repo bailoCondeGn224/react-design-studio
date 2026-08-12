@@ -52,4 +52,9 @@ export interface TrackingInfo {
   /** Rayon d'incertitude en mètres du point de livraison. */
   destinationPrecision?: number;
   destinationAdresse?: string;
+  /** Position de la boutique, point de départ de la course. */
+  boutiqueLatitude?: number;
+  boutiqueLongitude?: number;
+  /** Renseigné dès que le livreur a été détecté à destination. */
+  arriveeLe: string | null;
 }

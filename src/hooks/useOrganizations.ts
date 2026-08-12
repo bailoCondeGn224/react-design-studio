@@ -11,6 +11,7 @@ import {
   rejectOrganization,
   suspendOrganization,
   reactivateOrganization,
+  updateMyOrganizationPosition,
 } from '@/api/organizations';
 import { CreateOrganizationDto, UpdateOrganizationDto } from '@/types';
 import { toast } from 'sonner';
@@ -61,6 +62,27 @@ export const useUpdateOrganization = () => {
     },
     onError: (error: any) => {
       toast.error(error.response?.data?.message || 'Erreur lors de la mise à jour');
+    },
+  });
+};
+
+/** Position de sa propre boutique, modifiable par son admin. */
+export const useUpdateMyOrganizationPosition = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: updateMyOrganizationPosition,
+    onSuccess: () => {
+      // La vitrine expose la position en lecture: elle doit se rafraîchir aussi
+      queryClient.invalidateQueries({ queryKey: ['storefront-config'] });
+      queryClient.invalidateQueries({ queryKey: ['currentUser'] });
+      toast.success('Position de la boutique enregistrée');
+    },
+    onError: (error: any) => {
+      toast.error(
+        error.response?.data?.message ||
+          'Erreur lors de l’enregistrement de la position',
+      );
     },
   });
 };

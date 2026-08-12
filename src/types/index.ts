@@ -119,6 +119,9 @@ export interface Organization {
   email?: string;
   telephone?: string;
   adresse?: string;
+  /** Position physique du commerce: point de départ des livraisons. */
+  latitude?: number;
+  longitude?: number;
   siteWeb?: string;
   rccm?: string; // Registre de Commerce
   nif?: string; // Numéro d'Identification Fiscale
@@ -145,6 +148,9 @@ export interface RegisterOrganizationDto {
   nomCourt?: string;
   slogan?: string;
   adresse?: string;
+  /** Position du commerce, saisie dès l'inscription. */
+  latitude?: number;
+  longitude?: number;
   siteWeb?: string;
   rccm?: string;
   nif?: string;
@@ -186,6 +192,9 @@ export interface UpdateOrganizationDto {
   email?: string;
   telephone?: string;
   adresse?: string;
+  /** Position du commerce, modifiable par l'admin de la boutique. */
+  latitude?: number;
+  longitude?: number;
   siteWeb?: string;
   rccm?: string;
   nif?: string;

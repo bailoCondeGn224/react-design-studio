@@ -2,11 +2,12 @@ import { useEffect, useRef, useState } from 'react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { TrackingInfo } from '@/types/livreur';
-import { Phone, Truck, AlertCircle, Clock } from 'lucide-react';
+import { Phone, Truck, AlertCircle, Clock, BellRing } from 'lucide-react';
 import { formatDistance, formatDuration } from '@/lib/geo';
 import { useRoute } from '@/hooks/useRoute';
 import {
   addTileLayer,
+  buildBoutiqueIcon,
   buildDestinationIcon,
   buildLivreurIcon,
   buildUncertaintyCircle,
@@ -31,6 +32,7 @@ export const TrackingMap = ({ tracking }: TrackingMapProps) => {
   const livreurMarkerRef = useRef<L.Marker | null>(null);
   const destinationMarkerRef = useRef<L.Marker | null>(null);
   const uncertaintyCircleRef = useRef<L.Circle | null>(null);
+  const boutiqueMarkerRef = useRef<L.Marker | null>(null);
   const routeLineRef = useRef<L.Polyline | null>(null);
   const hasFittedRef = useRef(false);
 
@@ -96,7 +98,7 @@ export const TrackingMap = ({ tracking }: TrackingMapProps) => {
     }
 
     livreurMarkerRef.current.bindPopup(
-      `<b>🚚 ${tracking.livreurNom}</b><br/>${FRESHNESS_LABELS[freshness]}${age ? ` · ${age}` : ''}`,
+      `<b>${tracking.livreurNom}</b><br/>${FRESHNESS_LABELS[freshness]}${age ? ` · ${age}` : ''}`,
     );
 
     if (!hasDestination) {
@@ -131,7 +133,7 @@ export const TrackingMap = ({ tracking }: TrackingMapProps) => {
       })
         .addTo(map)
         .bindPopup(
-          `<b>📍 Destination</b><br/>${tracking.destinationAdresse || 'Adresse de livraison'}`,
+          `<b>Destination</b><br/>${tracking.destinationAdresse || 'Adresse de livraison'}`,
         );
     }
 
@@ -155,6 +157,34 @@ export const TrackingMap = ({ tracking }: TrackingMapProps) => {
     tracking.destinationPrecision,
     tracking.destinationAdresse,
   ]);
+
+  // Marqueur boutique: situe le point de départ de la course
+  useEffect(() => {
+    const map = mapInstanceRef.current;
+    if (!map) return;
+
+    const hasBoutique =
+      tracking.boutiqueLatitude != null && tracking.boutiqueLongitude != null;
+
+    if (!hasBoutique) {
+      boutiqueMarkerRef.current?.remove();
+      boutiqueMarkerRef.current = null;
+      return;
+    }
+
+    const coords: [number, number] = [
+      tracking.boutiqueLatitude!,
+      tracking.boutiqueLongitude!,
+    ];
+
+    if (boutiqueMarkerRef.current) {
+      boutiqueMarkerRef.current.setLatLng(coords);
+    } else {
+      boutiqueMarkerRef.current = L.marker(coords, { icon: buildBoutiqueIcon() })
+        .addTo(map)
+        .bindPopup('<b>Boutique</b><br/>Départ de votre commande');
+    }
+  }, [tracking.boutiqueLatitude, tracking.boutiqueLongitude]);
 
   // Tracé de l'itinéraire
   useEffect(() => {
@@ -184,6 +214,21 @@ export const TrackingMap = ({ tracking }: TrackingMapProps) => {
 
   return (
     <div className="space-y-3">
+      {tracking.arriveeLe && (
+        <div className="flex items-start gap-2 rounded-lg border border-emerald-200 bg-emerald-50 p-3">
+          <BellRing className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600" />
+          <div>
+            <p className="text-sm font-semibold text-emerald-900">
+              Votre livreur est arrivé
+            </p>
+            <p className="text-xs text-emerald-800">
+              Il est à votre adresse{' '}
+              {formatPositionAge(tracking.arriveeLe) ?? ''}.
+            </p>
+          </div>
+        </div>
+      )}
+
       {/* Livreur */}
       <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
         <div className="flex items-center gap-3">

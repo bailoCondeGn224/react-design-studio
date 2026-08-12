@@ -17,6 +17,7 @@ import { toast } from "sonner";
 import { useMutation } from "@tanstack/react-query";
 import { registerOrganization } from "@/api/organizations";
 import { RegisterOrganizationDto } from "@/types";
+import { BoutiquePositionField } from "@/components/BoutiquePositionField";
 
 const Register = () => {
   const navigate = useNavigate();
@@ -333,6 +334,21 @@ const Register = () => {
                       className="w-full pl-11 pr-4 py-3 rounded-lg border border-border bg-card text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
                     />
                   </div>
+                </div>
+
+                {/* Position GPS de la boutique */}
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-foreground">
+                    Position de la boutique{' '}
+                    <span className="text-muted-foreground font-normal">(optionnel)</span>
+                  </label>
+                  <BoutiquePositionField
+                    latitude={formData.latitude}
+                    longitude={formData.longitude}
+                    onChange={({ latitude, longitude }) =>
+                      setFormData((prev) => ({ ...prev, latitude, longitude }))
+                    }
+                  />
                 </div>
 
                 {/* Bouton Suivant */}

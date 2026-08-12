@@ -12,6 +12,13 @@ export interface StorefrontConfig {
   horaires?: string;
   fraisLivraison: number;
   adresse?: string;
+  /**
+   * Position de la boutique, point de départ des livraisons.
+   * En lecture seule ici: elle est portée par l'organisation et se modifie
+   * via les paramètres de l'organisation.
+   */
+  latitude?: number;
+  longitude?: number;
   organizationNom: string;
   fullUrl: string;
 }

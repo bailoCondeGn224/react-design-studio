@@ -95,6 +95,8 @@ export interface OnlineOrder {
   livreeLe?: string;
   annuleeLe?: string;
   expedieeLe?: string;
+  /** Renseigné dès que le livreur a été détecté à destination. */
+  arriveeLe?: string;
   createdAt: string;
   updatedAt: string;
 }

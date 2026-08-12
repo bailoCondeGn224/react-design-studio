@@ -108,6 +108,34 @@ export const buildDestinationIcon = (options: { label?: string; dimmed?: boolean
   });
 };
 
+/** Marqueur de la boutique: point de départ de la course. */
+export const buildBoutiqueIcon = () => {
+  const size = 32;
+
+  return L.divIcon({
+    className: 'custom-marker boutique-marker',
+    html: `<div style="
+      background: #7c3aed;
+      width: ${size}px;
+      height: ${size}px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 3px solid white;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.3);
+    ">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+        <path d="M3 9l1-5h16l1 5"></path>
+        <path d="M4 9v11a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1V9"></path>
+        <path d="M9 21v-6h6v6"></path>
+      </svg>
+    </div>`,
+    iconSize: [size, size],
+    iconAnchor: [size / 2, size / 2],
+  });
+};
+
 /** Marqueur « vous êtes ici » de l'app livreur. */
 export const buildSelfIcon = () => {
   ensurePulseStyle();

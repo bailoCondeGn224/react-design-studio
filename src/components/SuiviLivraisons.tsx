@@ -11,7 +11,15 @@ import {
   formatPositionAge,
   getPositionFreshness,
 } from '@/lib/position-freshness';
-import { Clock, MapPinOff, Phone, Route as RouteIcon, Truck } from 'lucide-react';
+import { useStorefrontConfig } from '@/hooks/useStorefrontConfig';
+import {
+  BellRing,
+  Clock,
+  MapPinOff,
+  Phone,
+  Route as RouteIcon,
+  Truck,
+} from 'lucide-react';
 
 interface SuiviLivraisonsProps {
   livreurs: Livreur[];
@@ -22,6 +30,16 @@ export const SuiviLivraisons = ({
   livreurs,
   ordersEnLivraison,
 }: SuiviLivraisonsProps) => {
+  const { data: storefront } = useStorefrontConfig();
+
+  const boutique =
+    storefront?.latitude != null && storefront?.longitude != null
+      ? {
+          latitude: storefront.latitude,
+          longitude: storefront.longitude,
+          nom: storefront.organizationNom,
+        }
+      : null;
   const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
   const [now, setNow] = useState(() => Date.now());
 
@@ -98,7 +116,15 @@ export const SuiviLivraisons = ({
             >
               <div className="flex items-start justify-between gap-2">
                 <div className="min-w-0">
-                  <p className="font-semibold text-sm truncate">{order.numero}</p>
+                  <div className="flex items-center gap-1.5">
+                    <p className="font-semibold text-sm truncate">{order.numero}</p>
+                    {order.arriveeLe && (
+                      <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-1.5 py-0.5 text-[10px] font-medium text-emerald-800 shrink-0">
+                        <BellRing className="h-2.5 w-2.5" />
+                        Arrivé
+                      </span>
+                    )}
+                  </div>
                   <p className="text-xs text-muted-foreground truncate">
                     {order.clientNom || order.customerNom || 'Client'}
                   </p>
@@ -117,9 +143,16 @@ export const SuiviLivraisons = ({
                   </div>
                 ) : (
                   straightLine != null && (
-                    <p className="text-xs font-semibold text-muted-foreground shrink-0">
-                      {formatDistance(straightLine)}
-                    </p>
+                    <div className="text-right shrink-0">
+                      <p className="text-xs font-semibold text-muted-foreground">
+                        ~{formatDistance(straightLine)}
+                      </p>
+                      {/* Sans cette mention, la distance se lit comme une
+                          distance routière alors qu'elle la sous-estime. */}
+                      <p className="text-[10px] text-muted-foreground/80">
+                        à vol d'oiseau
+                      </p>
+                    </div>
                   )
                 )}
               </div>
@@ -191,6 +224,7 @@ export const SuiviLivraisons = ({
         ordersEnLivraison={ordersEnLivraison}
         selectedOrderId={selectedOrderId}
         onSelectOrder={setSelectedOrderId}
+        boutique={boutique}
       />
     </div>
   );

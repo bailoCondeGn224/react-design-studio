@@ -59,7 +59,11 @@ export const useRoute = (from: RoutePoint | null, to: RoutePoint | null) => {
     enabled,
     staleTime: 5 * 60 * 1000,
     gcTime: 30 * 60 * 1000,
-    retry: 1,
+    // Le serveur public d'OSRM est intermittent: il rate-limite et coupe sous
+    // charge. Sans plusieurs tentatives, on retombe en ligne droite alors que
+    // l'itinéraire réel est disponible — soit ~30 % d'erreur sur Conakry.
+    retry: 3,
+    retryDelay: (attempt) => Math.min(1000 * 2 ** attempt, 8000),
     // fetch et non apiClient: l'intercepteur axios attacherait le JWT du livreur
     // ou du client à un service tiers.
     queryFn: async () => {

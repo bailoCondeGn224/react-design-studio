@@ -44,6 +44,19 @@ export const updateOrganization = async (
   return response.data;
 };
 
+// Mettre à jour la position de sa propre boutique (admin de la boutique).
+// Endpoint distinct de updateOrganization, réservé au super-admin.
+export const updateMyOrganizationPosition = async (position: {
+  latitude: number;
+  longitude: number;
+}): Promise<Organization> => {
+  const response = await apiClient.patch<Organization>(
+    '/organizations/me/position',
+    position,
+  );
+  return response.data;
+};
+
 // Supprimer une organization (SUPER_ADMIN only)
 export const deleteOrganization = async (id: string): Promise<void> => {
   await apiClient.delete(`/organizations/${id}`);

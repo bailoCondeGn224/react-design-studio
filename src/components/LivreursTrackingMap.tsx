@@ -8,6 +8,7 @@ import { distanceInMeters, formatDistance } from '@/lib/geo';
 import { useRoute } from '@/hooks/useRoute';
 import {
   addTileLayer,
+  buildBoutiqueIcon,
   buildDestinationIcon,
   buildLivreurIcon,
   buildUncertaintyCircle,
@@ -30,6 +31,8 @@ interface LivreursTrackingMapProps {
   /** Livraison mise en avant: son itinéraire réel est tracé et la carte s'y recadre. */
   selectedOrderId?: string | null;
   onSelectOrder?: (orderId: string) => void;
+  /** Position de la boutique, point de départ des courses. */
+  boutique?: { latitude: number; longitude: number; nom?: string } | null;
 }
 
 const hasDestination = (order: OnlineOrder) =>
@@ -72,7 +75,7 @@ const buildLivreurPopup = (
 
 const buildDestinationPopup = (order: OnlineOrder) => `
   <div style="min-width: 170px;">
-    <p style="font-weight: 600; margin-bottom: 4px;">📍 ${order.numero}</p>
+    <p style="font-weight: 600; margin-bottom: 4px;">${order.numero}</p>
     <p style="font-size: 12px;">${order.clientNom || order.customerNom || 'Client'}</p>
     ${
       order.adresseLivraison
@@ -87,6 +90,7 @@ export const LivreursTrackingMap = ({
   ordersEnLivraison = [],
   selectedOrderId = null,
   onSelectOrder,
+  boutique = null,
 }: LivreursTrackingMapProps) => {
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<L.Map | null>(null);
@@ -95,6 +99,8 @@ export const LivreursTrackingMap = ({
   const uncertaintyCirclesRef = useRef<Map<string, L.Circle>>(new Map());
   const linesRef = useRef<Map<string, L.Polyline>>(new Map());
   const selectedRouteRef = useRef<L.Polyline | null>(null);
+  const boutiqueMarkerRef = useRef<L.Marker | null>(null);
+  const boutiqueRouteRef = useRef<L.Polyline | null>(null);
   // Clé du dernier recadrage global: on ne recadre que quand la liste des points
   // change, jamais sur un simple déplacement — sinon impossible de naviguer.
   const fittedKeyRef = useRef<string | null>(null);
@@ -149,6 +155,15 @@ export const LivreursTrackingMap = ({
       : null,
   );
 
+  // Course complète depuis la boutique: montre le trajet à couvrir, alors que
+  // l'itinéraire du livreur ne montre que ce qu'il lui reste à faire.
+  const { route: boutiqueRoute } = useRoute(
+    boutique ? { lat: boutique.latitude, lng: boutique.longitude } : null,
+    selectedOrder
+      ? { lat: selectedOrder.latitudeLivraison!, lng: selectedOrder.longitudeLivraison! }
+      : null,
+  );
+
   const freshnessCounts = useMemo(() => {
     const counts: Record<PositionFreshness, number> = {
       live: 0,
@@ -180,6 +195,8 @@ export const LivreursTrackingMap = ({
       destinationMarkers.clear();
       circles.clear();
       lines.clear();
+      boutiqueMarkerRef.current = null;
+      boutiqueRouteRef.current = null;
       selectedRouteRef.current = null;
       fittedKeyRef.current = null;
       fittedSelectionRef.current = null;
@@ -341,6 +358,52 @@ export const LivreursTrackingMap = ({
       fittedKeyRef.current = fitKey;
     }
   }, [livreursWithPosition, destinations, ordersEnLivraison, selectedOrderId, now]);
+
+  // Marqueur boutique: point de départ des courses
+  useEffect(() => {
+    const map = mapInstanceRef.current;
+    if (!map) return;
+
+    if (!boutique) {
+      boutiqueMarkerRef.current?.remove();
+      boutiqueMarkerRef.current = null;
+      return;
+    }
+
+    const coords: [number, number] = [boutique.latitude, boutique.longitude];
+
+    if (boutiqueMarkerRef.current) {
+      boutiqueMarkerRef.current.setLatLng(coords);
+    } else {
+      boutiqueMarkerRef.current = L.marker(coords, { icon: buildBoutiqueIcon() })
+        .addTo(map)
+        .bindPopup(`<b>${boutique.nom || 'Votre boutique'}</b><br/>Départ des livraisons`);
+    }
+  }, [boutique]);
+
+  // Tracé boutique -> client: la course complète, alors que l'itinéraire du
+  // livreur ne montre que ce qu'il lui reste à parcourir.
+  useEffect(() => {
+    const map = mapInstanceRef.current;
+    if (!map) return;
+
+    if (!boutiqueRoute) {
+      boutiqueRouteRef.current?.remove();
+      boutiqueRouteRef.current = null;
+      return;
+    }
+
+    if (boutiqueRouteRef.current) {
+      boutiqueRouteRef.current.setLatLngs(boutiqueRoute.coordinates);
+    } else {
+      // Trait discret: c'est le contexte de la course, pas la position live
+      boutiqueRouteRef.current = L.polyline(boutiqueRoute.coordinates, {
+        color: '#7c3aed',
+        weight: 3,
+        opacity: 0.45,
+      }).addTo(map);
+    }
+  }, [boutiqueRoute]);
 
   // Tracé routier de la livraison sélectionnée
   useEffect(() => {

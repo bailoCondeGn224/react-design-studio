@@ -9,6 +9,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { Loader2, Save, ExternalLink, QrCode, Copy, Check, Globe, Phone, Clock, MapPin, Truck, FileText } from 'lucide-react';
 import { useStorefrontConfig, useUpdateStorefrontConfig } from '@/hooks/useStorefrontConfig';
+import { useUpdateMyOrganizationPosition } from '@/hooks/useOrganizations';
+import { BoutiquePositionField } from '@/components/BoutiquePositionField';
 import { storefrontConfigApi } from '@/api/storefront-config';
 import { apiClient } from '@/lib/api-client';
 import { toast } from 'sonner';
@@ -19,9 +21,14 @@ const StorefrontSettings = () => {
   const isMobile = useMediaQuery('(max-width: 768px)');
   const { data: config, isLoading } = useStorefrontConfig();
   const updateMutation = useUpdateStorefrontConfig();
+  const updatePositionMutation = useUpdateMyOrganizationPosition();
   const [copied, setCopied] = useState(false);
   const [qrCodeUrl, setQrCodeUrl] = useState<string | null>(null);
   const [qrLoading, setQrLoading] = useState(false);
+  const [position, setPosition] = useState<{
+    latitude: number;
+    longitude: number;
+  } | null>(null);
 
   const [form, setForm] = useState({
     isActive: false,
@@ -76,6 +83,16 @@ const StorefrontSettings = () => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     updateMutation.mutate(form);
+
+    // La position est portée par l'organisation, pas par la vitrine: elle passe
+    // donc par son propre endpoint. On n'écrit que si elle a été retouchée.
+    if (
+      position &&
+      (position.latitude !== config?.latitude ||
+        position.longitude !== config?.longitude)
+    ) {
+      updatePositionMutation.mutate(position);
+    }
   };
 
   const handleCopyLink = () => {
@@ -286,6 +303,18 @@ const StorefrontSettings = () => {
                       value={form.adresse}
                       onChange={(e) => setForm({ ...form, adresse: e.target.value })}
                       className="h-11"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground mb-1.5">
+                      <MapPin className="h-3.5 w-3.5" />
+                      Position sur la carte
+                    </label>
+                    <BoutiquePositionField
+                      latitude={position?.latitude ?? config?.latitude}
+                      longitude={position?.longitude ?? config?.longitude}
+                      onChange={setPosition}
                     />
                   </div>
                 </div>

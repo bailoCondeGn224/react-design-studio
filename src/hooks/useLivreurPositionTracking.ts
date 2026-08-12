@@ -1,5 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
-import { useUpdateLivreurPosition } from '@/hooks/useLivreurOrders';
+import { useQueryClient } from '@tanstack/react-query';
+import {
+  ArriveeSignalee,
+  useUpdateLivreurPosition,
+} from '@/hooks/useLivreurOrders';
 import { distanceInMeters } from '@/lib/geo';
 
 export type GeoStatus =
@@ -31,8 +35,11 @@ const HEARTBEAT_CHECK_MS = 20000;
  */
 export const useLivreurPositionTracking = (enabled = true) => {
   const updatePosition = useUpdateLivreurPosition();
+  const queryClient = useQueryClient();
   const [status, setStatus] = useState<GeoStatus>('starting');
   const [lastSentAt, setLastSentAt] = useState<Date | null>(null);
+  /** Arrivées détectées par le serveur au dernier relevé envoyé. */
+  const [arrivees, setArrivees] = useState<ArriveeSignalee[]>([]);
   // Position affichée localement: mise à jour à chaque relevé, sans attendre
   // l'envoi au serveur — la carte du livreur doit suivre son mouvement.
   const [position, setPosition] = useState<{
@@ -48,6 +55,8 @@ export const useLivreurPositionTracking = (enabled = true) => {
   // que l'effet ne se réabonne pas au GPS en boucle.
   const mutateRef = useRef(updatePosition.mutate);
   mutateRef.current = updatePosition.mutate;
+  const queryClientRef = useRef(queryClient);
+  queryClientRef.current = queryClient;
 
   useEffect(() => {
     if (!enabled) return;
@@ -61,7 +70,20 @@ export const useLivreurPositionTracking = (enabled = true) => {
       lastAttemptRef.current = { latitude, longitude, at: Date.now() };
       mutateRef.current(
         { latitude, longitude },
-        { onSuccess: () => setLastSentAt(new Date()) },
+        {
+          onSuccess: (data) => {
+            setLastSentAt(new Date());
+
+            if (data?.arrivees?.length) {
+              setArrivees(data.arrivees);
+              // La commande porte désormais arriveeLe: on rafraîchit la liste
+              // pour que la fiche affiche l'état d'arrivée.
+              queryClientRef.current.invalidateQueries({
+                queryKey: ['livreur-orders'],
+              });
+            }
+          },
+        },
       );
     };
 
@@ -111,5 +133,12 @@ export const useLivreurPositionTracking = (enabled = true) => {
     };
   }, [enabled]);
 
-  return { status, lastSentAt, position };
+  return {
+    status,
+    lastSentAt,
+    position,
+    arrivees,
+    /** Acquitte l'annonce d'arrivée une fois vue par le livreur. */
+    acquitterArrivees: () => setArrivees([]),
+  };
 };
