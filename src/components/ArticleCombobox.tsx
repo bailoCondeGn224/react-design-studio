@@ -92,6 +92,7 @@ const ArticleCombobox = ({
     page: 1,
     limit: 20,
     search: debouncedSearch || undefined,
+    inclureRuptures: checkStock ? undefined : true,
   });
 
   const articles = articlesResponse?.data || [];

@@ -33,7 +33,7 @@ export default function InventaireDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { data: inventaire, isLoading } = useInventaire(id || null);
-  const { data: stockResponse, isLoading: loadingStock } = useStock({ page: 1, limit: 100 }); // Limite max du backend
+  const { data: stockResponse, isLoading: loadingStock } = useStock({ page: 1, limit: 100, inclureRuptures: true }); // Limite max du backend
   const { data: categories = [] } = useCategoriesActive();
   const { data: zones = [] } = useZonesActive();
   const addComptageMutation = useAddComptage();

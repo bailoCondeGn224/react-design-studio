@@ -16,6 +16,7 @@ export interface VersementFilterParams extends PaginationParams {
 export interface StockFilterParams extends PaginationParams {
   categorieId?: string;
   enAlerte?: boolean;
+  inclureRuptures?: boolean;
 }
 
 export interface ClientFilterParams extends PaginationParams {

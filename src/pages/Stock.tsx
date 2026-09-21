@@ -5,7 +5,7 @@ import StockMobileCard from "@/components/StockMobileCard";
 import ArticleCard from "@/components/ArticleCard";
 import Pagination from "@/components/Pagination";
 import CanAccess from "@/components/CanAccess";
-import { Package, AlertTriangle, Search, Plus, Edit, Trash, MoreVertical, AlertCircle, TrendingDown, History, ArrowUpCircle, ArrowDownCircle, Flame, Zap, Clock, Snail, Snowflake, TrendingUp as TrendUp, RotateCcw, Upload, ShoppingCart, BarChart3, Layers } from "lucide-react";
+import { Package, PackageX, AlertTriangle, Search, Plus, Edit, Trash, MoreVertical, AlertCircle, TrendingDown, History, ArrowUpCircle, ArrowDownCircle, Flame, Zap, Clock, Snail, Snowflake, TrendingUp as TrendUp, RotateCcw, Upload, ShoppingCart, BarChart3, Layers } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { getPhotoUrl } from "@/lib/api-client";
@@ -43,6 +43,7 @@ import { useDebounce } from "@/hooks/useDebounce";
 
 const Stock = () => {
   const [selectedCategorieId, setSelectedCategorieId] = useState<string>("all");
+  const [afficherRuptures, setAfficherRuptures] = useState(false);
   const [searchInput, setSearchInput] = useState("");
   const debouncedSearch = useDebounce(searchInput, 800);
   // Vérifier si on doit rouvrir le formulaire après un rechargement (capture photo mobile)
@@ -85,6 +86,7 @@ const Stock = () => {
     limit,
     search: debouncedSearch || undefined,
     categorieId: selectedCategorieId !== "all" ? selectedCategorieId : undefined,
+    inclureRuptures: afficherRuptures || undefined,
   });
   const articles = stockResponse?.data || [];
   const meta = stockResponse?.meta;
@@ -178,7 +180,7 @@ const Stock = () => {
   // Réinitialiser la page quand les filtres ou la limite changent
   useEffect(() => {
     setPage(1);
-  }, [debouncedSearch, selectedCategorieId, limit]);
+  }, [debouncedSearch, selectedCategorieId, afficherRuptures, limit]);
 
   // Statistiques d'alerte (depuis le backend)
   const articlesEnRupture = stockStats?.articlesEnRupture || 0;
@@ -1263,6 +1265,20 @@ const Stock = () => {
             ))}
           </select>
         </div>
+        <button
+          type="button"
+          onClick={() => setAfficherRuptures((v) => !v)}
+          aria-pressed={afficherRuptures}
+          aria-label="Afficher les articles en rupture"
+          className={`flex items-center justify-center gap-2 rounded-lg border px-4 py-2.5 text-sm font-medium transition-colors ${
+            afficherRuptures
+              ? 'border-destructive bg-destructive/10 text-destructive'
+              : 'border-border bg-card text-muted-foreground hover:bg-muted/50'
+          }`}
+        >
+          <PackageX className="h-4 w-4" />
+          <span className="font-bold">{articlesEnRupture}</span>
+        </button>
       </div>
 
       {/* Grille d'articles - Style Facebook Feed */}
