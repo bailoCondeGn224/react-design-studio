@@ -95,9 +95,13 @@ const StorefrontSettings = () => {
     }
   };
 
+  // Vitrine et backoffice sont servis par la même app : l'adresse courante
+  // donne le bon port/domaine (le fullUrl du backend dépend de FRONTEND_URL).
+  const storefrontUrl = config?.slug ? `${window.location.origin}/b/${config.slug}` : null;
+
   const handleCopyLink = () => {
-    if (config?.fullUrl) {
-      navigator.clipboard.writeText(config.fullUrl);
+    if (storefrontUrl) {
+      navigator.clipboard.writeText(storefrontUrl);
       setCopied(true);
       toast.success('Lien copié !');
       setTimeout(() => setCopied(false), 2000);
@@ -207,7 +211,7 @@ const StorefrontSettings = () => {
                     />
                   </div>
 
-                  {form.isActive && config?.fullUrl && (
+                  {form.isActive && storefrontUrl && (
                     <div className="mt-2 p-4 bg-success/10 rounded-lg border border-success/20">
                       <p className="text-xs font-medium text-success mb-2 flex items-center gap-1.5">
                         <Check className="w-3.5 h-3.5" />
@@ -215,14 +219,14 @@ const StorefrontSettings = () => {
                       </p>
                       <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2">
                         <code className="text-xs bg-background px-2 py-1.5 rounded border border-border break-all flex-1 font-mono">
-                          {config.fullUrl}
+                          {storefrontUrl}
                         </code>
                         <div className="flex gap-1.5 w-full sm:w-auto">
                           <Button type="button" variant="outline" size="sm" onClick={handleCopyLink} className="flex-1 sm:flex-none h-9">
                             {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
                           </Button>
                           <Button type="button" variant="outline" size="sm" asChild className="flex-1 sm:flex-none h-9">
-                            <a href={config.fullUrl} target="_blank" rel="noopener noreferrer">
+                            <a href={storefrontUrl} target="_blank" rel="noopener noreferrer">
                               <ExternalLink className="h-3.5 w-3.5" />
                             </a>
                           </Button>
@@ -432,7 +436,7 @@ const StorefrontSettings = () => {
 
                   <div className="p-3 bg-muted/50 rounded-lg border border-border">
                     <p className="text-xs text-muted-foreground mb-1.5">URL de votre boutique</p>
-                    <p className="text-xs font-mono break-all text-foreground">{config.fullUrl}</p>
+                    <p className="text-xs font-mono break-all text-foreground">{storefrontUrl}</p>
                   </div>
 
                   <div className="flex gap-2 pt-1">
@@ -441,7 +445,7 @@ const StorefrontSettings = () => {
                       <span className="text-xs">Copier</span>
                     </Button>
                     <Button variant="outline" size="sm" className="flex-1 h-9" asChild>
-                      <a href={config.fullUrl} target="_blank" rel="noopener noreferrer">
+                      <a href={storefrontUrl} target="_blank" rel="noopener noreferrer">
                         <ExternalLink className="h-3.5 w-3.5 mr-1.5" />
                         <span className="text-xs">Ouvrir</span>
                       </a>
