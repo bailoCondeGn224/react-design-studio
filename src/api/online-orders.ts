@@ -72,4 +72,10 @@ export const onlineOrdersApi = {
     const response = await apiClient.get('/online-orders/pending-count');
     return response.data;
   },
+
+  // Assigner une commande à un livreur (passe en EN_LIVRAISON)
+  dispatch: async (orderId: string, livreurId: string): Promise<OnlineOrder> => {
+    const response = await apiClient.put<OnlineOrder>(`/online-orders/${orderId}/dispatch/${livreurId}`);
+    return response.data;
+  },
 };

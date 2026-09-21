@@ -1,7 +1,9 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { apiClient } from '@/lib/api-client';
+import { livreursApi } from '@/api/livreurs';
+import { onlineOrdersApi } from '@/api/online-orders';
 import { Livreur, CreateLivreurDto, UpdateLivreurDto } from '@/types/livreur';
 import { toast } from 'sonner';
+import { AxiosError } from 'axios';
 
 interface UseLivreursOptions {
   /**
@@ -15,7 +17,7 @@ interface UseLivreursOptions {
 export const useLivreurs = (options?: UseLivreursOptions) => {
   return useQuery<Livreur[]>({
     queryKey: ['livreurs'],
-    queryFn: () => apiClient.get('/livreurs').then((res) => res.data),
+    queryFn: () => livreursApi.getAll(),
     refetchInterval: options?.refetchInterval ?? false,
   });
 };
@@ -23,12 +25,13 @@ export const useLivreurs = (options?: UseLivreursOptions) => {
 export const useCreateLivreur = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (data: CreateLivreurDto) => apiClient.post('/livreurs', data),
+    mutationFn: (data: CreateLivreurDto) => livreursApi.create(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['livreurs'] });
       toast.success('Livreur créé');
     },
-    onError: () => toast.error('Erreur lors de la création'),
+    onError: (error: AxiosError<{ message?: string }>) =>
+      toast.error(error.response?.data?.message || 'Erreur lors de la création'),
   });
 };
 
@@ -36,24 +39,26 @@ export const useUpdateLivreur = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: ({ id, data }: { id: string; data: UpdateLivreurDto }) =>
-      apiClient.put(`/livreurs/${id}`, data),
+      livreursApi.update(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['livreurs'] });
       toast.success('Livreur modifié');
     },
-    onError: () => toast.error('Erreur lors de la modification'),
+    onError: (error: AxiosError<{ message?: string }>) =>
+      toast.error(error.response?.data?.message || 'Erreur lors de la modification'),
   });
 };
 
 export const useDeleteLivreur = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (id: string) => apiClient.delete(`/livreurs/${id}`),
+    mutationFn: (id: string) => livreursApi.delete(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['livreurs'] });
       toast.success('Livreur supprimé');
     },
-    onError: () => toast.error('Erreur lors de la suppression'),
+    onError: (error: AxiosError<{ message?: string }>) =>
+      toast.error(error.response?.data?.message || 'Erreur lors de la suppression'),
   });
 };
 
@@ -66,11 +71,12 @@ export const useDispatchOrder = () => {
     }: {
       orderId: string;
       livreurId: string;
-    }) => apiClient.put(`/online-orders/${orderId}/dispatch/${livreurId}`),
+    }) => onlineOrdersApi.dispatch(orderId, livreurId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['online-orders'] });
       toast.success('Commande assignée au livreur');
     },
-    onError: () => toast.error("Erreur lors de l'assignation"),
+    onError: (error: AxiosError<{ message?: string }>) =>
+      toast.error(error.response?.data?.message || "Erreur lors de l'assignation"),
   });
 };

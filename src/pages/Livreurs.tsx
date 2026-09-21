@@ -1,244 +1,220 @@
-import { useState } from 'react';
-import { useMediaQuery } from '@/hooks/useMediaQuery';
+import { useState } from "react";
+import AppLayout from "@/components/AppLayout";
+import PageHeader from "@/components/PageHeader";
+import LivreurForm, { LivreurFormSubmit } from "@/components/LivreurForm";
+import LivreurMobileCard from "@/components/LivreurMobileCard";
 import {
   useLivreurs,
   useCreateLivreur,
   useUpdateLivreur,
   useDeleteLivreur,
-} from '@/hooks/useLivreurs';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Switch } from '@/components/ui/switch';
+} from "@/hooks/useLivreurs";
+import { Livreur } from "@/types/livreur";
+import { Plus, Edit, Trash, CheckCircle, XCircle, Truck } from "lucide-react";
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
-import { Plus, Loader2, Pencil, Trash2 } from 'lucide-react';
-import { Livreur, CreateLivreurDto, UpdateLivreurDto } from '@/types/livreur';
-import LivreurMobileCard from '@/components/LivreurMobileCard';
-import AppLayout from '@/components/AppLayout';
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 const Livreurs = () => {
-  const isMobile = useMediaQuery('(max-width: 768px)');
   const { data: livreurs = [], isLoading } = useLivreurs();
-  const createLivreur = useCreateLivreur();
-  const updateLivreur = useUpdateLivreur();
-  const deleteLivreur = useDeleteLivreur();
+  const createMutation = useCreateLivreur();
+  const updateMutation = useUpdateLivreur();
+  const deleteMutation = useDeleteLivreur();
 
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [formOpen, setFormOpen] = useState(false);
   const [editingLivreur, setEditingLivreur] = useState<Livreur | null>(null);
-  const [formData, setFormData] = useState<CreateLivreurDto>({
-    nom: '',
-    telephone: '',
-    password: '',
-  });
-  const [isActive, setIsActive] = useState(true);
+  const [formMode, setFormMode] = useState<'create' | 'edit'>('create');
+  const [deleteId, setDeleteId] = useState<string | null>(null);
 
-  const resetForm = () => {
-    setFormData({ nom: '', telephone: '', password: '' });
-    setIsActive(true);
+  const handleCreate = () => {
+    setFormMode('create');
+    setEditingLivreur(null);
+    setFormOpen(true);
+  };
+
+  const handleEdit = (livreur: Livreur) => {
+    setFormMode('edit');
+    setEditingLivreur(livreur);
+    setFormOpen(true);
+  };
+
+  const handleDelete = () => {
+    if (deleteId) {
+      deleteMutation.mutate(deleteId);
+      setDeleteId(null);
+    }
+  };
+
+  // Le formulaire ne se ferme qu'en cas de succès : en cas d'erreur (téléphone
+  // déjà utilisé…), la saisie reste disponible pour être corrigée.
+  const closeForm = () => {
+    setFormOpen(false);
     setEditingLivreur(null);
   };
 
-  const handleOpenDialog = (livreur?: Livreur) => {
-    if (livreur) {
-      setEditingLivreur(livreur);
-      setFormData({
-        nom: livreur.nom,
-        telephone: livreur.telephone,
-        password: '',
-      });
-      setIsActive(livreur.isActive);
+  const handleSubmit = (submit: LivreurFormSubmit) => {
+    if (submit.mode === 'edit') {
+      updateMutation.mutate({ id: submit.id, data: submit.data }, { onSuccess: closeForm });
     } else {
-      resetForm();
-    }
-    setIsDialogOpen(true);
-  };
-
-  const handleSubmit = async () => {
-    if (editingLivreur) {
-      const updateData: UpdateLivreurDto = {
-        nom: formData.nom,
-        telephone: formData.telephone,
-        isActive,
-      };
-      if (formData.password) {
-        updateData.password = formData.password;
-      }
-      await updateLivreur.mutateAsync({
-        id: editingLivreur.id,
-        data: updateData,
-      });
-    } else {
-      await createLivreur.mutateAsync(formData);
-    }
-    setIsDialogOpen(false);
-    resetForm();
-  };
-
-  const handleDelete = async (id: string) => {
-    if (confirm('Supprimer ce livreur ?')) {
-      await deleteLivreur.mutateAsync(id);
+      createMutation.mutate(submit.data, { onSuccess: closeForm });
     }
   };
-
-  if (isLoading) {
-    return (
-      <AppLayout>
-        <div className="flex items-center justify-center min-h-[60vh]">
-          <Loader2 className="h-8 w-8 animate-spin" />
-        </div>
-      </AppLayout>
-    );
-  }
 
   return (
     <AppLayout>
-      <div className="p-4 md:p-6">
-        <div className="flex items-center justify-between mb-6">
-          <h1 className="text-2xl font-bold">Livreurs</h1>
-          <Button onClick={() => handleOpenDialog()}>
-            <Plus className="h-4 w-4 mr-2" />
-            Ajouter
-          </Button>
-        </div>
+      <div className="space-y-4 sm:space-y-6">
+        <PageHeader
+          title="Livreurs"
+          description="Gestion des comptes livreurs"
+          action={
+            <button
+              onClick={handleCreate}
+              className="gradient-gold text-primary-foreground px-4 py-2.5 rounded-lg text-sm font-semibold flex items-center gap-2 shadow-elevated hover:opacity-90 transition-opacity w-full sm:w-auto"
+            >
+              <Plus className="w-4 h-4" />
+              Nouveau Livreur
+            </button>
+          }
+        />
 
-        {livreurs.length === 0 ? (
-          <div className="text-center py-12 text-muted-foreground">
-            Aucun livreur enregistré
+      {/* Version mobile: Cartes */}
+      <div className="md:hidden space-y-3 mb-6">
+        {isLoading ? (
+          <div className="bg-card border border-border rounded-xl p-12 text-center">
+            <div className="w-12 h-12 border-4 border-primary/30 border-t-primary rounded-full animate-spin mx-auto mb-4" />
+            <p className="text-muted-foreground">Chargement...</p>
           </div>
-        ) : isMobile ? (
-          <div className="space-y-4">
-            {livreurs.map((livreur) => (
-              <LivreurMobileCard
-                key={livreur.id}
-                livreur={livreur}
-                onEdit={handleOpenDialog}
-                onDelete={handleDelete}
-                isDeleting={deleteLivreur.isPending}
-              />
-            ))}
-          </div>
+        ) : livreurs.length > 0 ? (
+          livreurs.map((livreur) => (
+            <LivreurMobileCard
+              key={livreur.id}
+              livreur={livreur}
+              onEdit={handleEdit}
+              onDelete={setDeleteId}
+              isDeleting={deleteMutation.isPending}
+            />
+          ))
         ) : (
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Nom</TableHead>
-                <TableHead>Téléphone</TableHead>
-                <TableHead>Statut</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {livreurs.map((livreur) => (
-                <TableRow key={livreur.id}>
-                  <TableCell className="font-medium">{livreur.nom}</TableCell>
-                  <TableCell>{livreur.telephone}</TableCell>
-                  <TableCell>
-                    <span
-                      className={`px-2 py-1 rounded-full text-xs ${livreur.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}
-                    >
-                      {livreur.isActive ? 'Actif' : 'Inactif'}
-                    </span>
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleOpenDialog(livreur)}
-                    >
-                      <Pencil className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleDelete(livreur.id)}
-                    >
-                      <Trash2 className="h-4 w-4 text-destructive" />
-                    </Button>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+          <div className="bg-card border border-border rounded-xl p-12 text-center">
+            <Truck className="w-12 h-12 mx-auto mb-3 text-muted-foreground opacity-30" />
+            <p className="text-foreground font-medium">Aucun livreur</p>
+            <p className="text-sm text-muted-foreground mt-1">Créez votre premier livreur</p>
+          </div>
         )}
+      </div>
 
-        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>
-                {editingLivreur ? 'Modifier le livreur' : 'Nouveau livreur'}
-              </DialogTitle>
-            </DialogHeader>
-            <div className="space-y-4">
-              <div>
-                <Label htmlFor="nom">Nom</Label>
-                <Input
-                  id="nom"
-                  value={formData.nom}
-                  onChange={(e) =>
-                    setFormData({ ...formData, nom: e.target.value })
-                  }
-                />
-              </div>
-              <div>
-                <Label htmlFor="telephone">Téléphone</Label>
-                <Input
-                  id="telephone"
-                  value={formData.telephone}
-                  onChange={(e) =>
-                    setFormData({ ...formData, telephone: e.target.value })
-                  }
-                />
-              </div>
-              <div>
-                <Label htmlFor="password">
-                  Mot de passe{' '}
-                  {editingLivreur && '(laisser vide pour ne pas changer)'}
-                </Label>
-                <Input
-                  id="password"
-                  type="password"
-                  value={formData.password}
-                  onChange={(e) =>
-                    setFormData({ ...formData, password: e.target.value })
-                  }
-                />
-              </div>
-              {editingLivreur && (
-                <div className="flex items-center justify-between">
-                  <Label htmlFor="isActive">Actif</Label>
-                  <Switch
-                    id="isActive"
-                    checked={isActive}
-                    onCheckedChange={setIsActive}
-                  />
-                </div>
+      {/* Version desktop: Tableau */}
+      <div className="hidden md:block bg-card border border-border rounded-xl shadow-card overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead className="bg-secondary border-b border-border">
+              <tr>
+                <th className="text-left px-4 sm:px-6 py-3 sm:py-4 text-[10px] sm:text-xs font-bold uppercase tracking-wide text-foreground">Nom</th>
+                <th className="text-left px-4 sm:px-6 py-3 sm:py-4 text-[10px] sm:text-xs font-bold uppercase tracking-wide text-foreground">Téléphone</th>
+                <th className="text-center px-4 sm:px-6 py-3 sm:py-4 text-[10px] sm:text-xs font-bold uppercase tracking-wide text-foreground">Statut</th>
+                <th className="text-right px-4 sm:px-6 py-3 sm:py-4 text-[10px] sm:text-xs font-bold uppercase tracking-wide text-foreground">Actions</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-border">
+              {isLoading ? (
+                <tr>
+                  <td colSpan={4} className="text-center p-8 text-muted-foreground">
+                    Chargement des livreurs...
+                  </td>
+                </tr>
+              ) : livreurs.length === 0 ? (
+                <tr>
+                  <td colSpan={4} className="text-center p-8 text-muted-foreground">
+                    Aucun livreur. Créez-en un pour commencer.
+                  </td>
+                </tr>
+              ) : (
+                livreurs.map((livreur) => (
+                  <tr key={livreur.id} className="hover:bg-secondary/50 transition-colors">
+                    <td className="px-4 sm:px-6 py-3 sm:py-4">
+                      <span className="text-sm sm:text-base font-medium">{livreur.nom}</span>
+                    </td>
+                    <td className="px-4 sm:px-6 py-3 sm:py-4">
+                      <span className="text-xs sm:text-sm text-muted-foreground">{livreur.telephone}</span>
+                    </td>
+                    <td className="px-4 sm:px-6 py-3 sm:py-4 text-center">
+                      {livreur.isActive ? (
+                        <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-green-100 text-green-700 text-[10px] sm:text-xs font-medium">
+                          <CheckCircle className="w-3 h-3" />
+                          Actif
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-gray-100 text-gray-600 text-[10px] sm:text-xs font-medium">
+                          <XCircle className="w-3 h-3" />
+                          Inactif
+                        </span>
+                      )}
+                    </td>
+                    <td className="px-4 sm:px-6 py-3 sm:py-4">
+                      <div className="flex items-center justify-end gap-2">
+                        <button
+                          onClick={() => handleEdit(livreur)}
+                          className="p-2 hover:bg-primary/10 rounded-lg text-primary transition-colors"
+                          title="Modifier"
+                        >
+                          <Edit className="w-4 h-4" />
+                        </button>
+                        <button
+                          onClick={() => setDeleteId(livreur.id)}
+                          className="p-2 hover:bg-destructive/10 rounded-lg text-destructive transition-colors"
+                          title="Supprimer"
+                        >
+                          <Trash className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
               )}
-              <Button
-                className="w-full"
-                onClick={handleSubmit}
-                disabled={createLivreur.isPending || updateLivreur.isPending}
-              >
-                {(createLivreur.isPending || updateLivreur.isPending) && (
-                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                )}
-                {editingLivreur ? 'Modifier' : 'Créer'}
-              </Button>
-            </div>
-          </DialogContent>
-        </Dialog>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* Form Dialog */}
+      <LivreurForm
+        open={formOpen}
+        onOpenChange={setFormOpen}
+        onSubmit={handleSubmit}
+        initialData={editingLivreur}
+        mode={formMode}
+        isSubmitting={createMutation.isPending || updateMutation.isPending}
+      />
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={deleteId !== null} onOpenChange={() => setDeleteId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Supprimer le livreur</AlertDialogTitle>
+            <AlertDialogDescription>
+              Êtes-vous sûr de vouloir supprimer ce livreur ? Il ne pourra plus se connecter.
+              Cette action est irréversible.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deleteMutation.isPending}>Annuler</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDelete}
+              disabled={deleteMutation.isPending}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {deleteMutation.isPending ? 'Suppression...' : 'Supprimer'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
       </div>
     </AppLayout>
   );
