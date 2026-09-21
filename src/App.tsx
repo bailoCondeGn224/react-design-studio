@@ -11,6 +11,7 @@ import { SidebarProvider } from "./contexts/SidebarContext";
 import { AuthProvider } from "./contexts/AuthContext";
 import { CustomerAuthProvider } from "./contexts/CustomerAuthContext";
 import { LivreurAuthProvider } from "./contexts/LivreurAuthContext";
+import { LivreurProtectedRoute } from "./components/livreur/LivreurProtectedRoute";
 import { CustomerProtectedRoute } from "./components/customer/CustomerProtectedRoute";
 import { InstallPWA } from "./components/InstallPWA";
 import { PWAUpdateNotification, OfflineIndicator } from "./components/PWAUpdateNotification";
@@ -401,23 +402,18 @@ const App = () => (
                     </CustomerProtectedRoute>
                   }
                 />
-                {/* Livreur routes */}
-                <Route
-                  path="/b/:slug/livreur"
-                  element={
-                    <LivreurAuthProvider>
-                      <LivreurLogin />
-                    </LivreurAuthProvider>
-                  }
-                />
-                <Route
-                  path="/b/:slug/livreur/dashboard"
-                  element={
-                    <LivreurAuthProvider>
-                      <LivreurDashboard />
-                    </LivreurAuthProvider>
-                  }
-                />
+                {/* Livreur routes - single LivreurAuthProvider wrapper */}
+                <Route element={<LivreurAuthProvider />}>
+                  <Route path="/b/:slug/livreur" element={<LivreurLogin />} />
+                  <Route
+                    path="/b/:slug/livreur/dashboard"
+                    element={
+                      <LivreurProtectedRoute>
+                        <LivreurDashboard />
+                      </LivreurProtectedRoute>
+                    }
+                  />
+                </Route>
               </Route>
               <Route path="*" element={<NotFound />} />
             </Routes>

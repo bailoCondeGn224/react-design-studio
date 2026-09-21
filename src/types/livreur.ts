@@ -58,3 +58,16 @@ export interface TrackingInfo {
   /** Renseigné dès que le livreur a été détecté à destination. */
   arriveeLe: string | null;
 }
+
+/** Commande pour laquelle le serveur vient de détecter l'arrivée du livreur. */
+export interface ArriveeSignalee {
+  orderId: string;
+  numero: string;
+  adresseLivraison?: string;
+}
+
+/** Réponse de PUT /public/livreur/position */
+export interface UpdateLivreurPositionResponse {
+  ok: boolean;
+  arrivees: ArriveeSignalee[];
+}

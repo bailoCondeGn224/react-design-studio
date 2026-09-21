@@ -5,50 +5,58 @@ import {
   useEffect,
   ReactNode,
 } from 'react';
-import { apiClient } from '@/lib/api-client';
+import { Outlet } from 'react-router-dom';
+import { livreurApi } from '@/api/livreur';
+import {
+  LIVREUR_AUTH_REQUIRED_EVENT,
+  LIVREUR_STORAGE_KEYS,
+} from '@/lib/livreur-api-client';
 import { LivreurLoginDto, LivreurAuthResponse } from '@/types/livreur';
 
+type LivreurSession = LivreurAuthResponse['livreur'];
+
 interface LivreurAuthContextType {
-  livreur: LivreurAuthResponse['livreur'] | null;
+  livreur: LivreurSession | null;
   isAuthenticated: boolean;
-  isLoading: boolean;
   login: (dto: LivreurLoginDto) => Promise<void>;
   logout: () => void;
 }
 
 const LivreurAuthContext = createContext<LivreurAuthContextType | null>(null);
 
-const STORAGE_KEY = 'livreur_token';
-const LIVREUR_KEY = 'livreur_data';
+// Lecture synchrone : la session doit être connue dès le premier rendu, sinon
+// la route protégée redirige vers la connexion avant qu'elle soit restaurée.
+const readStoredSession = (): LivreurSession | null => {
+  if (!localStorage.getItem(LIVREUR_STORAGE_KEYS.TOKEN)) return null;
+  try {
+    const stored = localStorage.getItem(LIVREUR_STORAGE_KEYS.LIVREUR);
+    return stored ? JSON.parse(stored) : null;
+  } catch {
+    localStorage.removeItem(LIVREUR_STORAGE_KEYS.LIVREUR);
+    return null;
+  }
+};
 
-export const LivreurAuthProvider = ({ children }: { children: ReactNode }) => {
-  const [livreur, setLivreur] = useState<LivreurAuthResponse['livreur'] | null>(
-    null,
-  );
-  const [isLoading, setIsLoading] = useState(true);
+export const LivreurAuthProvider = ({ children }: { children?: ReactNode }) => {
+  const [livreur, setLivreur] = useState<LivreurSession | null>(readStoredSession);
 
+  // Session expirée côté serveur (401 intercepté par livreurApiClient)
   useEffect(() => {
-    const token = localStorage.getItem(STORAGE_KEY);
-    const savedLivreur = localStorage.getItem(LIVREUR_KEY);
-    if (token && savedLivreur) {
-      setLivreur(JSON.parse(savedLivreur));
-    }
-    setIsLoading(false);
+    const handleExpired = () => setLivreur(null);
+    window.addEventListener(LIVREUR_AUTH_REQUIRED_EVENT, handleExpired);
+    return () => window.removeEventListener(LIVREUR_AUTH_REQUIRED_EVENT, handleExpired);
   }, []);
 
   const login = async (dto: LivreurLoginDto) => {
-    const res = await apiClient.post<LivreurAuthResponse>(
-      '/public/livreur/login',
-      dto,
-    );
-    localStorage.setItem(STORAGE_KEY, res.data.access_token);
-    localStorage.setItem(LIVREUR_KEY, JSON.stringify(res.data.livreur));
-    setLivreur(res.data.livreur);
+    const data = await livreurApi.login(dto);
+    localStorage.setItem(LIVREUR_STORAGE_KEYS.TOKEN, data.access_token);
+    localStorage.setItem(LIVREUR_STORAGE_KEYS.LIVREUR, JSON.stringify(data.livreur));
+    setLivreur(data.livreur);
   };
 
   const logout = () => {
-    localStorage.removeItem(STORAGE_KEY);
-    localStorage.removeItem(LIVREUR_KEY);
+    localStorage.removeItem(LIVREUR_STORAGE_KEYS.TOKEN);
+    localStorage.removeItem(LIVREUR_STORAGE_KEYS.LIVREUR);
     setLivreur(null);
   };
 
@@ -57,12 +65,11 @@ export const LivreurAuthProvider = ({ children }: { children: ReactNode }) => {
       value={{
         livreur,
         isAuthenticated: !!livreur,
-        isLoading,
         login,
         logout,
       }}
     >
-      {children}
+      {children ?? <Outlet />}
     </LivreurAuthContext.Provider>
   );
 };

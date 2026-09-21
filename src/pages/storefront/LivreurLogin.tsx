@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { Navigate, useNavigate, useParams } from 'react-router-dom';
 import { useLivreurAuth } from '@/contexts/LivreurAuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -10,7 +10,7 @@ import { toast } from 'sonner';
 const LivreurLogin = () => {
   const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
-  const { login } = useLivreurAuth();
+  const { login, isAuthenticated } = useLivreurAuth();
   const [telephone, setTelephone] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -28,6 +28,11 @@ const LivreurLogin = () => {
       setIsLoading(false);
     }
   };
+
+  // Déjà connecté (app rouverte, retour arrière) : directement aux livraisons
+  if (isAuthenticated) {
+    return <Navigate to={`/b/${slug}/livreur/dashboard`} replace />;
+  }
 
   return (
     <div className="min-h-screen bg-background px-4">

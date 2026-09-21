@@ -1,9 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
-import {
-  ArriveeSignalee,
-  useUpdateLivreurPosition,
-} from '@/hooks/useLivreurOrders';
+import { useUpdateLivreurPosition } from '@/hooks/useLivreurOrders';
+import { ArriveeSignalee } from '@/types/livreur';
 import { distanceInMeters } from '@/lib/geo';
 
 export type GeoStatus =
