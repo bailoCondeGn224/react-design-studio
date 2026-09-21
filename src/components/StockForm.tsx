@@ -7,7 +7,7 @@ import MobileCombobox from "@/components/MobileCombobox";
 import { toast } from "sonner";
 import { useCategoriesActive } from "@/hooks/useCategories";
 import { formatPrixInput, handlePrixChange } from "@/utils/format-prix";
-import { ImageIcon, Upload, X, Camera, Layers } from "lucide-react";
+import { ImageIcon, Upload, Camera, Layers, RotateCcw } from "lucide-react";
 import { getPhotoUrl } from "@/lib/api-client";
 import { ModeVenteInline } from '@/types';
 import { TypeVenteSelector, TypeVente } from "./TypeVenteSelector";
@@ -98,6 +98,9 @@ const StockForm = ({ open, onOpenChange, onSubmit, initialData = null, mode = 'c
   const [form, setForm] = useState(getInitialState());
   const [photoFile, setPhotoFile] = useState<File | null>(null);
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
+  // Photo enregistrée de l'article (mode édition) : c'est vers elle que
+  // « Réinitialiser » revient. Le backend ne sait que remplacer une photo.
+  const [originalPhotoUrl, setOriginalPhotoUrl] = useState<string | null>(null);
   const [isCapturingPhoto, setIsCapturingPhoto] = useState(false);
   const [typeVente, setTypeVente] = useState<TypeVente>("detail");
   const [quantiteGros, setQuantiteGros] = useState(12);
@@ -171,11 +174,9 @@ const StockForm = ({ open, onOpenChange, onSubmit, initialData = null, mode = 'c
       setPrixGros(venteConfig.prixGros);
 
       // Afficher la photo existante si présente
-      if (initialData.photo) {
-        setPhotoPreview(getPhotoUrl(initialData.photo));
-      } else {
-        setPhotoPreview(null);
-      }
+      const existingPhoto = initialData.photo ? getPhotoUrl(initialData.photo) : null;
+      setOriginalPhotoUrl(existingPhoto);
+      setPhotoPreview(existingPhoto);
       setPhotoFile(null); // Pas de fichier (juste l'aperçu depuis l'URL)
     }
 
@@ -219,6 +220,17 @@ const StockForm = ({ open, onOpenChange, onSubmit, initialData = null, mode = 'c
     // Reset input pour permettre de re-sélectionner le même fichier
     e.target.value = '';
   };
+
+  // Revient à la photo enregistrée (édition) ou à aucune photo (création)
+  const baselinePhoto = mode === 'edit' ? originalPhotoUrl : null;
+
+  const handleResetPhoto = () => {
+    setPhotoFile(null);
+    setPhotoPreview(baselinePhoto);
+  };
+
+  const hasPhotoChanged = photoPreview !== baselinePhoto;
+  const resetPhotoLabel = baselinePhoto ? "Rétablir la photo d'origine" : 'Retirer la photo';
 
   // Déclencher la capture photo (sauvegarde IMMÉDIATE avant d'ouvrir la caméra)
   const handleCameraClick = () => {
@@ -350,123 +362,99 @@ const StockForm = ({ open, onOpenChange, onSubmit, initialData = null, mode = 'c
             maxLength={50}
           />
 
-          {/* Photo Upload - Optimisé mobile */}
+          {/* Photo de l'article */}
           <div className="space-y-2">
             <label className="block text-sm font-medium text-foreground">
               Photo de l'article (optionnel)
             </label>
 
-            {/* Version mobile: pleine largeur */}
-            <div className="md:hidden">
-              {photoPreview ? (
-                <div className="relative w-full rounded-xl border-2 border-border overflow-hidden bg-muted/30">
-                  <img
-                    src={photoPreview}
-                    alt="Aperçu"
-                    className="w-full h-40 object-cover"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end p-3">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setPhotoFile(null);
-                        setPhotoPreview(null);
-                      }}
-                      className="flex items-center gap-2 px-4 h-11 rounded-lg bg-destructive text-destructive-foreground text-sm font-semibold active:scale-95 transition-transform"
-                    >
-                      <X className="w-4 h-4" />
-                      Supprimer
-                    </button>
-                  </div>
-                </div>
-              ) : (
-                <div className="w-full space-y-2">
-                  {/* Input pour caméra */}
-                  <input
-                    type="file"
-                    id="photo-camera-edit-mobile"
-                    accept="image/*"
-                    capture="environment"
-                    onChange={handlePhotoChange}
-                    className="hidden"
-                  />
-                  {/* Input pour galerie */}
-                  <input
-                    type="file"
-                    id="photo-gallery-edit-mobile"
-                    accept="image/*"
-                    onChange={handlePhotoChange}
-                    className="hidden"
-                  />
+            {/* Inputs fichiers (toujours montés : on peut changer une photo existante) */}
+            <input
+              type="file"
+              id="photo-camera-edit-mobile"
+              accept="image/*"
+              capture="environment"
+              onChange={handlePhotoChange}
+              className="hidden"
+            />
+            <input
+              type="file"
+              id="photo-gallery-edit-mobile"
+              accept="image/*"
+              onChange={handlePhotoChange}
+              className="hidden"
+            />
+            <input
+              type="file"
+              id="photo-upload-edit-desktop"
+              accept="image/jpeg,image/png,image/webp,image/jpg"
+              onChange={handlePhotoChange}
+              className="hidden"
+            />
 
-                  {/* Bouton Prendre une photo */}
+            <div className="rounded-xl border border-border bg-muted/20 p-3 flex flex-col md:flex-row md:items-center gap-3">
+              {/* Aperçu */}
+              <div className="relative w-full h-44 md:w-28 md:h-28 flex-shrink-0 rounded-lg overflow-hidden border border-border bg-muted/50">
+                {photoPreview ? (
+                  <img src={photoPreview} alt="Aperçu de la photo" className="w-full h-full object-cover" />
+                ) : (
+                  <div className="w-full h-full flex flex-col items-center justify-center gap-1 text-muted-foreground">
+                    <ImageIcon className="w-8 h-8" />
+                    <span className="text-xs">Aucune photo</span>
+                  </div>
+                )}
+                {photoPreview && hasPhotoChanged && (
+                  <span className="absolute top-2 left-2 rounded-full bg-primary px-2 py-0.5 text-[10px] font-semibold text-primary-foreground shadow">
+                    Nouvelle photo
+                  </span>
+                )}
+              </div>
+
+              {/* Actions */}
+              <div className="flex-1 min-w-0 space-y-2">
+                {/* Mobile : appareil photo + galerie */}
+                <div className="grid grid-cols-2 gap-2 md:hidden">
                   <label
                     htmlFor="photo-camera-edit-mobile"
                     onClick={handleCameraClick}
-                    className="flex items-center justify-center gap-2 w-full h-14 border-2 border-primary/30 rounded-xl cursor-pointer bg-primary text-primary-foreground active:scale-[0.98] transition-all font-semibold"
+                    className="flex items-center justify-center gap-2 h-11 rounded-lg bg-primary text-primary-foreground text-sm font-semibold cursor-pointer active:scale-[0.98] transition-all"
                   >
-                    <Camera className="w-5 h-5" />
-                    Prendre une photo
+                    <Camera className="w-4 h-4" />
+                    {photoPreview ? 'Reprendre' : 'Photo'}
                   </label>
-
-                  {/* Bouton Choisir depuis galerie */}
                   <label
                     htmlFor="photo-gallery-edit-mobile"
                     onClick={handleCameraClick}
-                    className="flex items-center justify-center gap-2 w-full h-14 border-2 border-dashed border-primary/30 rounded-xl cursor-pointer bg-primary/5 active:bg-primary/10 active:scale-[0.98] transition-all font-medium"
+                    className="flex items-center justify-center gap-2 h-11 rounded-lg border border-primary/30 bg-primary/5 text-sm font-medium cursor-pointer active:bg-primary/10 active:scale-[0.98] transition-all"
                   >
-                    <Upload className="w-5 h-5 text-primary" />
-                    Choisir depuis la galerie
+                    <Upload className="w-4 h-4 text-primary" />
+                    Galerie
                   </label>
                 </div>
-              )}
-            </div>
 
-            {/* Version desktop: horizontal */}
-            <div className="hidden md:flex items-center gap-4">
-              {photoPreview ? (
-                <div className="relative w-24 h-24 rounded-lg border border-border overflow-hidden">
-                  <img
-                    src={photoPreview}
-                    alt="Aperçu"
-                    className="w-full h-full object-cover"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setPhotoFile(null);
-                      setPhotoPreview(null);
-                    }}
-                    className="absolute top-1 right-1 p-1 bg-destructive text-destructive-foreground rounded-full hover:bg-destructive/90"
-                  >
-                    <X className="w-3 h-3" />
-                  </button>
-                </div>
-              ) : (
-                <div className="w-24 h-24 rounded-lg border-2 border-dashed border-border bg-muted/50 flex items-center justify-center">
-                  <ImageIcon className="w-8 h-8 text-muted-foreground" />
-                </div>
-              )}
-
-              <div className="flex-1">
-                <input
-                  type="file"
-                  id="photo-upload-edit-desktop"
-                  accept="image/jpeg,image/png,image/webp,image/jpg"
-                  onChange={handlePhotoChange}
-                  className="hidden"
-                />
+                {/* Desktop : un seul sélecteur de fichier */}
                 <label
                   htmlFor="photo-upload-edit-desktop"
                   onClick={handleCameraClick}
-                  className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-border bg-card text-sm font-medium cursor-pointer hover:bg-secondary transition-colors"
+                  className="hidden md:inline-flex items-center gap-2 h-9 px-4 rounded-lg border border-border bg-card text-sm font-medium cursor-pointer hover:bg-secondary transition-colors"
                 >
                   <Upload className="w-4 h-4" />
                   {photoPreview ? 'Changer la photo' : 'Choisir une photo'}
                 </label>
-                <p className="text-xs text-muted-foreground mt-1">
-                  JPG, PNG ou WEBP. Max 5MB.
-                </p>
+
+                {/* Réinitialiser : visible seulement s'il y a un changement à annuler */}
+                {hasPhotoChanged && (
+                  <button
+                    type="button"
+                    onClick={handleResetPhoto}
+                    className="flex w-full md:w-auto items-center justify-center md:justify-start gap-2 h-10 md:h-9 px-3 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
+                  >
+                    <RotateCcw className="w-4 h-4" />
+                    {resetPhotoLabel}
+                  </button>
+                )}
+
+                <p className="text-xs text-muted-foreground">JPG, PNG ou WEBP. Max 5MB.</p>
               </div>
             </div>
           </div>
