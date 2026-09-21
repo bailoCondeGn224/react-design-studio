@@ -613,10 +613,10 @@ export interface StatsStock {
   articlesEnRupture: number;
   articlesStockFaible: number;
   articlesOK: number;
-  enAlerte: number; // alias de articlesEnAlerte
+  enAlerte: number; 
   articlesEnAlerte: number;
   valeurTotaleStock: number;
-  tauxAlerte: number; // Pourcentage d'articles en alerte
+  tauxAlerte: number;  
   parCategorie: { categorie: string; count: number }[];
 }
 
@@ -626,7 +626,7 @@ export interface DashboardAnalytics {
     totalArticles: number;
     articlesEnAlerte: number;
     articlesEnRupture: number;
-    articlesCritiques: number; // = articles en stock faible (1 à 5), nom gardé côté backend
+    articlesCritiques: number;
   };
   fournisseurs: {
     totalActifs: number;
@@ -778,7 +778,7 @@ export interface Approvisionnement {
   numero: string;
   fournisseurId: string;
   fournisseurNom: string;
-  fournisseur?: Fournisseur; // chargé uniquement par GET /approvisionnements/:id
+  fournisseur?: Fournisseur; 
   lignes: LigneApprovisionnement[];
   total: number;
   montantPaye: number;
@@ -937,7 +937,6 @@ export interface LigneRetourClient {
   sousTotal: number;
   raison?: 'defectueux' | 'taille_incorrecte' | 'couleur_incorrecte' | 'erreur_commande' | 'non_conforme' | 'qualite_insuffisante' | 'changement_avis' | 'autre';
   noteArticle?: string;
-  // Renvoyés par l'entité LigneRetourClient ; ignorés à la création (le backend les recalcule depuis la ligne de vente)
   quantiteBase?: number;
   modeVenteId?: string | null;
   modeVente?: ModeVente | null;
