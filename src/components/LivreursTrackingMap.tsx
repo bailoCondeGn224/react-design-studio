@@ -6,6 +6,8 @@ import { Livreur } from '@/types/livreur';
 import { OnlineOrder } from '@/types';
 import { distanceInMeters, formatDistance } from '@/lib/geo';
 import { useRoute } from '@/hooks/useRoute';
+import { MapStatTiles } from '@/components/MapStatTiles';
+import { createRouteLine, RouteLine } from '@/lib/map-route-style';
 import {
   addTileLayer,
   buildBoutiqueIcon,
@@ -102,7 +104,7 @@ export const LivreursTrackingMap = ({
   const destinationMarkersRef = useRef<Map<string, L.Marker>>(new Map());
   const uncertaintyCirclesRef = useRef<Map<string, L.Circle>>(new Map());
   const linesRef = useRef<Map<string, L.Polyline>>(new Map());
-  const selectedRouteRef = useRef<L.Polyline | null>(null);
+  const selectedRouteRef = useRef<RouteLine | null>(null);
   const boutiqueMarkerRef = useRef<L.Marker | null>(null);
   const boutiqueRouteRef = useRef<L.Polyline | null>(null);
   const fittedKeyRef = useRef<string | null>(null);
@@ -405,16 +407,13 @@ export const LivreursTrackingMap = ({
 
     if (selectedRouteRef.current) {
       selectedRouteRef.current.setLatLngs(selectedRoute.coordinates);
-      selectedRouteRef.current.setStyle({
-        dashArray: isApproximate ? '10, 10' : undefined,
-      });
+      selectedRouteRef.current.setApproximate(isApproximate);
     } else {
-      selectedRouteRef.current = L.polyline(selectedRoute.coordinates, {
-        color: '#2563eb',
-        weight: 5,
-        opacity: 0.85,
-        dashArray: isApproximate ? '10, 10' : undefined,
-      }).addTo(map);
+      selectedRouteRef.current = createRouteLine(
+        map,
+        selectedRoute.coordinates,
+        isApproximate,
+      );
     }
 
     if (fittedSelectionRef.current !== selectedOrderId) {
@@ -478,12 +477,17 @@ export const LivreursTrackingMap = ({
       </div>
 
       {/* Carte */}
-      <div className="relative">
+      <div className="relative overflow-hidden rounded-xl border border-border shadow-card">
         <MapTileWarning health={tileHealth} />
-        <div
-          ref={mapRef}
-          className="h-[26rem] rounded-lg overflow-hidden border border-border shadow-card"
-        />
+        <div ref={mapRef} className="h-[30rem] w-full [&_.leaflet-top]:top-24" />
+
+        <div className="pointer-events-none absolute inset-x-3 top-3 z-[400]">
+          <MapStatTiles
+            distanceM={selectedRoute?.distanceM}
+            durationS={selectedRoute?.durationS}
+            approximate={isApproximate}
+          />
+        </div>
       </div>
     </div>
   );

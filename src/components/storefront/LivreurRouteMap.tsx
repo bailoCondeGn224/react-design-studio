@@ -3,7 +3,8 @@ import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { OnlineOrder } from '@/types';
 import { useRoute } from '@/hooks/useRoute';
-import { formatDistance, formatDuration } from '@/lib/geo';
+import { MapStatTiles } from '@/components/MapStatTiles';
+import { createRouteLine, RouteLine } from '@/lib/map-route-style';
 import {
   addTileLayer,
   buildDestinationIcon,
@@ -16,13 +17,14 @@ import {
 import { MapTileWarning } from '@/components/MapTileWarning';
 import { animateMarkerTo, applyBearing, computeBearing } from '@/lib/marker-animation';
 import { createMapFollower, MapFollower } from '@/lib/map-follow';
-import { Navigation, Route as RouteIcon, Loader2 } from 'lucide-react';
+import { Crosshair, Navigation } from 'lucide-react';
 
 interface LivreurRouteMapProps {
   orders: OnlineOrder[];
   selectedOrderId: string | null;
   onSelectOrder: (orderId: string) => void;
   position: { latitude: number; longitude: number } | null;
+  onNavigate?: (order: OnlineOrder) => void;
 }
 
 const hasCoords = (order: OnlineOrder) =>
@@ -33,13 +35,14 @@ export const LivreurRouteMap = ({
   selectedOrderId,
   onSelectOrder,
   position,
+  onNavigate,
 }: LivreurRouteMapProps) => {
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<L.Map | null>(null);
   const selfMarkerRef = useRef<L.Marker | null>(null);
   const destinationMarkersRef = useRef<Map<string, L.Marker>>(new Map());
   const uncertaintyCirclesRef = useRef<Map<string, L.Circle>>(new Map());
-  const routeLineRef = useRef<L.Polyline | null>(null);
+  const routeLineRef = useRef<RouteLine | null>(null);
   const fittedForRef = useRef<string | null>(null);
 
   const onSelectRef = useRef(onSelectOrder);
@@ -55,7 +58,7 @@ export const LivreurRouteMap = ({
     [deliverableOrders, selectedOrderId],
   );
 
-  const { route, isApproximate, isLoading } = useRoute(
+  const { route, isApproximate } = useRoute(
     position ? { lat: position.latitude, lng: position.longitude } : null,
     selectedOrder
       ? { lat: selectedOrder.latitudeLivraison!, lng: selectedOrder.longitudeLivraison! }
@@ -189,14 +192,9 @@ export const LivreurRouteMap = ({
 
     if (routeLineRef.current) {
       routeLineRef.current.setLatLngs(route.coordinates);
-      routeLineRef.current.setStyle({ dashArray: isApproximate ? '10, 10' : undefined });
+      routeLineRef.current.setApproximate(isApproximate);
     } else {
-      routeLineRef.current = L.polyline(route.coordinates, {
-        color: '#2563eb',
-        weight: 5,
-        opacity: 0.8,
-        dashArray: isApproximate ? '10, 10' : undefined,
-      }).addTo(map);
+      routeLineRef.current = createRouteLine(map, route.coordinates, isApproximate);
     }
 
     if (fittedForRef.current !== selectedOrderId) {
@@ -225,44 +223,42 @@ export const LivreurRouteMap = ({
   if (deliverableOrders.length === 0) return null;
 
   return (
-    <div className="relative">
+    <div className="relative overflow-hidden rounded-xl border border-border">
       <MapTileWarning health={tileHealth} />
       <div
         ref={mapRef}
-        className="h-64 rounded-lg overflow-hidden border border-border"
+        className={`h-[58vh] min-h-[340px] w-full ${
+          selectedOrder && onNavigate ? '[&_.leaflet-bottom]:bottom-20' : ''
+        }`}
       />
+
+      <div className="pointer-events-none absolute inset-x-3 top-3 z-[400]">
+        <MapStatTiles
+          distanceM={route?.distanceM}
+          durationS={route?.durationS}
+          approximate={isApproximate}
+        />
+      </div>
 
       <button
         type="button"
         onClick={recenter}
         aria-label="Recentrer la carte"
-        className="absolute top-3 right-3 z-[400] bg-card border border-border rounded-full p-2 shadow-md"
+        className="absolute right-3 top-24 z-[400] rounded-full border border-border bg-card p-3 shadow-lg"
       >
-        <Navigation className="h-4 w-4 text-foreground" />
+        <Crosshair className="h-5 w-5 text-foreground" />
       </button>
 
-      {selectedOrder && route && (
-        <div className="absolute bottom-3 left-3 z-[400] bg-card/95 backdrop-blur border border-border rounded-lg px-3 py-2 shadow-md">
-          <p className="text-xs text-muted-foreground">{selectedOrder.numero}</p>
-          <div className="flex items-center gap-2">
-            {isLoading ? (
-              <Loader2 className="h-3.5 w-3.5 animate-spin text-muted-foreground" />
-            ) : (
-              <RouteIcon className="h-3.5 w-3.5 text-primary" />
-            )}
-            <p className="text-sm font-bold">
-              {formatDistance(route.distanceM)}
-              {route.durationS != null && (
-                <span className="font-normal text-muted-foreground">
-                  {' · '}
-                  {formatDuration(route.durationS)}
-                </span>
-              )}
-            </p>
-          </div>
-          {isApproximate && !isLoading && (
-            <p className="text-[10px] text-muted-foreground">à vol d'oiseau</p>
-          )}
+      {selectedOrder && onNavigate && (
+        <div className="absolute inset-x-4 bottom-4 z-[400]">
+          <button
+            type="button"
+            onClick={() => onNavigate(selectedOrder)}
+            className="flex h-14 w-full items-center justify-center gap-2 rounded-full bg-primary text-base font-semibold text-primary-foreground shadow-xl active:scale-[0.98]"
+          >
+            <Navigation className="h-5 w-5" />
+            Naviguer
+          </button>
         </div>
       )}
     </div>

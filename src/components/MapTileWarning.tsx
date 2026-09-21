@@ -24,7 +24,7 @@ export const MapTileWarning = ({ health }: MapTileWarningProps) => {
   if (health !== 'error' && !isOffline) return null;
 
   return (
-    <div className="absolute inset-x-2 top-2 z-[500] flex items-start gap-2 rounded-lg border border-amber-300 bg-amber-50/95 px-3 py-2 shadow-sm backdrop-blur">
+    <div className="absolute inset-x-2 top-2 z-[600] flex items-start gap-2 rounded-lg border border-amber-300 bg-amber-50/95 px-3 py-2 shadow-sm backdrop-blur">
       <WifiOff className="mt-0.5 h-4 w-4 shrink-0 text-amber-600" />
       <p className="text-[11px] leading-snug text-amber-900">
         <span className="font-medium">Fond de carte indisponible.</span>{' '}

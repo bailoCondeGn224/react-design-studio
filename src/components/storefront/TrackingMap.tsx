@@ -2,9 +2,10 @@ import { useEffect, useRef, useState } from 'react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { TrackingInfo } from '@/types/livreur';
-import { Phone, Truck, AlertCircle, Clock, BellRing, Crosshair } from 'lucide-react';
-import { formatDistance, formatDuration } from '@/lib/geo';
+import { Phone, Truck, AlertCircle, BellRing, Crosshair } from 'lucide-react';
 import { useRoute } from '@/hooks/useRoute';
+import { MapStatTiles } from '@/components/MapStatTiles';
+import { createRouteLine, RouteLine } from '@/lib/map-route-style';
 import {
   addTileLayer,
   buildBoutiqueIcon,
@@ -40,7 +41,7 @@ export const TrackingMap = ({ tracking }: TrackingMapProps) => {
   const destinationMarkerRef = useRef<L.Marker | null>(null);
   const uncertaintyCircleRef = useRef<L.Circle | null>(null);
   const boutiqueMarkerRef = useRef<L.Marker | null>(null);
-  const routeLineRef = useRef<L.Polyline | null>(null);
+  const routeLineRef = useRef<RouteLine | null>(null);
   const followerRef = useRef<MapFollower | null>(null);
   const [isFollowing, setIsFollowing] = useState(true);
   const hasFittedRef = useRef(false);
@@ -200,16 +201,9 @@ export const TrackingMap = ({ tracking }: TrackingMapProps) => {
 
     if (routeLineRef.current) {
       routeLineRef.current.setLatLngs(route.coordinates);
-      routeLineRef.current.setStyle({
-        dashArray: isApproximate ? '10, 10' : undefined,
-      });
+      routeLineRef.current.setApproximate(isApproximate);
     } else {
-      routeLineRef.current = L.polyline(route.coordinates, {
-        color: '#3b82f6',
-        weight: 4,
-        opacity: 0.75,
-        dashArray: isApproximate ? '10, 10' : undefined,
-      }).addTo(map);
+      routeLineRef.current = createRouteLine(map, route.coordinates, isApproximate);
     }
 
     if (!hasFittedRef.current) {
@@ -246,29 +240,15 @@ export const TrackingMap = ({ tracking }: TrackingMapProps) => {
           </div>
           <div className="flex-1 min-w-0">
             <p className="font-semibold text-blue-900">{tracking.livreurNom}</p>
-            <a
-              href={`tel:${tracking.livreurTelephone}`}
-              className="flex items-center gap-1 text-sm text-blue-700"
-            >
-              <Phone className="w-3 h-3" />
-              {tracking.livreurTelephone}
-            </a>
+            <p className="text-sm text-blue-700">{tracking.livreurTelephone}</p>
           </div>
-          {route && (
-            <div className="text-right shrink-0">
-              <p className="text-xs text-gray-500">
-                {isApproximate ? 'À vol d’oiseau' : 'Par la route'}
-              </p>
-              <p className="text-lg font-bold text-blue-600 leading-tight">
-                {formatDistance(route.distanceM)}
-              </p>
-              {route.durationS != null && (
-                <p className="flex items-center justify-end gap-1 text-xs text-blue-700">
-                  <Clock className="w-3 h-3" />~{formatDuration(route.durationS)}
-                </p>
-              )}
-            </div>
-          )}
+          <a
+            href={`tel:${tracking.livreurTelephone}`}
+            aria-label="Appeler le livreur"
+            className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-blue-600 text-white shadow-md active:scale-95"
+          >
+            <Phone className="h-5 w-5" />
+          </a>
         </div>
       </div>
 
@@ -296,12 +276,20 @@ export const TrackingMap = ({ tracking }: TrackingMapProps) => {
             </div>
           )}
 
-          <div className="relative">
+          <div className="relative overflow-hidden rounded-xl border">
             <MapTileWarning health={tileHealth} />
             <div
               ref={mapRef}
-              className="h-72 rounded-lg overflow-hidden border shadow-inner"
+              className="h-[52vh] min-h-[300px] w-full [&_.leaflet-top]:top-24"
             />
+
+            <div className="pointer-events-none absolute inset-x-3 top-3 z-[500]">
+              <MapStatTiles
+                distanceM={route?.distanceM}
+                durationS={route?.durationS}
+                approximate={isApproximate}
+              />
+            </div>
 
             {!isFollowing && hasPosition && (
               <button

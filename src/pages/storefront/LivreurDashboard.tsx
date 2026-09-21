@@ -179,6 +179,7 @@ const LivreurDashboard = () => {
             selectedOrderId={selectedOrderId}
             onSelectOrder={setSelectedOrderId}
             position={position}
+            onNavigate={handleNavigate}
           />
         )}
 
