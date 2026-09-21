@@ -612,11 +612,9 @@ const Ventes = () => {
                       <XCircle className="w-5 h-5" />
                       <span className="font-bold">Vente annulée</span>
                     </div>
-                    {venteDetails.motifAnnulation && (
-                      <p className="text-sm text-muted-foreground mt-1">
-                        Motif: {venteDetails.motifAnnulation}
-                      </p>
-                    )}
+                    <p className="text-sm text-muted-foreground mt-1">
+                      Suite à un retour client total
+                    </p>
                   </div>
                 )}
 

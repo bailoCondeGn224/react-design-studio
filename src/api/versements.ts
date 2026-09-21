@@ -1,8 +1,8 @@
 import { apiClient } from '@/lib/api-client';
-import { Versement, CreateVersementDto, PaginatedResponse, PaginationParams } from '@/types';
+import { Versement, CreateVersementDto, PaginatedResponse, PaginationParams, VersementFilterParams } from '@/types';
 
 export const versementsApi = {
-  getAll: async (params?: PaginationParams): Promise<PaginatedResponse<Versement>> => {
+  getAll: async (params?: VersementFilterParams): Promise<PaginatedResponse<Versement>> => {
     const response = await apiClient.get<PaginatedResponse<Versement>>('/versements', { params });
     return response.data;
   },

@@ -182,9 +182,8 @@ const Stock = () => {
 
   // Statistiques d'alerte (depuis le backend)
   const articlesEnRupture = stockStats?.articlesEnRupture || 0;
-  const articlesStockCritique = stockStats?.articlesStockCritique || 0;
   const articlesStockFaible = stockStats?.articlesStockFaible || 0;
-  const totalAlertes = articlesEnRupture + articlesStockCritique + articlesStockFaible;
+  const totalAlertes = articlesEnRupture + articlesStockFaible;
 
   // Valeur totale du stock (depuis le backend)
   const valeurTotaleStock = stockStats?.valeurTotaleStock || 0;
@@ -252,21 +251,14 @@ const Stock = () => {
         });
       }
 
-      // Vérifier les stocks critiques
-      if (articlesStockCritique > 0) {
-        toast.warning(`⚠️ ${articlesStockCritique} article${articlesStockCritique > 1 ? 's' : ''} en stock critique`, {
-          duration: 4000,
-        });
-      }
-
-      // Vérifier les stocks faibles (seulement si pas de rupture/critique)
-      if (articlesEnRupture === 0 && articlesStockCritique === 0 && articlesStockFaible > 0) {
-        toast.info(`ℹ️ ${articlesStockFaible} article${articlesStockFaible > 1 ? 's' : ''} avec stock faible`, {
+      // Vérifier les stocks faibles (seulement si pas de rupture)
+      if (articlesEnRupture === 0 && articlesStockFaible > 0) {
+        toast.info(`${articlesStockFaible} article${articlesStockFaible > 1 ? 's' : ''} avec stock faible`, {
           duration: 3000,
         });
       }
     }
-  }, [isLoading, articlesEnRupture, articlesStockCritique, articlesStockFaible]);
+  }, [isLoading, articlesEnRupture, articlesStockFaible]);
 
   // Afficher spinner pleine page SEULEMENT au premier chargement (pas de données)
   if (isLoading && !articles.length) {
@@ -824,12 +816,6 @@ const Stock = () => {
                   <span><strong className="text-destructive">{articlesEnRupture}</strong> article{articlesEnRupture > 1 ? 's' : ''} en rupture de stock</span>
                 </p>
               )}
-              {articlesStockCritique > 0 && (
-                <p className="flex items-center gap-1.5 sm:gap-2">
-                  <span className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-destructive/70 rounded-full flex-shrink-0"></span>
-                  <span><strong className="text-destructive">{articlesStockCritique}</strong> article{articlesStockCritique > 1 ? 's' : ''} en stock critique</span>
-                </p>
-              )}
               {articlesStockFaible > 0 && (
                 <p className="flex items-center gap-1.5 sm:gap-2">
                   <span className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-warning rounded-full flex-shrink-0"></span>
@@ -1231,8 +1217,8 @@ const Stock = () => {
               <AlertCircle className="w-4 h-4 sm:w-5 sm:h-5 text-destructive" />
             </div>
             <div className="min-w-0">
-              <p className="text-[11px] sm:text-xs text-muted-foreground">Rupture/Critique</p>
-              <p className="text-lg sm:text-xl font-bold text-destructive">{articlesEnRupture + articlesStockCritique}</p>
+              <p className="text-[11px] sm:text-xs text-muted-foreground">Rupture</p>
+              <p className="text-lg sm:text-xl font-bold text-destructive">{articlesEnRupture}</p>
             </div>
           </div>
         </div>

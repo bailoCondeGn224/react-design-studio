@@ -139,7 +139,7 @@ const Approvisionnements = () => {
         numero: details.numero,
         date: details.dateLivraison,
         clientNom: details.fournisseurNom,
-        clientTelephone: details.fournisseurTelephone,
+        clientTelephone: details.fournisseur?.telephone,
         lignes: details.lignes || [],
         total: details.total,
         typePaiement: 'virement',

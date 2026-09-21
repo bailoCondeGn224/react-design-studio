@@ -47,6 +47,7 @@ const VenteForm = ({ open, onOpenChange, onSubmit, initialData = null, mode = 'c
         lignes: initialData.lignes || [],
         montantPaye: initialData.montantPaye || 0,
         modePaiement: initialData.modePaiement || "especes",
+        note: initialData.note || "",
       };
     }
     return {
@@ -56,6 +57,7 @@ const VenteForm = ({ open, onOpenChange, onSubmit, initialData = null, mode = 'c
       lignes: [],
       montantPaye: 0,
       modePaiement: "especes",
+      note: "",
     };
   };
 
@@ -75,6 +77,7 @@ const VenteForm = ({ open, onOpenChange, onSubmit, initialData = null, mode = 'c
         lignes: initialData.lignes || [],
         montantPaye: initialData.montantPaye || 0,
         modePaiement: initialData.modePaiement || "especes",
+        note: initialData.note || "",
       });
     }
   }, [mode, initialData, open]);
@@ -286,6 +289,7 @@ const VenteForm = ({ open, onOpenChange, onSubmit, initialData = null, mode = 'c
       montantPaye: Number(form.montantPaye),
       montantRestant,
       modePaiement: form.modePaiement,
+      note: form.note.trim() || (mode === 'edit' ? "" : undefined),
     };
 
     onSubmit(venteData);
@@ -771,6 +775,21 @@ const VenteForm = ({ open, onOpenChange, onSubmit, initialData = null, mode = 'c
                   <option value="credit">💳 Crédit</option>
                   <option value="acompte_50">💰 Acompte 50%</option>
                 </select>
+              </div>
+
+              {/* Note */}
+              <div>
+                <label className="text-sm font-semibold text-foreground mb-2 block">
+                  Note <span className="font-normal text-muted-foreground">(optionnel)</span>
+                </label>
+                <textarea
+                  value={form.note}
+                  onChange={e => update("note", e.target.value)}
+                  maxLength={500}
+                  rows={2}
+                  placeholder="Ex : livrer après 17h, emballage cadeau…"
+                  className="w-full px-3 py-2.5 rounded-lg border-2 border-border bg-card text-base sm:text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all resize-none"
+                />
               </div>
             </div>
           </div>

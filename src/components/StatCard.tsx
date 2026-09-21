@@ -1,7 +1,7 @@
 interface StatCardProps {
   title: string;
   value: string;
-  subtitle?: string;
+  subtitle?: React.ReactNode;
   subtitleDanger?: boolean; // Pour afficher le subtitle en rouge (dettes, crédits)
   icon: React.ReactNode;
   trend?: { value: string; positive: boolean };
@@ -41,7 +41,7 @@ const StatCard = ({ title, value, subtitle, subtitleDanger = false, icon, trend,
         </p>
         <p className="text-xl sm:text-2xl lg:text-3xl font-heading font-bold leading-tight break-words">{value}</p>
         {subtitle && (
-          <p className={`text-[10px] sm:text-xs font-medium ${
+          <div className={`text-[10px] sm:text-xs font-medium ${
             subtitleDanger
               ? "text-destructive"
               : isColored
@@ -49,7 +49,7 @@ const StatCard = ({ title, value, subtitle, subtitleDanger = false, icon, trend,
                 : "text-muted-foreground"
           }`}>
             {subtitle}
-          </p>
+          </div>
         )}
       </div>
     </div>

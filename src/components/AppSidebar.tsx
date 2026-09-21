@@ -138,7 +138,7 @@ const SidebarContent = ({ collapsed, setCollapsed, onItemClick }: { collapsed: b
   const organization = user?.organization;
 
   // Choisir le bon menu selon le type d'utilisateur - mémorisé pour éviter les re-renders
-  const menuItems = useMemo(() => {
+  const menuItems = useMemo<NavItem[]>(() => {
     if (isSuperAdmin) {
       return superAdminNavItems;
     } else if (userRole === 'ADMIN') {

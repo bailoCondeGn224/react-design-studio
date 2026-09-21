@@ -4,6 +4,7 @@ interface FormFieldProps extends InputHTMLAttributes<HTMLInputElement | HTMLSele
   label: string;
   error?: string;
   as?: "input" | "select" | "textarea";
+  rows?: number; // pour as="textarea"
   children?: React.ReactNode;
 }
 

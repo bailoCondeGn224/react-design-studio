@@ -27,11 +27,16 @@ import {
   useDeleteCommande,
 } from "@/hooks/useCommandes";
 import { useClients } from "@/hooks/useClients";
-import { Commande } from "@/types";
+import { Commande, CommandeFilterParams, LivrerCommandeDto } from "@/types";
 
 const Commandes = () => {
   const [page, setPage] = useState(1);
-  const [filters, setFilters] = useState({
+  const [filters, setFilters] = useState<{
+    statut: NonNullable<CommandeFilterParams["statut"]> | "";
+    clientId: string;
+    dateDebut: string;
+    dateFin: string;
+  }>({
     statut: "",
     clientId: "",
     dateDebut: "",
@@ -42,7 +47,7 @@ const Commandes = () => {
   const [editingCommande, setEditingCommande] = useState<Commande | null>(null);
   const [detailsCommande, setDetailsCommande] = useState<Commande | null>(null);
   const [livrerCommande, setLivrerCommande] = useState<Commande | null>(null);
-  const [livrerData, setLivrerData] = useState({ montantPaye: 0, modePaiement: "especes", note: "" });
+  const [livrerData, setLivrerData] = useState<LivrerCommandeDto>({ montantPaye: 0, modePaiement: "especes", note: "" });
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [annulerId, setAnnulerId] = useState<string | null>(null);
   const [printCommande, setPrintCommande] = useState<Commande | null>(null);
@@ -52,7 +57,7 @@ const Commandes = () => {
   const isMobile = useIsMobile();
 
   // Hooks
-  const { data: commandesResponse, isLoading } = useCommandes({ page, limit: 15, ...filters });
+  const { data: commandesResponse, isLoading } = useCommandes({ page, limit: 15, ...filters, statut: filters.statut || undefined });
   const { data: stats } = useCommandesStats();
   const { data: clientsResponse } = useClients({ page: 1, limit: 100 });
   const { data: lignesResponse } = useCommandeLignes(detailsCommande?.id || null, lignesPage, lignesLimit);
@@ -332,7 +337,7 @@ const Commandes = () => {
                 label="Statut"
                 as="select"
                 value={filters.statut}
-                onChange={(e) => setFilters({ ...filters, statut: (e.target as HTMLSelectElement).value })}
+                onChange={(e) => setFilters({ ...filters, statut: (e.target as HTMLSelectElement).value as typeof filters.statut })}
               >
                 <option value="">Tous les statuts</option>
                 <option value="en_attente">En attente</option>
@@ -387,7 +392,7 @@ const Commandes = () => {
           label="Statut"
           as="select"
           value={filters.statut}
-          onChange={(e) => setFilters({ ...filters, statut: (e.target as HTMLSelectElement).value })}
+          onChange={(e) => setFilters({ ...filters, statut: (e.target as HTMLSelectElement).value as typeof filters.statut })}
         >
           <option value="">Tous les statuts</option>
           <option value="en_attente">En attente</option>
@@ -956,7 +961,7 @@ const Commandes = () => {
                         label="Mode de paiement"
                         as="select"
                         value={livrerData.modePaiement}
-                        onChange={(e) => setLivrerData({ ...livrerData, modePaiement: (e.target as HTMLSelectElement).value })}
+                        onChange={(e) => setLivrerData({ ...livrerData, modePaiement: (e.target as HTMLSelectElement).value as LivrerCommandeDto['modePaiement'] })}
                       >
                         <option value="especes">Espèces</option>
                         <option value="mobile_money">Mobile Money</option>
@@ -1082,7 +1087,7 @@ const Commandes = () => {
                       label="Mode de paiement"
                       as="select"
                       value={livrerData.modePaiement}
-                      onChange={(e) => setLivrerData({ ...livrerData, modePaiement: (e.target as HTMLSelectElement).value })}
+                      onChange={(e) => setLivrerData({ ...livrerData, modePaiement: (e.target as HTMLSelectElement).value as LivrerCommandeDto['modePaiement'] })}
                     >
                       <option value="especes">Espèces</option>
                       <option value="mobile_money">Mobile Money</option>

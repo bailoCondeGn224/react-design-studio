@@ -29,6 +29,8 @@ interface Article {
   prixVente?: number;
   prixAchat?: number;
   fournisseurPrefereNom?: string;
+  dateExpiration?: string;
+  delaiAlerteExpiration?: number;
   uniteStock?: string;
   modesVente?: Array<{
     id: string;

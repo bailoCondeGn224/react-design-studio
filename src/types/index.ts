@@ -6,6 +6,13 @@ export interface PaginationParams {
 }
 
 // Types pour les filtres spécifiques
+// Filtres de GET /versements (VersementFilterDto)
+export interface VersementFilterParams extends PaginationParams {
+  fournisseurId?: string;
+  dateDebut?: string;
+  dateFin?: string;
+}
+
 export interface StockFilterParams extends PaginationParams {
   categorieId?: string;
   enAlerte?: boolean;
@@ -124,6 +131,7 @@ export interface Organization {
   longitude?: number;
   siteWeb?: string;
   rccm?: string; // Registre de Commerce
+  registreCommerce?: string;
   nif?: string; // Numéro d'Identification Fiscale
   devise?: string; // Ex: "GNF", "XOF"
   mentionsLegales?: string;
@@ -366,6 +374,7 @@ export interface Vente {
   montantRestant: number;
   modePaiement: 'especes' | 'mobile_money' | 'virement' | 'credit' | 'acompte_50';
   statut: 'active' | 'annulee';
+  note?: string | null;
   date: string;
   heure: string;
   createdAt?: string;
@@ -382,6 +391,7 @@ export interface CreateVenteDto {
   montantPaye: number;
   montantRestant: number;
   modePaiement: 'especes' | 'mobile_money' | 'virement' | 'credit' | 'acompte_50';
+  note?: string;
 }
 
 // Types pour les Commandes Client
@@ -593,15 +603,18 @@ export interface RapportMensuel {
 export interface StatsVentes {
   jour: { count: number; total: number };
   semaine: { count: number; total: number };
-  mois: { count: number; total: number };
+  mois: { count: number; total: number; benefice: number; dette: number };
 }
 
+// Réponse de GET /stock/stats (StockService.getStats)
 export interface StatsStock {
+  total: number; // alias de totalArticles
   totalArticles: number;
   articlesEnRupture: number;
-  articlesStockCritique: number;
   articlesStockFaible: number;
   articlesOK: number;
+  enAlerte: number; // alias de articlesEnAlerte
+  articlesEnAlerte: number;
   valeurTotaleStock: number;
   tauxAlerte: number; // Pourcentage d'articles en alerte
   parCategorie: { categorie: string; count: number }[];
@@ -612,7 +625,8 @@ export interface DashboardAnalytics {
     valeurTotale: number;
     totalArticles: number;
     articlesEnAlerte: number;
-    articlesCritiques: number;
+    articlesEnRupture: number;
+    articlesCritiques: number; // = articles en stock faible (1 à 5), nom gardé côté backend
   };
   fournisseurs: {
     totalActifs: number;
@@ -636,13 +650,35 @@ export interface DashboardAnalytics {
 }
 
 // Types pour les statistiques de rotation
+// Réponse de GET /stock/rotation/stats (StockService.getRotationStats)
+export interface ArticleRotationStat {
+  articleId: string;
+  nom: string;
+  categorie: string;
+  totalVendu: number;
+  nombreVentes: number;
+  stockActuel: number;
+  tauxRotationPeriode: string;
+  pourcentageVendu: number;
+  derniereVente: string | null;
+  valeurStock: number;
+  statut: 'rotation_rapide' | 'rotation_moyenne' | 'rotation_lente';
+}
+
 export interface StatsRotation {
-  tauxRotationMoyen: number;
-  articlesRapides: Article[]; // Top 5 rotation rapide
-  articlesDormants: Article[]; // Articles sans vente >90j
-  articlesLents: Article[]; // Rotation lente
-  valeurStockDormant: number;
-  pourcentageDormant: number;
+  periode: string;
+  dateDebut: string;
+  dateFin: string;
+  resume: {
+    articlesAnalyses: number;
+    rotationRapide: number;
+    rotationMoyenne: number;
+    rotationLente: number;
+    valeurStockImmobilise: number;
+  };
+  topVentes: ArticleRotationStat[];
+  stockMort: ArticleRotationStat[];
+  detailParStatut: { rapide: number; moyenne: number; lente: number };
 }
 
 // Types pour les Clients
@@ -742,6 +778,7 @@ export interface Approvisionnement {
   numero: string;
   fournisseurId: string;
   fournisseurNom: string;
+  fournisseur?: Fournisseur; // chargé uniquement par GET /approvisionnements/:id
   lignes: LigneApprovisionnement[];
   total: number;
   montantPaye: number;
@@ -900,6 +937,10 @@ export interface LigneRetourClient {
   sousTotal: number;
   raison?: 'defectueux' | 'taille_incorrecte' | 'couleur_incorrecte' | 'erreur_commande' | 'non_conforme' | 'qualite_insuffisante' | 'changement_avis' | 'autre';
   noteArticle?: string;
+  // Renvoyés par l'entité LigneRetourClient ; ignorés à la création (le backend les recalcule depuis la ligne de vente)
+  quantiteBase?: number;
+  modeVenteId?: string | null;
+  modeVente?: ModeVente | null;
 }
 
 export interface RetourClient {

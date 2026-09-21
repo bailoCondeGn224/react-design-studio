@@ -28,7 +28,7 @@ export const generateFinancesPDF = (inventaire: Inventaire) => {
   });
 
   // Palette cohérente avec votre UI
-  const colors = {
+  const colors: Record<string, [number, number, number]> = {
     primary: [37, 99, 235],        // Bleu moderne
     dark: [15, 23, 42],             // Slate 900
     success: [16, 185, 129],        // Emerald 500

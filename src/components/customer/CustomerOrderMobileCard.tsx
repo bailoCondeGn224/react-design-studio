@@ -15,6 +15,7 @@ const statutConfig: Record<OnlineOrderStatut, { label: string; className: string
   [OnlineOrderStatut.EN_ATTENTE]: { label: 'En attente', className: 'bg-orange-100 text-orange-700 border-orange-200' },
   [OnlineOrderStatut.CONFIRMEE]: { label: 'Confirmée', className: 'bg-blue-100 text-blue-700 border-blue-200' },
   [OnlineOrderStatut.PRETE]: { label: 'Prête', className: 'bg-green-100 text-green-700 border-green-200' },
+  [OnlineOrderStatut.EN_LIVRAISON]: { label: 'En livraison', className: 'bg-purple-100 text-purple-700 border-purple-200' },
   [OnlineOrderStatut.LIVREE]: { label: 'Livrée', className: 'bg-gray-100 text-gray-700 border-gray-200' },
   [OnlineOrderStatut.ANNULEE]: { label: 'Annulée', className: 'bg-red-100 text-red-700 border-red-200' },
 };

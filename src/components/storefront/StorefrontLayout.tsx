@@ -67,13 +67,13 @@ const StorefrontLayoutContent = ({ children }: StorefrontLayoutProps) => {
         onRemove={removeItem}
         onUpdateQuantity={updateQuantity}
         onCheckout={() => {}}
-        storefront={storefront}
+        storefront={{ nom: storefront.organizationNom, whatsappNumber: storefront.whatsappNumber }}
       />
       {/* Bouton WhatsApp flottant */}
       {storefront.whatsappNumber && (
         <WhatsAppFloatingButton
           phoneNumber={storefront.whatsappNumber}
-          storeName={storefront.nom}
+          storeName={storefront.organizationNom}
         />
       )}
       {/* Bottom Navigation */}

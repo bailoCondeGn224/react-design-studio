@@ -32,9 +32,6 @@ const CommandeReceipt = ({ commande, clientNom, clientTelephone, clientAdresse, 
     // Formater le statut
     const statutText =
       commande.statut === 'en_attente' ? 'En Attente' :
-      commande.statut === 'confirmee' ? 'Confirmee' :
-      commande.statut === 'en_preparation' ? 'En Preparation' :
-      commande.statut === 'prete' ? 'Prete' :
       commande.statut === 'livree' ? 'Livree' :
       commande.statut === 'annulee' ? 'Annulee' : commande.statut;
 
@@ -226,9 +223,6 @@ Pour toute question: Contactez-nous`;
               <p className="text-sm text-muted-foreground mb-2">Statut de la commande</p>
               <div className="inline-flex items-center px-4 py-2 rounded-lg bg-primary/10 text-primary font-semibold text-sm">
                 {commande.statut === 'en_attente' && 'En Attente'}
-                {commande.statut === 'confirmee' && 'Confirmée'}
-                {commande.statut === 'en_preparation' && 'En Préparation'}
-                {commande.statut === 'prete' && 'Prête'}
                 {commande.statut === 'livree' && 'Livrée'}
                 {commande.statut === 'annulee' && 'Annulée'}
               </div>

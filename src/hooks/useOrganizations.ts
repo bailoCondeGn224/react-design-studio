@@ -19,7 +19,7 @@ import { toast } from 'sonner';
 export const useOrganizations = () => {
   return useQuery({
     queryKey: ['organizations'],
-    queryFn: getAllOrganizations,
+    queryFn: () => getAllOrganizations(),
   });
 };
 

@@ -112,7 +112,6 @@ const ClientCombobox = ({
         {selectedClient ? (
           <span className="flex items-center gap-2 flex-wrap">
             <span className="font-medium">{selectedClient.nom}</span>
-            {selectedClient.prenom && <span>{selectedClient.prenom}</span>}
             {selectedClient.telephone && (
               <>
                 <span className="text-muted-foreground">•</span>
@@ -199,7 +198,6 @@ const ClientCombobox = ({
                             <span className={`font-semibold text-base ${isSelected ? 'text-primary' : 'text-foreground'}`}>
                               {client.nom}
                             </span>
-                            {client.prenom && <span className="text-base">{client.prenom}</span>}
                           </div>
                           <div className="flex flex-col gap-1 text-sm text-muted-foreground">
                             {client.telephone && <span>{client.telephone}</span>}
@@ -249,7 +247,7 @@ const ClientCombobox = ({
                 {clients.map((client) => (
                   <CommandItem
                     key={client.id}
-                    value={`${client.nom} ${client.prenom || ''} ${client.telephone || ''} ${client.email || ''}`}
+                    value={`${client.nom} ${client.telephone || ''} ${client.email || ''}`}
                     onSelect={() => handleSelectClient(client)}
                     className="cursor-pointer"
                   >
@@ -262,7 +260,6 @@ const ClientCombobox = ({
                     <div className="flex flex-col flex-1 min-w-0">
                       <div className="flex items-center gap-2">
                         <span className="font-medium">{client.nom}</span>
-                        {client.prenom && <span>{client.prenom}</span>}
                       </div>
                       <div className="flex items-center gap-3 text-xs text-muted-foreground mt-0.5">
                         {client.telephone && (
