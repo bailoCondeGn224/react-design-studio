@@ -11,6 +11,7 @@ import { useLogout, useCurrentUser, useIsSuperAdmin, useUserRole } from "@/hooks
 import CanAccess from "@/components/CanAccess";
 import { useSidebar } from "@/contexts/SidebarContext";
 import { usePendingOrderCount } from "@/hooks/useOnlineOrders";
+import { estVersionBureau } from "@/lib/edition";
 
 // Menu pour les utilisateurs normaux (tenant users)
 const navItems = [
@@ -24,9 +25,9 @@ const navItems = [
   { to: "/approvisionnements", icon: Truck, label: "Approvisionnements", permissions: ["approvisionnements.read"] },
   { to: "/ventes", icon: ShoppingCart, label: "Ventes", permissions: ["ventes.read"] },
   { to: "/commandes", icon: ClipboardList, label: "Commandes", permissions: ["commandes.read"] },
-  { to: "/online-orders", icon: Globe, label: "Commandes en ligne", permissions: [], hasBadge: true },
-  { to: "/livreurs", icon: Truck, label: "Livreurs", permissions: [] },
-  { to: "/storefront-settings", icon: Store, label: "Vitrine en ligne", permissions: [] },
+  { to: "/online-orders", icon: Globe, label: "Commandes en ligne", permissions: [], hasBadge: true, enLigne: true },
+  { to: "/livreurs", icon: Truck, label: "Livreurs", permissions: [], enLigne: true },
+  { to: "/storefront-settings", icon: Store, label: "Vitrine en ligne", permissions: [], enLigne: true },
   { to: "/versements", icon: ArrowDownRight, label: "Versements", permissions: ["versements.read"] },
   { to: "/versements-client", icon: ArrowDownLeft, label: "Paiements Clients", permissions: ["versements-client.read"] },
   { to: "/retours-clients", icon: RotateCcw, label: "Retours Clients", permissions: ["retours.create"] },
@@ -58,9 +59,9 @@ const adminNavItems = [
   { to: "/approvisionnements", icon: Truck, label: "Approvisionnements", permissions: ["approvisionnements.read"] },
   { to: "/ventes", icon: ShoppingCart, label: "Ventes", permissions: ["ventes.read"] },
   { to: "/commandes", icon: ClipboardList, label: "Commandes", permissions: ["commandes.read"] },
-  { to: "/online-orders", icon: Globe, label: "Commandes en ligne", hasBadge: true },
-  { to: "/livreurs", icon: Truck, label: "Livreurs" },
-  { to: "/storefront-settings", icon: Store, label: "Vitrine en ligne" },
+  { to: "/online-orders", icon: Globe, label: "Commandes en ligne", hasBadge: true, enLigne: true },
+  { to: "/livreurs", icon: Truck, label: "Livreurs", enLigne: true },
+  { to: "/storefront-settings", icon: Store, label: "Vitrine en ligne", enLigne: true },
   { to: "/versements", icon: ArrowDownRight, label: "Versements", permissions: ["versements.read"] },
   { to: "/versements-client", icon: ArrowDownLeft, label: "Paiements Clients", permissions: ["versements-client.read"] },
   { to: "/retours-clients", icon: RotateCcw, label: "Retours Clients", permissions: ["retours.create"] },
@@ -80,6 +81,7 @@ type NavItem = {
   label: string;
   permissions?: string[];
   hasBadge?: boolean;
+  enLigne?: boolean;
 };
 
 // Composant MenuItem mémorisé pour éviter les re-renders inutiles
@@ -139,12 +141,13 @@ const SidebarContent = ({ collapsed, setCollapsed, onItemClick }: { collapsed: b
 
   // Choisir le bon menu selon le type d'utilisateur - mémorisé pour éviter les re-renders
   const menuItems = useMemo<NavItem[]>(() => {
+    let items: NavItem[] = navItems;
     if (isSuperAdmin) {
-      return superAdminNavItems;
+      items = superAdminNavItems;
     } else if (userRole === 'ADMIN') {
-      return adminNavItems;
+      items = adminNavItems;
     }
-    return navItems;
+    return estVersionBureau ? items.filter((item) => !item.enLigne) : items;
   }, [isSuperAdmin, userRole]);
 
   // Restaurer la position de scroll au montage et après navigation

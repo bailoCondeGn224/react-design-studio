@@ -15,6 +15,7 @@ import { LivreurProtectedRoute } from "./components/livreur/LivreurProtectedRout
 import { CustomerProtectedRoute } from "./components/customer/CustomerProtectedRoute";
 import { InstallPWA } from "./components/InstallPWA";
 import { PWAUpdateNotification, OfflineIndicator } from "./components/PWAUpdateNotification";
+import { estVersionBureau } from "./lib/edition";
 
 // Lazy load all pages for code splitting and better performance
 const Login = lazy(() => import("./pages/Login.tsx"));
@@ -94,9 +95,13 @@ const App = () => (
           <DynamicFavicon />
           <Toaster />
           <Sonner />
-          <InstallPWA />
-          <PWAUpdateNotification />
-          <OfflineIndicator />
+          {!estVersionBureau && (
+            <>
+              <InstallPWA />
+              <PWAUpdateNotification />
+              <OfflineIndicator />
+            </>
+          )}
           <BrowserRouter>
           <Suspense fallback={<LoadingFallback />}>
             <Routes>
@@ -314,33 +319,37 @@ const App = () => (
                   </ProtectedRoute>
                 }
               />
-              {/* Route Online Orders (back-office) */}
-              <Route
-                path="/online-orders"
-                element={
-                  <ProtectedRoute>
-                    <OnlineOrders />
-                  </ProtectedRoute>
-                }
-              />
-              {/* Route Livreurs (Deliveries) */}
-              <Route
-                path="/livreurs"
-                element={
-                  <ProtectedRoute>
-                    <Livreurs />
-                  </ProtectedRoute>
-                }
-              />
-              {/* Route Storefront Settings (back-office) */}
-              <Route
-                path="/storefront-settings"
-                element={
-                  <ProtectedRoute roles={['ADMIN']}>
-                    <StorefrontSettings />
-                  </ProtectedRoute>
-                }
-              />
+              {!estVersionBureau && (
+                <>
+                  {/* Route Online Orders (back-office) */}
+                  <Route
+                    path="/online-orders"
+                    element={
+                      <ProtectedRoute>
+                        <OnlineOrders />
+                      </ProtectedRoute>
+                    }
+                  />
+                  {/* Route Livreurs (Deliveries) */}
+                  <Route
+                    path="/livreurs"
+                    element={
+                      <ProtectedRoute>
+                        <Livreurs />
+                      </ProtectedRoute>
+                    }
+                  />
+                  {/* Route Storefront Settings (back-office) */}
+                  <Route
+                    path="/storefront-settings"
+                    element={
+                      <ProtectedRoute roles={['ADMIN']}>
+                        <StorefrontSettings />
+                      </ProtectedRoute>
+                    }
+                  />
+                </>
+              )}
               {/* Routes Storefront et Customer - single CustomerAuthProvider wrapper */}
               <Route element={<CustomerAuthProvider />}>
                 {/* Storefront (public) */}

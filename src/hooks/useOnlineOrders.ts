@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { onlineOrdersApi } from '@/api/online-orders';
 import { CreateOnlineOrderDto, OnlineOrderFilterParams } from '@/types';
 import { toast } from 'sonner';
+import { estVersionBureau } from '@/lib/edition';
 
 // Client hooks
 export const useCreateOrder = () => {
@@ -131,7 +132,7 @@ export const usePendingOrderCount = () => {
   return useQuery({
     queryKey: ['online-orders-pending-count'],
     queryFn: () => onlineOrdersApi.getPendingCount(),
-    refetchInterval: hasToken && !isSuperAdmin ? 30000 : false,
-    enabled: hasToken && !isSuperAdmin,
+    refetchInterval: hasToken && !isSuperAdmin && !estVersionBureau ? 30000 : false,
+    enabled: hasToken && !isSuperAdmin && !estVersionBureau,
   });
 };

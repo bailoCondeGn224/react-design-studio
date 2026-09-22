@@ -3,7 +3,7 @@ import App from "./App.tsx";
 import "./index.css";
 
 // Nettoyer les Service Workers en développement pour éviter les problèmes de cache
-if (import.meta.env.DEV && 'serviceWorker' in navigator) {
+if ((import.meta.env.DEV || import.meta.env.VITE_EDITION === 'bureau') && 'serviceWorker' in navigator) {
   navigator.serviceWorker.getRegistrations().then((registrations) => {
     for (const registration of registrations) {
       registration.unregister();

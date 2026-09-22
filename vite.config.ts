@@ -42,6 +42,7 @@ export default defineConfig(({ mode }) => {
     react(),
     mode === "development" && componentTagger(),
     VitePWA({
+      disable: env.VITE_EDITION === 'bureau',
       registerType: 'autoUpdate',
       includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'mask-icon.svg'],
       manifest: {
