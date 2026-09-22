@@ -1,3 +1,8 @@
+// Option commune des hooks de lecture : désactiver une requête (ex. permission absente)
+export interface QueryToggle {
+  enabled?: boolean;
+}
+
 // Types pour la pagination
 export interface PaginationParams {
   page?: number;

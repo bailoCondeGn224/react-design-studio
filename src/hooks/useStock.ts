@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { stockApi } from '@/api/stock';
 import { CreateArticleDto, StockFilterParams } from '@/types';
 import { toast } from 'sonner';
+import type { QueryToggle } from '@/types';
 
 export const useStock = (params?: StockFilterParams) => {
   return useQuery({
@@ -12,15 +13,17 @@ export const useStock = (params?: StockFilterParams) => {
   });
 };
 
-export const useStockAlerts = () => {
+export const useStockAlerts = (options: QueryToggle = {}) => {
   return useQuery({
+    enabled: options.enabled ?? true,
     queryKey: ['stock', 'alerts'],
     queryFn: stockApi.getAlerts,
   });
 };
 
-export const useStockStats = () => {
+export const useStockStats = (options: QueryToggle = {}) => {
   return useQuery({
+    enabled: options.enabled ?? true,
     queryKey: ['stock', 'stats'],
     queryFn: stockApi.getStats,
   });

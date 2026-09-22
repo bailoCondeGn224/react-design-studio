@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { fournisseursApi } from '@/api/fournisseurs';
 import { CreateFournisseurDto, PaginationParams } from '@/types';
 import { toast } from 'sonner';
+import type { QueryToggle } from '@/types';
 
 export const useFournisseurs = (params?: PaginationParams) => {
   return useQuery({
@@ -21,8 +22,9 @@ export const useFournisseurDetails = (id: string | null, approPage: number = 1, 
   });
 };
 
-export const useStatsFournisseurs = () => {
+export const useStatsFournisseurs = (options: QueryToggle = {}) => {
   return useQuery({
+    enabled: options.enabled ?? true,
     queryKey: ['fournisseurs', 'stats'],
     queryFn: fournisseursApi.getStats,
   });

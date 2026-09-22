@@ -2,9 +2,11 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { approvisionnementsApi } from '@/api/approvisionnements';
 import { CreateApprovisionnementDto, PaginationParams } from '@/types';
 import { toast } from 'sonner';
+import type { QueryToggle } from '@/types';
 
-export const useApprovisionnements = (params?: PaginationParams) => {
+export const useApprovisionnements = (params?: PaginationParams, options: QueryToggle = {}) => {
   return useQuery({
+    enabled: options.enabled ?? true,
     queryKey: ['approvisionnements', params],
     queryFn: () => approvisionnementsApi.getAll(params),
     placeholderData: (previousData) => previousData, // Garde les données précédentes pendant le chargement

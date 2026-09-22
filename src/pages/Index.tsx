@@ -1,3 +1,4 @@
+import { Navigate } from "react-router-dom";
 import AppLayout from "@/components/AppLayout";
 import PageHeader from "@/components/PageHeader";
 import StatCard from "@/components/StatCard";
@@ -13,21 +14,35 @@ import { useApprovisionnements } from "@/hooks/useApprovisionnements";
 import { useStatsFournisseurs } from "@/hooks/useFournisseurs";
 import { useExpirationStats } from "@/hooks/useExpirationStats";
 import { useVentesSemaine, useRevenusMois } from "@/hooks/useAnalytics";
+import { useCurrentUser, useHasPermission, useIsSuperAdmin } from "@/hooks/useAuth";
 
+// Tableau de bord commun (rôles autres qu'ADMIN, y compris les rôles sur
+// mesure). Chaque bloc n'est chargé et affiché que si l'utilisateur a la
+// permission exigée par l'endpoint correspondant côté backend : sans ça, le
+// backend répond 403 et le bloc afficherait des zéros trompeurs.
 const Dashboard = () => {
-  // Données dynamiques pour les graphiques
-  const { data: ventesSemaine = [], isLoading: loadingVentesSemaine } = useVentesSemaine();
-  const { data: revenusMois = [], isLoading: loadingRevenusMois } = useRevenusMois();
+  const canVentes = useHasPermission('ventes.read');
+  const canStock = useHasPermission('stock.read');
+  const canFournisseurs = useHasPermission('fournisseurs.read');
+  const canAppros = useHasPermission('approvisionnements.read');
+  const canClients = useHasPermission('clients.read');
 
-  const { data: ventesStats, isLoading: loadingVentesStats } = useVentesStats();
-  const { data: stockStats, isLoading: loadingStockStats } = useStockStats();
-  const { data: recentVentes = [], isLoading: loadingRecentVentes } = useVentesRecent();
-  const { data: stockAlerts = [], isLoading: loadingStockAlerts } = useStockAlerts();
-  const { data: topClients = [], isLoading: loadingTopClients } = useTopClients(5);
-  const { data: approvisionnementsResponse, isLoading: loadingAppros } = useApprovisionnements({ page: 1, limit: 10 });
+  // Données dynamiques pour les graphiques
+  const { data: ventesSemaine = [], isLoading: loadingVentesSemaine } = useVentesSemaine({ enabled: canVentes });
+  const { data: revenusMois = [], isLoading: loadingRevenusMois } = useRevenusMois({ enabled: canVentes });
+
+  const { data: ventesStats, isLoading: loadingVentesStats } = useVentesStats(undefined, { enabled: canVentes });
+  const { data: stockStats, isLoading: loadingStockStats } = useStockStats({ enabled: canStock });
+  const { data: recentVentes = [] } = useVentesRecent({ enabled: canVentes });
+  const { data: stockAlerts = [] } = useStockAlerts({ enabled: canStock });
+  const { data: topClients = [] } = useTopClients(5, { enabled: canClients });
+  const { data: approvisionnementsResponse } = useApprovisionnements({ page: 1, limit: 10 }, { enabled: canAppros });
   const approvisionnements = approvisionnementsResponse?.data || [];
-  const { data: fournisseursStats, isLoading: loadingFournisseurs } = useStatsFournisseurs();
-  const { data: expirationStats, isLoading: loadingExpiration } = useExpirationStats();
+  const { data: fournisseursStats, isLoading: loadingFournisseurs } = useStatsFournisseurs({ enabled: canFournisseurs });
+  const { data: expirationStats } = useExpirationStats({ enabled: canStock });
+
+  const hasAnyBlock = canVentes || canStock || canFournisseurs || canAppros || canClients;
+  const moisCourant = new Date().toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' });
 
   // Vérifier si les données principales sont en cours de chargement
   const isLoading = loadingVentesStats || loadingStockStats || loadingFournisseurs || loadingVentesSemaine || loadingRevenusMois;
@@ -73,11 +88,23 @@ const Dashboard = () => {
     <AppLayout>
       <PageHeader
         title="Tableau de Bord"
-        description="Vue d'ensemble de votre activité — Avril 2026"
+        description={`Vue d'ensemble de votre activité — ${moisCourant}`}
       />
 
+      {!hasAnyBlock && (
+        <div className="bg-card border border-border rounded-xl p-8 sm:p-12 text-center shadow-card">
+          <Package className="w-12 h-12 mx-auto mb-3 text-muted-foreground opacity-30" />
+          <p className="text-foreground font-medium">Aucun indicateur disponible pour votre rôle</p>
+          <p className="text-sm text-muted-foreground mt-1">
+            Utilisez le menu pour accéder aux pages qui vous sont ouvertes.
+          </p>
+        </div>
+      )}
+
       {/* Stats */}
+      {(canVentes || canStock || canFournisseurs) && (
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5 mb-6 sm:mb-8">
+        {canVentes && (<>
         <StatCard
           title="Chiffre d'Affaires"
           value={formatPrix(ventesStats?.mois?.total || 0)}
@@ -93,19 +120,25 @@ const Dashboard = () => {
           icon={<ShoppingCart className="w-5 h-5 text-primary" />}
           trend={{ value: "8%", positive: true }}
         />
+        </>)}
+        {canStock && (
         <StatCard
           title="Articles en Stock"
           value={String(stockStats?.total || 0)}
           subtitle={`${stockStats?.enAlerte || 0} en alerte`}
           icon={<Package className="w-5 h-5 text-accent" />}
         />
+        )}
+        {canFournisseurs && (
         <StatCard
           title="Dettes Fournisseurs"
           value={formatPrix(fournisseursStats?.totalDette || 0)}
           subtitle={`${fournisseursStats?.fournisseursEnDette || 0} fournisseurs`}
           icon={<AlertTriangle className="w-5 h-5 text-destructive" />}
         />
+        )}
       </div>
+      )}
 
       {/* Alertes Expiration */}
       {expirationStats && (expirationStats.expires > 0 || expirationStats.expirantBientot > 0) && (
@@ -149,6 +182,7 @@ const Dashboard = () => {
       )}
 
       {/* Charts Row */}
+      {canVentes && (
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-5 mb-6 sm:mb-8">
         {/* Sales Chart */}
         <div className="lg:col-span-2 bg-card border border-border rounded-xl p-4 sm:p-5 shadow-card">
@@ -224,10 +258,13 @@ const Dashboard = () => {
           </ResponsiveContainer>
         </div>
       </div>
+      )}
 
-      {/* Bottom Row */}
+      {/* Listes : une seule grille, les blocs autorisés se rangent côte à côte */}
+      {(canVentes || canStock || canClients || canAppros) && (
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-5">
         {/* Recent Sales */}
+        {canVentes && (
         <div className="bg-card border border-border rounded-xl p-4 sm:p-5 shadow-card">
           <div className="flex items-center justify-between mb-3 sm:mb-4">
             <h3 className="font-heading font-semibold text-sm sm:text-base text-foreground">Ventes Récentes</h3>
@@ -258,8 +295,10 @@ const Dashboard = () => {
             )}
           </div>
         </div>
+        )}
 
         {/* Stock Alerts */}
+        {canStock && (
         <div className="bg-card border border-border rounded-xl p-4 sm:p-5 shadow-card">
           <div className="flex items-center justify-between mb-3 sm:mb-4">
             <h3 className="font-heading font-semibold text-sm sm:text-base text-foreground">Alertes Stock</h3>
@@ -299,11 +338,10 @@ const Dashboard = () => {
             )}
           </div>
         </div>
-      </div>
+        )}
 
-      {/* New Row: Top Clients & Recent Approvisionnements */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-5 mt-6">
         {/* Top Clients */}
+        {canClients && (
         <div className="bg-card border border-border rounded-xl p-4 sm:p-5 shadow-card">
           <div className="flex items-center justify-between mb-3 sm:mb-4">
             <h3 className="font-heading font-semibold text-sm sm:text-base text-foreground">Top 5 Clients</h3>
@@ -328,8 +366,10 @@ const Dashboard = () => {
             )}
           </div>
         </div>
+        )}
 
         {/* Recent Approvisionnements */}
+        {canAppros && (
         <div className="bg-card border border-border rounded-xl p-4 sm:p-5 shadow-card">
           <div className="flex items-center justify-between mb-3 sm:mb-4">
             <h3 className="font-heading font-semibold text-sm sm:text-base text-foreground">Derniers Approvisionnements</h3>
@@ -357,9 +397,23 @@ const Dashboard = () => {
             )}
           </div>
         </div>
+        )}
       </div>
+      )}
     </AppLayout>
   );
 };
 
-export default Dashboard;
+// "/" est la page d'accueil par défaut (connexion, logo, accès refusé) :
+// super admin et ADMIN y retrouvent toujours leur propre tableau de bord.
+const Index = () => {
+  const isSuperAdmin = useIsSuperAdmin();
+  const user = useCurrentUser();
+
+  if (isSuperAdmin) return <Navigate to="/super-admin/dashboard" replace />;
+  if (user?.role?.nom === 'ADMIN') return <Navigate to="/admin/dashboard" replace />;
+
+  return <Dashboard />;
+};
+
+export default Index;

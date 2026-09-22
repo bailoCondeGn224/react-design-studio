@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { ventesApi } from '@/api/ventes';
 import { CreateVenteDto, VenteFilterParams } from '@/types';
 import { toast } from 'sonner';
+import type { QueryToggle } from '@/types';
 
 export const useVentes = (params?: VenteFilterParams) => {
   return useQuery({
@@ -36,8 +37,9 @@ export const useVenteVersements = (venteId: string | null, page: number = 1, lim
   });
 };
 
-export const useVentesStats = (params?: { mois?: number; annee?: number }) => {
+export const useVentesStats = (params?: { mois?: number; annee?: number }, options: QueryToggle = {}) => {
   return useQuery({
+    enabled: options.enabled ?? true,
     queryKey: ['ventes', 'stats', params],
     queryFn: () => ventesApi.getStats(params),
   });
@@ -46,8 +48,9 @@ export const useVentesStats = (params?: { mois?: number; annee?: number }) => {
 // Alias pour compatibilité
 export const useStatsVentes = useVentesStats;
 
-export const useVentesRecent = () => {
+export const useVentesRecent = (options: QueryToggle = {}) => {
   return useQuery({
+    enabled: options.enabled ?? true,
     queryKey: ['ventes', 'recent'],
     queryFn: ventesApi.getRecent,
   });

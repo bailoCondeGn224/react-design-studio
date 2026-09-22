@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { clientsApi } from '@/api/clients';
 import { CreateClientDto, ClientFilterParams, ClientHistoriqueParams } from '@/types';
 import { toast } from 'sonner';
+import type { QueryToggle } from '@/types';
 
 export const useClients = (params?: ClientFilterParams) => {
   return useQuery({
@@ -26,8 +27,9 @@ export const useClientsCredits = () => {
   });
 };
 
-export const useTopClients = (limit: number = 10) => {
+export const useTopClients = (limit: number = 10, options: QueryToggle = {}) => {
   return useQuery({
+    enabled: options.enabled ?? true,
     queryKey: ['clients', 'top', limit],
     queryFn: () => clientsApi.getTop(limit),
   });
