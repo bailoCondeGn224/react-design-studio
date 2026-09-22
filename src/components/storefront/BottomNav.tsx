@@ -66,7 +66,7 @@ export const BottomNav = () => {
   };
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 md:hidden safe-area-inset-bottom">
+    <nav className="fixed bottom-0 left-0 right-0 z-50 md:hidden pb-[var(--storefront-nav-extra)]">
       {/* Background */}
       <div className="absolute inset-0 bg-card border-t border-border shadow-elevated" />
 

@@ -1,6 +1,6 @@
 // src/components/storefront/StorefrontLayout.tsx
 import { ReactNode } from 'react';
-import { useParams } from 'react-router-dom';
+import { useLocation, useParams } from 'react-router-dom';
 import { StorefrontHeader } from './StorefrontHeader';
 import { CartDrawer } from './CartDrawer';
 import { WhatsAppFloatingButton } from './WhatsAppFloatingButton';
@@ -18,6 +18,8 @@ interface StorefrontLayoutProps {
 
 const StorefrontLayoutContent = ({ children }: StorefrontLayoutProps) => {
   const { slug } = useParams<{ slug: string }>();
+  const { pathname } = useLocation();
+  const isProductPage = pathname.includes('/product/');
   const { isOpen, openCart, closeCart } = useCartDrawer();
   const { isAuthenticated } = useCustomerAuth();
 
@@ -57,7 +59,7 @@ const StorefrontLayoutContent = ({ children }: StorefrontLayoutProps) => {
         cartCount={itemCount}
         onCartClick={openCart}
       />
-      <main>{children}</main>
+      <main className="pb-[var(--storefront-nav-extra)] md:pb-0">{children}</main>
       <CartDrawer
         open={isOpen}
         onOpenChange={(open) => !open && closeCart()}
@@ -74,6 +76,7 @@ const StorefrontLayoutContent = ({ children }: StorefrontLayoutProps) => {
         <WhatsAppFloatingButton
           phoneNumber={storefront.whatsappNumber}
           storeName={storefront.organizationNom}
+          raised={isProductPage}
         />
       )}
       {/* Bottom Navigation */}

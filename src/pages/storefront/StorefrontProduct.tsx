@@ -83,7 +83,7 @@ const StorefrontProduct = () => {
 
   return (
     <StorefrontLayout>
-      <div className="min-h-screen bg-white pb-36">
+      <div className="min-h-screen bg-white pb-40 md:pb-36">
         {/* Header with back button */}
         <div className="sticky top-0 z-20 bg-white/95 backdrop-blur-md border-b border-gray-100">
           <div className="flex items-center h-14 px-4">
@@ -218,7 +218,7 @@ const StorefrontProduct = () => {
 
         {/* Fixed Bottom Action Bar */}
         {!isOutOfStock && (
-          <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 shadow-[0_-4px_20px_rgba(0,0,0,0.08)]">
+          <div className="fixed left-0 right-0 z-40 bottom-[calc(4rem+var(--storefront-nav-extra))] md:bottom-0 bg-white border-t border-gray-100 shadow-[0_-4px_20px_rgba(0,0,0,0.08)]">
             <div className="p-5 max-w-lg mx-auto">
               <div className="flex items-center gap-3">
                 {/* Quantity Selector */}

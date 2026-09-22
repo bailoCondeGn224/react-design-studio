@@ -4,9 +4,10 @@ import { WhatsAppIcon } from '@/components/icons/WhatsAppIcon';
 interface WhatsAppFloatingButtonProps {
   phoneNumber: string;
   storeName: string;
+  raised?: boolean;
 }
 
-export const WhatsAppFloatingButton = ({ phoneNumber, storeName }: WhatsAppFloatingButtonProps) => {
+export const WhatsAppFloatingButton = ({ phoneNumber, storeName, raised = false }: WhatsAppFloatingButtonProps) => {
   const handleWhatsAppClick = () => {
     // Nettoyer le numéro de téléphone (enlever espaces, tirets, etc.)
     const cleanPhone = phoneNumber.replace(/\s+|-/g, '');
@@ -27,7 +28,13 @@ export const WhatsAppFloatingButton = ({ phoneNumber, storeName }: WhatsAppFloat
   if (!phoneNumber) return null;
 
   return (
-    <div className="fixed bottom-20 md:bottom-6 right-4 z-50 animate-in slide-in-from-bottom-4 duration-500">
+    <div
+      className={`fixed right-4 z-50 animate-in slide-in-from-bottom-4 duration-500 ${
+        raised
+          ? 'bottom-[calc(10.5rem+var(--storefront-nav-extra))] md:bottom-28'
+          : 'bottom-[calc(5rem+var(--storefront-nav-extra))] md:bottom-6'
+      }`}
+    >
       <button
         onClick={handleWhatsAppClick}
         className="group relative flex items-center gap-3 bg-[#25D366] hover:bg-[#20BA5A] text-white rounded-full shadow-lg hover:shadow-xl transition-all duration-300 active:scale-95"
