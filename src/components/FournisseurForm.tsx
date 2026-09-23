@@ -77,6 +77,7 @@ const FournisseurForm = ({ open, onOpenChange, onSubmit, initialData = null, mod
     const fournisseurData = {
       ...form,
       nom: `${form.nom} ${form.prenom}`.trim(),
+      email: form.email.trim() || null,
     };
 
     // Retirer le champ prenom avant l'envoi
