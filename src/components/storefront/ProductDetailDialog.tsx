@@ -175,10 +175,18 @@ export const ProductDetailDialog = ({
                       <div className="flex items-center justify-between pr-5">
                         <div className="flex items-baseline gap-2">
                           <span className="text-xs text-gray-500">{mode.nom}</span>
-                          <span className="text-primary font-bold text-sm">{formatPrix(mode.prix)}</span>
+                          <span className="text-primary font-bold text-sm">
+                            {formatPrix(Math.round(mode.prix / (mode.quantiteStock || 1)))}
+                          </span>
+                          <span className="text-xs text-gray-500">/ unité</span>
                         </div>
                         <span className="text-xs font-medium text-gray-600">{Math.floor(mode.quantiteStock)}+ unités</span>
                       </div>
+                      {mode.quantiteStock > 1 && (
+                        <p className="text-xs text-gray-500 mt-1">
+                          Le paquet de {Math.floor(mode.quantiteStock)} : {formatPrix(mode.prix)}
+                        </p>
+                      )}
                     </button>
                   ))}
                 </div>

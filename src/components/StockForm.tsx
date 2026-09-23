@@ -7,7 +7,7 @@ import MobileCombobox from "@/components/MobileCombobox";
 import { toast } from "sonner";
 import { useCategoriesActive } from "@/hooks/useCategories";
 import { formatPrixInput, handlePrixChange } from "@/utils/format-prix";
-import { ImageIcon, Upload, Camera, Layers, RotateCcw } from "lucide-react";
+import { ImageIcon, Upload, Camera, Layers, RotateCcw, Package, TrendingDown, AlertTriangle } from "lucide-react";
 import { getPhotoUrl } from "@/lib/api-client";
 import { ModeVenteInline } from '@/types';
 import { TypeVenteSelector, TypeVente } from "./TypeVenteSelector";
@@ -37,13 +37,13 @@ function inferTypeVenteFromModes(modes: ModeVenteInline[] | undefined): {
     return {
       typeVente: "gros_et_detail",
       quantiteGros: modeGros.quantiteStock,
-      prixGros: modeGros.prixVente,
+      prixGros: Math.round(modeGros.prixVente / modeGros.quantiteStock),
     };
   } else if (modeGros) {
     return {
       typeVente: "gros",
       quantiteGros: modeGros.quantiteStock,
-      prixGros: modeGros.prixVente,
+      prixGros: Math.round(modeGros.prixVente / modeGros.quantiteStock),
     };
   } else {
     return {
@@ -292,7 +292,7 @@ const StockForm = ({ open, onOpenChange, onSubmit, initialData = null, mode = 'c
       generatedModesVente.push({
         nom: "Gros",
         quantiteStock: quantiteGros,
-        prixVente: prixGros || Number(form.prixVente) * quantiteGros,
+        prixVente: (prixGros || Number(form.prixVente)) * quantiteGros,
         parDefaut: typeVente === "gros",
       });
     }
@@ -601,9 +601,9 @@ const StockForm = ({ open, onOpenChange, onSubmit, initialData = null, mode = 'c
               quantiteGros={quantiteGros}
               onQuantiteGrosChange={(q) => {
                 setQuantiteGros(q);
-                // Auto-calculer prix gros si pas encore défini
+                // Auto-remplir avec le prix unitaire tant que rien n'est saisi
                 if (prixGros === 0 && form.prixVente) {
-                  setPrixGros(Number(form.prixVente) * q);
+                  setPrixGros(Number(form.prixVente));
                 }
               }}
             />
@@ -612,7 +612,7 @@ const StockForm = ({ open, onOpenChange, onSubmit, initialData = null, mode = 'c
             {(typeVente === "gros" || typeVente === "gros_et_detail") && (
               <div className="mt-4 p-4 rounded-lg bg-muted/50 space-y-2">
                 <label className="text-xs font-semibold text-foreground block">
-                  Prix de vente en gros (GNF)
+                  Prix en gros par {form.uniteStock?.toLowerCase() || 'unité'} (GNF)
                 </label>
                 <div className="flex items-center gap-2">
                   <input
@@ -624,10 +624,33 @@ const StockForm = ({ open, onOpenChange, onSubmit, initialData = null, mode = 'c
                   />
                   <span className="text-sm text-muted-foreground">GNF</span>
                 </div>
-                {form.prixVente && (
-                  <p className="text-xs text-muted-foreground">
-                    Prix suggéré sans remise: {(Number(form.prixVente) * quantiteGros).toLocaleString()} GNF
-                  </p>
+
+                <div className="flex items-center gap-2 pt-1">
+                  <Package className="w-4 h-4 text-primary flex-shrink-0" />
+                  <span className="text-sm text-foreground">
+                    Le paquet de {quantiteGros} :{' '}
+                    <span className="font-bold text-primary">
+                      {(prixGros * quantiteGros).toLocaleString('fr-GN')} GNF
+                    </span>
+                  </span>
+                </div>
+
+                {typeVente === "gros_et_detail" && Number(form.prixVente) > 0 && prixGros > 0 && (
+                  Number(form.prixVente) > prixGros ? (
+                    <div className="flex items-center gap-2 text-success">
+                      <TrendingDown className="w-4 h-4 flex-shrink-0" />
+                      <span className="text-sm font-medium">
+                        {(Number(form.prixVente) - prixGros).toLocaleString('fr-GN')} GNF de moins qu'au détail
+                      </span>
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-2 text-destructive">
+                      <AlertTriangle className="w-4 h-4 flex-shrink-0" />
+                      <span className="text-sm font-medium">
+                        Plus cher qu'au détail ({Number(form.prixVente).toLocaleString('fr-GN')} GNF)
+                      </span>
+                    </div>
+                  )
                 )}
               </div>
             )}

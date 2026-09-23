@@ -93,7 +93,10 @@ export const ProductMobileCard = ({ article, onClick, formatPrix }: ProductMobil
             <p className="text-[10px] text-muted-foreground mb-1">Vente en gros:</p>
             <div className="flex items-baseline justify-between">
               <span className="text-sm font-bold text-primary">
-                {formatPrix(article.modesVente[0].prix)}
+                {formatPrix(
+                  Math.round(article.modesVente[0].prix / (article.modesVente[0].quantiteStock || 1)),
+                )}
+                <span className="text-[10px] font-normal text-muted-foreground"> / unité</span>
               </span>
               <span className="text-[10px] text-muted-foreground">
                 Min. {Math.floor(article.modesVente[0].quantiteStock)}+ unités

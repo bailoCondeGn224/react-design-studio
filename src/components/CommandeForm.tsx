@@ -387,7 +387,12 @@ const CommandeForm = ({ open, onOpenChange, onSubmit, initialData = null, mode =
                                           {mode.quantiteStock > 1 ? `${mode.quantiteStock} ${ligne.uniteStock || 'unités'}` : 'À l\'unité'}
                                         </span>
                                         <span className={`font-semibold mt-1 ${isSelected ? "text-primary-foreground" : "text-primary"}`}>
-                                          {new Intl.NumberFormat('fr-GN').format(mode.prixVente)} GNF
+                                          {new Intl.NumberFormat('fr-GN').format(
+                                            Math.round(mode.prixVente / (Number(mode.quantiteStock) || 1)),
+                                          )} GNF
+                                        </span>
+                                        <span className={`text-[10px] ${isSelected ? "text-primary-foreground/80" : "text-muted-foreground"}`}>
+                                          par {ligne.uniteStock?.toLowerCase() || 'unité'}
                                         </span>
                                       </button>
                                     );
@@ -439,13 +444,23 @@ const CommandeForm = ({ open, onOpenChange, onSubmit, initialData = null, mode =
                             </div>
 
                             <div>
-                              <label className="text-xs font-semibold text-foreground mb-2 block">Prix unitaire (GNF)</label>
+                              <label className="text-xs font-semibold text-foreground mb-2 block">
+                                Prix par {ligne.uniteStock?.toLowerCase() || 'unité'} (GNF)
+                              </label>
                               <input
                                 type="text"
                                 inputMode="numeric"
                                 placeholder="0"
-                                value={formatPrixInput(ligne.prixUnitaire)}
-                                onChange={e => updateLigne(index, "prixUnitaire", handlePrixChange(e.target.value))}
+                                value={formatPrixInput(
+                                  Math.round((Number(ligne.prixUnitaire) || 0) / (Number(ligne.modeQuantiteStock) || 1)),
+                                )}
+                                onChange={e =>
+                                  updateLigne(
+                                    index,
+                                    "prixUnitaire",
+                                    Number(handlePrixChange(e.target.value)) * (Number(ligne.modeQuantiteStock) || 1),
+                                  )
+                                }
                                 className="w-full px-4 h-12 rounded-lg border-2 border-border bg-card text-lg font-bold text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
                               />
                             </div>
@@ -461,6 +476,12 @@ const CommandeForm = ({ open, onOpenChange, onSubmit, initialData = null, mode =
                                 </div>
                                 <span className="text-base sm:text-sm font-black text-primary">{formatPrix(ligne.sousTotal)}</span>
                               </div>
+                              {ligne.modeQuantiteStock > 1 && (
+                                <p className="text-xs text-muted-foreground mt-1">
+                                  {Number(ligne.quantite) || 0} × {ligne.modeQuantiteStock} {ligne.uniteStock || 'unités'} ×{' '}
+                                  {Math.round((Number(ligne.prixUnitaire) || 0) / ligne.modeQuantiteStock).toLocaleString('fr-GN')} GNF
+                                </p>
+                              )}
                             </div>
                           )}
                         </div>

@@ -206,7 +206,7 @@ const BulkArticleForm = ({ open, onOpenChange, onSubmit, isSubmitting = false }:
 
       let prixVenteArticle: number;
       if (ligne.typeVente === "gros") {
-        prixVenteArticle = prixGros > 0 ? Math.round(prixGros / qteGros) : 0;
+        prixVenteArticle = prixGros;
       } else {
         prixVenteArticle = Number(ligne.prixVente) || 0;
       }
@@ -224,7 +224,7 @@ const BulkArticleForm = ({ open, onOpenChange, onSubmit, isSubmitting = false }:
         modesVente.push({
           nom: "Gros",
           quantiteStock: qteGros,
-          prixVente: prixGros,
+          prixVente: prixGros * qteGros,
           parDefaut: ligne.typeVente === "gros",
         });
       }
@@ -476,7 +476,7 @@ const BulkArticleForm = ({ open, onOpenChange, onSubmit, isSubmitting = false }:
               />
             </div>
             <div className="space-y-2">
-              <label className="block text-sm font-medium text-foreground">Prix gros (GNF)</label>
+              <label className="block text-sm font-medium text-foreground">Prix gros par unité (GNF)</label>
               <input
                 type="text"
                 inputMode="numeric"
@@ -486,6 +486,18 @@ const BulkArticleForm = ({ open, onOpenChange, onSubmit, isSubmitting = false }:
                 className="w-full px-4 h-11 rounded-lg border border-border bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-ring/30"
               />
             </div>
+
+            {Number(ligne.prixGros) > 0 && (
+              <div className="col-span-2 flex items-center gap-2">
+                <Package className="w-4 h-4 text-primary flex-shrink-0" />
+                <span className="text-sm text-foreground">
+                  Le paquet de {Number(ligne.quantiteGros) || 12} :{' '}
+                  <span className="font-bold text-primary">
+                    {(Number(ligne.prixGros) * (Number(ligne.quantiteGros) || 12)).toLocaleString('fr-GN')} GNF
+                  </span>
+                </span>
+              </div>
+            )}
           </div>
         )}
 
