@@ -30,7 +30,6 @@ const CategoryMobileCard = ({
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-sm font-bold text-foreground truncate">{categorie.nom}</p>
-              <p className="text-xs text-muted-foreground font-mono">{categorie.code}</p>
             </div>
           </div>
           {categorie.actif ? (

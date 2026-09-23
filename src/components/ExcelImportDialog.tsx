@@ -195,7 +195,6 @@ export default function ExcelImportDialog({
                   <AlertDescription className="ml-2">
                     <p className="font-semibold">
                       Ligne {error.row}
-                      {error.codeArticle && ` - ${error.codeArticle}`}
                       {error.nom && ` (${error.nom})`}
                     </p>
                     <ul className="text-xs mt-1">

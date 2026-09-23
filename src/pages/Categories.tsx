@@ -172,7 +172,6 @@ const Categories = () => {
             <table className="w-full">
               <thead className="bg-secondary/50">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Code</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Nom</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Description</th>
                   <th className="px-6 py-3 text-center text-xs font-medium text-muted-foreground uppercase tracking-wider">Statut</th>
@@ -182,9 +181,6 @@ const Categories = () => {
               <tbody className="divide-y divide-border">
                 {categories.map((categorie) => (
                   <tr key={categorie.id} className="hover:bg-secondary/30 transition-colors">
-                    <td className="px-6 py-3">
-                      <span className="font-mono font-semibold text-primary text-sm">{categorie.code}</span>
-                    </td>
                     <td className="px-6 py-3">
                       <span className="font-medium text-foreground text-sm">{categorie.nom}</span>
                     </td>

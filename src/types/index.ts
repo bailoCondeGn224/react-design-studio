@@ -246,7 +246,6 @@ export interface LoginResponse {
 export interface Categorie {
   id: string;
   nom: string;
-  code: string;
   description?: string;
   actif: boolean;
   createdAt?: string;
@@ -255,7 +254,6 @@ export interface Categorie {
 
 export interface CreateCategorieDto {
   nom: string;
-  code: string;
   description?: string;
   actif?: boolean;
 }
@@ -264,7 +262,6 @@ export interface CreateCategorieDto {
 export interface Article {
   id: string;
   nom: string;
-  reference?: string;
   categorieId: string;
   categorie?: Categorie; // Relation optionnelle si on veut afficher les détails
   zone: string;
@@ -310,7 +307,6 @@ export interface ArticleFournisseur {
 
 export interface CreateArticleDto {
   nom: string;
-  reference?: string;
   categorieId: string;
   zone: string;
   stock: number;

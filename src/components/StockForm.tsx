@@ -66,7 +66,6 @@ const StockForm = ({ open, onOpenChange, onSubmit, initialData = null, mode = 'c
         seuilAlerte: String(initialData.seuilAlerte),
         prixVente: initialData.prixVente?.toString().replace(' GNF', '') || '',
         prixAchat: initialData.prixAchat?.toString().replace(' GNF', '') || '',
-        reference: initialData.reference || '',
         dateExpiration: initialData.dateExpiration || '',
         delaiAlerteExpiration: initialData.delaiAlerteExpiration?.toString() || '30',
         uniteStock: initialData.uniteStock || 'Unité',
@@ -81,7 +80,6 @@ const StockForm = ({ open, onOpenChange, onSubmit, initialData = null, mode = 'c
     }
     return {
       nom: "",
-      reference: "",
       categorieId: "",
       zone: "A",
       stock: "",
@@ -154,7 +152,6 @@ const StockForm = ({ open, onOpenChange, onSubmit, initialData = null, mode = 'c
         seuilAlerte: String(initialData.seuilAlerte),
         prixVente: initialData.prixVente?.replace(' GNF', '') || '',
         prixAchat: initialData.prixAchat?.replace(' GNF', '') || '',
-        reference: initialData.reference || '',
         dateExpiration: initialData.dateExpiration || '',
         delaiAlerteExpiration: initialData.delaiAlerteExpiration?.toString() || '30',
         uniteStock: initialData.uniteStock || 'Unité',
@@ -302,7 +299,6 @@ const StockForm = ({ open, onOpenChange, onSubmit, initialData = null, mode = 'c
 
     const articleData = {
       nom: form.nom,
-      reference: form.reference || undefined,
       categorieId: form.categorieId,
       zone: form.zone,
       stock: Number(form.stock) || 0,
@@ -353,7 +349,6 @@ const StockForm = ({ open, onOpenChange, onSubmit, initialData = null, mode = 'c
       </div>
       <form onSubmit={handleSubmit} className="space-y-3 sm:space-y-4 overflow-y-auto flex-1 min-h-0 p-4 sm:p-6">
           <FormField label="Nom de l'article *" placeholder="Ex: Abaya Noire Premium" value={form.nom} onChange={e => update("nom", (e.target as HTMLInputElement).value)} maxLength={100} />
-          <FormField label="Référence (SKU)" placeholder="Ex: ABY-001" value={form.reference} onChange={e => update("reference", (e.target as HTMLInputElement).value)} maxLength={50} />
           <FormField
             label="Unité de stock"
             placeholder="Ex: Bouteille, Kilo, Pièce"

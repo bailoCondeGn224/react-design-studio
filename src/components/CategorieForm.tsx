@@ -26,7 +26,6 @@ const CategorieForm = ({ open, onOpenChange, onSubmit, initialData = null, mode 
     if (mode === 'edit' && initialData) {
       return {
         nom: initialData.nom || '',
-        code: initialData.code || '',
         description: initialData.description || '',
         actif: initialData.actif ?? true,
         zoneId: (initialData as any).zoneId || '',
@@ -34,7 +33,6 @@ const CategorieForm = ({ open, onOpenChange, onSubmit, initialData = null, mode 
     }
     return {
       nom: '',
-      code: '',
       description: '',
       actif: true,
       zoneId: '',
@@ -56,14 +54,13 @@ const CategorieForm = ({ open, onOpenChange, onSubmit, initialData = null, mode 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!form.nom.trim() || !form.code.trim()) {
+    if (!form.nom.trim()) {
       toast.error("Veuillez remplir tous les champs obligatoires");
       return;
     }
 
     const categorieData = {
       nom: form.nom.trim(),
-      code: form.code.trim().toUpperCase(),
       description: form.description.trim() || undefined,
       actif: form.actif,
       zoneId: form.zoneId || undefined,
@@ -126,25 +123,7 @@ const CategorieForm = ({ open, onOpenChange, onSubmit, initialData = null, mode 
                 maxLength={100}
                 className="w-full px-3 h-11 rounded-lg border border-border bg-background text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-primary/20 focus:border-primary"
               />
-            </div>
-
-            <div>
-              <label className="block text-xs font-medium text-muted-foreground mb-1.5">
-                Code <span className="text-destructive">*</span>
-              </label>
-              <input
-                type="text"
-                placeholder="Ex: ABY"
-                value={form.code}
-                onChange={e => update("code", e.target.value.toUpperCase())}
-                maxLength={10}
-                className="w-full px-3 h-11 rounded-lg border border-border bg-background text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-primary/20 focus:border-primary font-mono uppercase"
-              />
-              <p className="text-xs text-muted-foreground mt-1">
-                Le code sera automatiquement converti en majuscules
-              </p>
-            </div>
-          </div>
+            </div>          </div>
         </div>
 
         {/* Section Description */}

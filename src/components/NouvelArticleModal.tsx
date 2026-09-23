@@ -23,7 +23,6 @@ const NouvelArticleModal = ({ open, onOpenChange, onArticleCreated }: NouvelArti
 
   const [form, setForm] = useState({
     nom: "",
-    reference: "",
     categorieId: "",
     zone: "A",
     seuilAlerte: "10",
@@ -43,7 +42,6 @@ const NouvelArticleModal = ({ open, onOpenChange, onArticleCreated }: NouvelArti
   const resetForm = () => {
     setForm({
       nom: "",
-      reference: "",
       categorieId: "",
       zone: "A",
       seuilAlerte: "10",
@@ -95,7 +93,6 @@ const NouvelArticleModal = ({ open, onOpenChange, onArticleCreated }: NouvelArti
 
     const articleData = {
       nom: form.nom,
-      reference: form.reference || undefined,
       categorieId: form.categorieId,
       zone: form.zone,
       stock: 0, // Stock initial à 0, sera augmenté par l'approvisionnement
@@ -152,15 +149,6 @@ const NouvelArticleModal = ({ open, onOpenChange, onArticleCreated }: NouvelArti
             onChange={e => update("nom", (e.target as HTMLInputElement).value)}
             maxLength={100}
           />
-
-          <FormField
-            label="Référence (SKU)"
-            placeholder="Ex: ABY-001"
-            value={form.reference}
-            onChange={e => update("reference", (e.target as HTMLInputElement).value)}
-            maxLength={50}
-          />
-
           {/* Photo Upload */}
           <div className="space-y-2">
             <label className="block text-sm font-medium text-foreground">

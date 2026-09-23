@@ -15,7 +15,6 @@ import MobileCombobox from "@/components/MobileCombobox";
 type TypeVente = "detail" | "gros" | "gros_et_detail";
 
 interface LigneArticle {
-  code: string;
   nom: string;
   description: string;
   categorieId: string;
@@ -47,7 +46,6 @@ const BulkArticleForm = ({ open, onOpenChange, onSubmit, isSubmitting = false }:
   const isMobile = useIsMobile();
 
   const ligneVide: LigneArticle = {
-    code: "",
     nom: "",
     description: "",
     categorieId: "",
@@ -187,17 +185,17 @@ const BulkArticleForm = ({ open, onOpenChange, onSubmit, isSubmitting = false }:
   };
 
   const handleSubmit = () => {
-    const lignesValides = lignes.filter(ligne => ligne.code && ligne.nom && ligne.categorieId && ligne.zone);
+    const lignesValides = lignes.filter(ligne => ligne.nom && ligne.categorieId && ligne.zone);
 
     if (lignesValides.length === 0) {
       toast.error("Veuillez remplir au moins un article complet");
       return;
     }
 
-    const codes = lignesValides.map(l => l.code.trim());
-    const doublons = codes.filter((code, index) => codes.indexOf(code) !== index);
+    const noms = lignesValides.map(l => l.nom.trim().toLowerCase());
+    const doublons = noms.filter((nom, index) => noms.indexOf(nom) !== index);
     if (doublons.length > 0) {
-      toast.error(`Code(s) en double : ${doublons.join(', ')}`);
+      toast.error(`Nom(s) en double : ${doublons.join(', ')}`);
       return;
     }
 
@@ -232,7 +230,6 @@ const BulkArticleForm = ({ open, onOpenChange, onSubmit, isSubmitting = false }:
       }
 
       return {
-        code: ligne.code.trim(),
         nom: ligne.nom.trim(),
         description: ligne.description.trim(),
         categorieId: ligne.categorieId,
@@ -256,7 +253,7 @@ const BulkArticleForm = ({ open, onOpenChange, onSubmit, isSubmitting = false }:
   };
 
   const isLigneValide = (ligne: LigneArticle) => {
-    return ligne.code && ligne.nom && ligne.categorieId && ligne.zone;
+    return ligne.nom && ligne.categorieId && ligne.zone;
   };
 
   const lignesValides = lignes.filter(isLigneValide).length;
@@ -354,22 +351,13 @@ const BulkArticleForm = ({ open, onOpenChange, onSubmit, isSubmitting = false }:
         </div>
 
         {/* Champs du formulaire */}
-        <div className="grid grid-cols-2 gap-3">
-          <FormField
-            label="Code *"
-            placeholder="ART001"
-            value={ligne.code}
-            onChange={(e) => updateLigne(index, 'code', (e.target as HTMLInputElement).value)}
-            maxLength={20}
-          />
-          <FormField
-            label="Nom *"
-            placeholder="Nom de l'article"
-            value={ligne.nom}
-            onChange={(e) => updateLigne(index, 'nom', (e.target as HTMLInputElement).value)}
-            maxLength={100}
-          />
-        </div>
+        <FormField
+          label="Nom *"
+          placeholder="Nom de l'article"
+          value={ligne.nom}
+          onChange={(e) => updateLigne(index, 'nom', (e.target as HTMLInputElement).value)}
+          maxLength={100}
+        />
 
         {/* Catégorie et Zone */}
         <div className="grid grid-cols-2 gap-3">

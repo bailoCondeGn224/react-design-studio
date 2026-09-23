@@ -778,28 +778,6 @@ const Stock = () => {
                 </div>
               )}
 
-              {/* Bouton de fermeture personnalisé */}
-              <button
-                onClick={() => setSelectedImage(null)}
-                className="absolute top-4 right-4 w-10 h-10 rounded-full bg-background/80 hover:bg-background border-2 border-border flex items-center justify-center transition-all hover:scale-110 shadow-lg z-20"
-                aria-label="Fermer"
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="20"
-                  height="20"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  className="text-foreground"
-                >
-                  <line x1="18" y1="6" x2="6" y2="18" />
-                  <line x1="6" y1="6" x2="18" y2="18" />
-                </svg>
-              </button>
             </div>
           </DialogContent>
         </Dialog>
@@ -1413,7 +1391,6 @@ const Stock = () => {
                           )}
                           <div className="min-w-0">
                             <span className="text-xs sm:text-sm font-semibold text-foreground block truncate">{item.nom}</span>
-                            {item.reference && <p className="text-[10px] text-muted-foreground truncate">{item.reference}</p>}
                           </div>
                         </div>
                       </div>

@@ -13,7 +13,6 @@ export interface ImportResult {
 
 export interface ImportError {
   row: number;
-  codeArticle?: string;
   nom?: string;
   errors: string[];
 }

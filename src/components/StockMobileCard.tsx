@@ -139,14 +139,7 @@ const StockMobileCard = ({
               </SheetHeader>
 
               {/* Infos détaillées dans le Sheet */}
-              <div className="space-y-4 mb-6">
-                {article.reference && (
-                  <div className="flex justify-between py-2 border-b border-border">
-                    <span className="text-sm text-muted-foreground">Référence</span>
-                    <span className="text-sm font-medium">{article.reference}</span>
-                  </div>
-                )}
-                <div className="flex justify-between py-2 border-b border-border">
+              <div className="space-y-4 mb-6">                <div className="flex justify-between py-2 border-b border-border">
                   <span className="text-sm text-muted-foreground">Zone</span>
                   <span className="text-sm font-medium">{article.zone}</span>
                 </div>
