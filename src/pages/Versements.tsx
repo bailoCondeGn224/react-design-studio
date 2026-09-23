@@ -715,7 +715,7 @@ const Versements = () => {
         </Sheet>
       ) : (
         <Dialog open={historyDialogOpen} onOpenChange={setHistoryDialogOpen}>
-          <DialogContent className="max-w-[95vw] sm:max-w-2xl h-[90vh] flex flex-col p-0">
+          <DialogContent className="max-w-[95vw] sm:max-w-2xl max-h-[85vh] flex flex-col p-0">
             <DialogHeader className="p-6 pb-4 flex-shrink-0">
               <DialogTitle className="font-heading">Historique des Paiements</DialogTitle>
             </DialogHeader>
@@ -829,16 +829,16 @@ const Versements = () => {
                   )}
                 </div>
 
-                <div className="flex justify-end pt-2">
-                  <button
-                    onClick={() => setHistoryDialogOpen(false)}
-                    className="py-2.5 px-4 rounded-lg border border-border text-sm font-medium text-muted-foreground hover:bg-secondary transition-colors"
-                  >
-                    Fermer
-                  </button>
-                </div>
               </div>
             )}
+            </div>
+            <div className="flex-shrink-0 border-t border-border px-6 py-4 flex justify-end">
+              <button
+                onClick={() => setHistoryDialogOpen(false)}
+                className="h-11 px-6 rounded-lg border-2 border-border text-sm font-semibold text-muted-foreground hover:bg-secondary transition-colors"
+              >
+                Fermer
+              </button>
             </div>
           </DialogContent>
         </Dialog>

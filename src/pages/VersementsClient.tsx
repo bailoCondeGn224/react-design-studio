@@ -381,7 +381,7 @@ const VersementsClient = () => {
         </Sheet>
       ) : (
         <Dialog open={historyDialogOpen} onOpenChange={setHistoryDialogOpen}>
-          <DialogContent className="max-w-[95vw] sm:max-w-2xl h-[90vh] flex flex-col p-0">
+          <DialogContent className="max-w-[95vw] sm:max-w-2xl max-h-[90vh] flex flex-col p-0">
             <DialogHeader className="px-4 sm:px-6 py-4 border-b flex-shrink-0">
               <DialogTitle className="text-lg font-bold">Historique des Paiements</DialogTitle>
             </DialogHeader>
@@ -667,7 +667,7 @@ const VersementsClient = () => {
         </Sheet>
       ) : (
         <Dialog open={detailsOpen} onOpenChange={setDetailsOpen}>
-          <DialogContent className="max-w-[95vw] sm:max-w-md h-[90vh] flex flex-col p-0">
+          <DialogContent className="max-w-[95vw] sm:max-w-md max-h-[90vh] flex flex-col p-0">
             <DialogHeader className="px-4 sm:px-6 py-4 border-b flex-shrink-0">
               <DialogTitle className="text-lg font-bold">Détails du Paiement</DialogTitle>
             </DialogHeader>
@@ -754,40 +754,42 @@ const VersementsClient = () => {
                       )}
                     </div>
 
-                    <div className="flex gap-2 pt-2">
-                      <CanAccess permissions={['versements-client.update']}>
-                        <button
-                          onClick={() => {
-                            setDetailsOpen(false);
-                            handleEdit(selectedVersement);
-                          }}
-                          className="flex-1 py-2.5 rounded-lg gradient-gold text-primary-foreground text-sm font-semibold hover:opacity-90 transition-opacity flex items-center justify-center gap-2"
-                        >
-                          <Edit2 className="w-4 h-4" /> Modifier
-                        </button>
-                      </CanAccess>
-                      <CanAccess permissions={['versements-client.delete']}>
-                        <button
-                          onClick={() => {
-                            setDetailsOpen(false);
-                            handleDelete(selectedVersement);
-                          }}
-                          className="py-2.5 px-4 rounded-lg border border-destructive/30 text-sm font-medium text-destructive hover:bg-destructive/10 transition-colors flex items-center gap-2"
-                        >
-                          <Trash2 className="w-4 h-4" /> Annuler
-                        </button>
-                      </CanAccess>
-                      <button
-                        onClick={() => setDetailsOpen(false)}
-                        className="py-2.5 px-4 rounded-lg border border-border text-sm font-medium text-muted-foreground hover:bg-secondary transition-colors"
-                      >
-                        Fermer
-                      </button>
-                    </div>
                   </div>
                 );
               })()}
             </div>
+            {selectedVersement && (
+              <div className="flex-shrink-0 border-t border-border px-4 sm:px-6 py-4 flex gap-2">
+                <CanAccess permissions={['versements-client.update']}>
+                  <button
+                    onClick={() => {
+                      setDetailsOpen(false);
+                      handleEdit(selectedVersement);
+                    }}
+                    className="flex-1 h-11 rounded-lg gradient-gold text-primary-foreground text-sm font-semibold hover:opacity-90 transition-opacity flex items-center justify-center gap-2"
+                  >
+                    <Edit2 className="w-4 h-4" /> Modifier
+                  </button>
+                </CanAccess>
+                <CanAccess permissions={['versements-client.delete']}>
+                  <button
+                    onClick={() => {
+                      setDetailsOpen(false);
+                      handleDelete(selectedVersement);
+                    }}
+                    className="h-11 px-4 rounded-lg border-2 border-destructive/30 text-sm font-semibold text-destructive hover:bg-destructive/10 transition-colors flex items-center gap-2"
+                  >
+                    <Trash2 className="w-4 h-4" /> Annuler
+                  </button>
+                </CanAccess>
+                <button
+                  onClick={() => setDetailsOpen(false)}
+                  className="h-11 px-4 rounded-lg border-2 border-border text-sm font-semibold text-muted-foreground hover:bg-secondary transition-colors"
+                >
+                  Fermer
+                </button>
+              </div>
+            )}
           </DialogContent>
         </Dialog>
       )}

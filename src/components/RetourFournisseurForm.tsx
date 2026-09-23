@@ -499,7 +499,7 @@ const RetourFournisseurForm = ({ open, onOpenChange, onSubmit, isSubmitting = fa
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-[95vw] sm:max-w-4xl h-[90vh] flex flex-col p-0 bg-gradient-to-br from-background via-background to-destructive/5" onOpenAutoFocus={(e) => e.preventDefault()}>
+      <DialogContent className="max-w-[95vw] sm:max-w-4xl max-h-[90vh] flex flex-col p-0 bg-gradient-to-br from-background via-background to-destructive/5" onOpenAutoFocus={(e) => e.preventDefault()}>
         {formContent}
       </DialogContent>
     </Dialog>

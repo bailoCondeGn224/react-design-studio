@@ -180,7 +180,7 @@ export default function ComptageDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md h-[90vh] flex flex-col p-0">
+      <DialogContent className="sm:max-w-md max-h-[90vh] flex flex-col p-0">
         {content}
       </DialogContent>
     </Dialog>

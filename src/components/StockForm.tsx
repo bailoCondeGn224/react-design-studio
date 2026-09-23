@@ -689,7 +689,7 @@ const StockForm = ({ open, onOpenChange, onSubmit, initialData = null, mode = 'c
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="max-w-[95vw] sm:max-w-md h-[90vh] flex flex-col p-0" onOpenAutoFocus={(e) => e.preventDefault()}>
+      <DialogContent className="max-w-[95vw] sm:max-w-md max-h-[90vh] flex flex-col p-0" onOpenAutoFocus={(e) => e.preventDefault()}>
         <DialogHeader className="sr-only">
           <DialogTitle>{mode === 'edit' ? 'Modifier l\'Article' : 'Nouvel Article'}</DialogTitle>
           <DialogDescription>

@@ -138,7 +138,7 @@ export default function CreateInventaireDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="h-[90vh] flex flex-col p-0">
+      <DialogContent className="max-h-[90vh] flex flex-col p-0">
         {content}
       </DialogContent>
     </Dialog>

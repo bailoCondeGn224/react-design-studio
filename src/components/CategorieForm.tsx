@@ -252,7 +252,7 @@ const CategorieForm = ({ open, onOpenChange, onSubmit, initialData = null, mode 
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-[95vw] sm:max-w-2xl h-[90vh] flex flex-col p-0" onOpenAutoFocus={(e) => e.preventDefault()}>
+      <DialogContent className="max-w-[95vw] sm:max-w-2xl max-h-[90vh] flex flex-col p-0" onOpenAutoFocus={(e) => e.preventDefault()}>
         <DialogHeader className="sr-only">
           <DialogTitle>{mode === 'edit' ? 'Modifier la Catégorie' : 'Nouvelle Catégorie'}</DialogTitle>
           <DialogDescription>

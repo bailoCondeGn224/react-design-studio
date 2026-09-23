@@ -621,7 +621,7 @@ const BulkArticleForm = ({ open, onOpenChange, onSubmit, isSubmitting = false }:
 
   return (
     <Dialog open={open} onOpenChange={(isOpen) => { if (!isOpen) handleClose(); else onOpenChange(true); }}>
-      <DialogContent className="max-w-2xl h-[90vh] flex flex-col p-0" onOpenAutoFocus={(e) => e.preventDefault()}>
+      <DialogContent className="max-w-2xl max-h-[90vh] flex flex-col p-0" onOpenAutoFocus={(e) => e.preventDefault()}>
         <DialogHeader className="sr-only">
           <DialogTitle>Ajout d'articles en masse</DialogTitle>
           <DialogDescription>Ajoutez plusieurs articles rapidement</DialogDescription>
