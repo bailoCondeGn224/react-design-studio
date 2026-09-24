@@ -753,7 +753,7 @@ const Stock = () => {
         )
       ) : (
         <Dialog open={selectedImage !== null} onOpenChange={() => setSelectedImage(null)}>
-          <DialogContent className="max-w-[95vw] sm:max-w-4xl max-h-[95vh] p-0 overflow-hidden bg-background/95 backdrop-blur-sm border-2">
+          <DialogContent className="max-w-[95vw] sm:max-w-4xl h-[95vh] p-0 overflow-hidden bg-background/95 backdrop-blur-sm border-2">
             <DialogHeader className="sr-only">
               <DialogTitle>{selectedImage?.nom || 'Photo de l\'article'}</DialogTitle>
             </DialogHeader>

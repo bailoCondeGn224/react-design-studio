@@ -429,7 +429,7 @@ const Ventes = () => {
   </Sheet>
       ) : (
         <Dialog open={detailsId !== null} onOpenChange={() => setDetailsId(null)}>
-          <DialogContent className="max-w-[95vw] sm:max-w-2xl max-h-[90vh] flex flex-col">
+          <DialogContent className="max-w-[95vw] sm:max-w-2xl h-[90vh] flex flex-col">
             <DialogHeader>
               <DialogTitle className="font-heading text-base sm:text-lg">Détails de la Vente</DialogTitle>
             </DialogHeader>

@@ -121,7 +121,7 @@ const OrganizationForm = ({ open, onOpenChange, onSubmit, initialData = null, mo
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-[95vw] sm:max-w-2xl max-h-[90vh] overflow-y-auto elegant-scroll">
+      <DialogContent className="max-w-[95vw] sm:max-w-2xl h-[90vh] overflow-y-auto elegant-scroll">
         <DialogHeader>
           <DialogTitle className="font-heading">
             {mode === 'edit' ? "Modifier l'Organization" : 'Nouvelle Organization'}

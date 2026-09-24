@@ -366,7 +366,7 @@ const NouvelArticleModal = ({ open, onOpenChange, onArticleCreated }: NouvelArti
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-[95vw] sm:max-w-md max-h-[90vh] flex flex-col p-0" onOpenAutoFocus={(e) => e.preventDefault()}>
+      <DialogContent className="max-w-[95vw] sm:max-w-md h-[90vh] flex flex-col p-0" onOpenAutoFocus={(e) => e.preventDefault()}>
         <DialogHeader className="px-4 sm:px-6 py-4 sm:py-5 border-b bg-gradient-to-r from-success/10 via-success/5 to-transparent flex-shrink-0">
           <div className="flex items-center gap-3 pr-12">
             <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br from-success to-success/70 flex items-center justify-center shadow-lg">

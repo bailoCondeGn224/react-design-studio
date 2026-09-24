@@ -193,7 +193,7 @@ export default function ValiderInventaireDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-lg max-h-[90vh] flex flex-col p-0">
+      <DialogContent className="sm:max-w-lg h-[90vh] flex flex-col p-0">
         {content}
       </DialogContent>
     </Dialog>

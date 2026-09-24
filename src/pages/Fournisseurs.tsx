@@ -372,7 +372,7 @@ const Fournisseurs = () => {
         </Sheet>
       ) : (
         <Dialog open={detailsItem !== null} onOpenChange={() => setDetailsItem(null)}>
-          <DialogContent className="max-w-[95vw] sm:max-w-3xl max-h-[90vh] overflow-y-auto">
+          <DialogContent className="max-w-[95vw] sm:max-w-3xl h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle className="font-heading text-xl">
                 Détails du Fournisseur

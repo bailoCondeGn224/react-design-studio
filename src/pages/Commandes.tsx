@@ -743,7 +743,7 @@ const Commandes = () => {
         </Sheet>
       ) : (
         <Dialog open={!!detailsCommande} onOpenChange={() => setDetailsCommande(null)}>
-          <DialogContent className="max-w-3xl max-h-[90vh] flex flex-col p-0">
+          <DialogContent className="max-w-3xl h-[90vh] flex flex-col p-0">
             <DialogHeader className="p-6 border-b bg-gradient-to-r from-primary/10 via-primary/5 to-transparent space-y-0 flex-shrink-0">
               <div className="flex items-center gap-3">
                 <div className="w-12 h-12 rounded-lg bg-primary/20 flex items-center justify-center">

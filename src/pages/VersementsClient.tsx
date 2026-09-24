@@ -381,7 +381,7 @@ const VersementsClient = () => {
         </Sheet>
       ) : (
         <Dialog open={historyDialogOpen} onOpenChange={setHistoryDialogOpen}>
-          <DialogContent className="max-w-[95vw] sm:max-w-2xl max-h-[90vh] flex flex-col p-0">
+          <DialogContent className="max-w-[95vw] sm:max-w-2xl h-[90vh] flex flex-col p-0">
             <DialogHeader className="px-4 sm:px-6 py-4 border-b flex-shrink-0">
               <DialogTitle className="text-lg font-bold">Historique des Paiements</DialogTitle>
             </DialogHeader>
@@ -667,7 +667,7 @@ const VersementsClient = () => {
         </Sheet>
       ) : (
         <Dialog open={detailsOpen} onOpenChange={setDetailsOpen}>
-          <DialogContent className="max-w-[95vw] sm:max-w-md max-h-[90vh] flex flex-col p-0">
+          <DialogContent className="max-w-[95vw] sm:max-w-md max-h-[85vh] flex flex-col p-0">
             <DialogHeader className="px-4 sm:px-6 py-4 border-b flex-shrink-0">
               <DialogTitle className="text-lg font-bold">Détails du Paiement</DialogTitle>
             </DialogHeader>
