@@ -3,7 +3,7 @@ import {
   LayoutDashboard, Users, UserCheck, Package, FolderTree, MapPin, Truck, ShoppingCart, Wallet,
   ChevronLeft, ChevronRight, ArrowDownRight, ArrowDownLeft, Menu, LogOut, History, BarChart3,
   Shield, UserCog, Settings, Building2, CreditCard, RotateCcw, PackageX, ClipboardList, ClipboardCheck,
-  Receipt, Calculator, Globe, Store
+  Receipt, Calculator, Globe, Store, Save
 } from "lucide-react";
 import { useState, useRef, useEffect, memo, useMemo } from "react";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
@@ -38,6 +38,7 @@ const navItems = [
   { to: "/zakat", icon: Calculator, label: "Zakat", permissions: [] },
   { to: "/utilisateurs", icon: UserCog, label: "Utilisateurs", permissions: ["users.read"] },
   { to: "/roles", icon: Shield, label: "Rôles & Permissions", permissions: ["roles.read"] },
+  { to: "/sauvegarde", icon: Save, label: "Sauvegarde", permissions: [], bureau: true, externe: true },
 ];
 
 // Menu pour les super admins (plateforme)
@@ -72,6 +73,7 @@ const adminNavItems = [
   { to: "/zakat", icon: Calculator, label: "Zakat" },
   { to: "/utilisateurs", icon: UserCog, label: "Utilisateurs", permissions: ["users.read"] },
   { to: "/roles", icon: Shield, label: "Rôles & Permissions", permissions: ["roles.read"] },
+  { to: "/sauvegarde", icon: Save, label: "Sauvegarde", permissions: [], bureau: true, externe: true },
 ];
 
 // Type for nav items with optional hasBadge property
@@ -82,19 +84,53 @@ type NavItem = {
   permissions?: string[];
   hasBadge?: boolean;
   enLigne?: boolean;
+  bureau?: boolean;
+  externe?: boolean;
 };
 
+// Pastille de rappel sur l'entrée Sauvegarde : dépend de la dernière copie sur clé USB
+function usePastilleSauvegarde() {
+  const [pastille, setPastille] = useState<string | undefined>(undefined);
+
+  useEffect(() => {
+    if (!estVersionBureau) return;
+
+    const charger = async () => {
+      try {
+        const reponse = await fetch('/sauvegarde/etat');
+        const etat = await reponse.json();
+        const jours = etat.dernierExport
+          ? (Date.now() - new Date(etat.dernierExport).getTime()) / 86400000
+          : Infinity;
+        setPastille(jours < 7 ? 'bg-success' : jours < 15 ? 'bg-warning' : 'bg-destructive');
+      } catch {
+        setPastille(undefined);
+      }
+    };
+
+    charger();
+    const minuterie = setInterval(charger, 300000);
+    return () => clearInterval(minuterie);
+  }, []);
+
+  return pastille;
+}
+
 // Composant MenuItem mémorisé pour éviter les re-renders inutiles
-const MenuItem = memo(({ item, collapsed, isActive, onItemClick, badgeCount }: {
+const MenuItem = memo(({ item, collapsed, isActive, onItemClick, badgeCount, pastille }: {
   item: NavItem;
   collapsed: boolean;
   isActive: boolean;
   onItemClick?: () => void;
   badgeCount?: number;
+  pastille?: string;
 }) => {
+  const Lien = item.externe ? 'a' : NavLink;
+  const proprietesLien = item.externe ? { href: item.to } : { to: item.to };
+
   return (
-    <NavLink
-      to={item.to}
+    <Lien
+      {...(proprietesLien as any)}
       onClick={onItemClick}
       className={`relative flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 group ${
         isActive
@@ -110,6 +146,7 @@ const MenuItem = memo(({ item, collapsed, isActive, onItemClick, badgeCount }: {
       {!collapsed && (
         <span className="animate-fade-in flex-1 flex items-center justify-between">
           <span>{item.label}</span>
+          {pastille && <span className={`ml-2 w-2.5 h-2.5 rounded-full ${pastille}`} />}
           {item.hasBadge && badgeCount !== undefined && badgeCount > 0 && (
             <span className="ml-2 px-2 py-0.5 text-xs font-bold rounded-full bg-primary text-primary-foreground min-w-[20px] text-center">
               {badgeCount > 99 ? '99+' : badgeCount}
@@ -120,7 +157,8 @@ const MenuItem = memo(({ item, collapsed, isActive, onItemClick, badgeCount }: {
       {collapsed && item.hasBadge && badgeCount !== undefined && badgeCount > 0 && (
         <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-primary" />
       )}
-    </NavLink>
+      {collapsed && pastille && <span className={`absolute top-1 right-1 w-2 h-2 rounded-full ${pastille}`} />}
+    </Lien>
   );
 });
 
@@ -135,6 +173,7 @@ const SidebarContent = ({ collapsed, setCollapsed, onItemClick }: { collapsed: b
   // Get pending online orders count for badge
   const { data: pendingData } = usePendingOrderCount();
   const pendingCount = pendingData?.count ?? 0;
+  const pastilleSauvegarde = usePastilleSauvegarde();
 
   // Les paramètres viennent maintenant de l'organization de l'utilisateur
   const organization = user?.organization;
@@ -147,7 +186,9 @@ const SidebarContent = ({ collapsed, setCollapsed, onItemClick }: { collapsed: b
     } else if (userRole === 'ADMIN') {
       items = adminNavItems;
     }
-    return estVersionBureau ? items.filter((item) => !item.enLigne) : items;
+    return items.filter((item) =>
+      estVersionBureau ? !item.enLigne : !item.bureau,
+    );
   }, [isSuperAdmin, userRole]);
 
   // Restaurer la position de scroll au montage et après navigation
@@ -226,6 +267,7 @@ const SidebarContent = ({ collapsed, setCollapsed, onItemClick }: { collapsed: b
                 isActive={isActive}
                 onItemClick={onItemClick}
                 badgeCount={item.hasBadge ? pendingCount : undefined}
+                pastille={item.to === "/sauvegarde" ? pastilleSauvegarde : undefined}
               />
             );
           }
@@ -239,6 +281,7 @@ const SidebarContent = ({ collapsed, setCollapsed, onItemClick }: { collapsed: b
                 isActive={isActive}
                 onItemClick={onItemClick}
                 badgeCount={item.hasBadge ? pendingCount : undefined}
+                pastille={item.to === "/sauvegarde" ? pastilleSauvegarde : undefined}
               />
             </CanAccess>
           );
