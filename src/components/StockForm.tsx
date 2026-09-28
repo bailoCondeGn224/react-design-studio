@@ -635,6 +635,16 @@ const StockForm = ({ open, onOpenChange, onSubmit, initialData = null, mode = 'c
                   </span>
                 </div>
 
+                {prixGros > 0 && Number(form.prixAchat) > 0 && prixGros < Number(form.prixAchat) && (
+                  <div className="flex items-center gap-2 text-destructive">
+                    <AlertTriangle className="w-4 h-4 flex-shrink-0" />
+                    <span className="text-sm font-bold">
+                      Vente à perte : achat à {Number(form.prixAchat).toLocaleString('fr-GN')} GNF par{' '}
+                      {form.uniteStock?.toLowerCase() || 'unité'}
+                    </span>
+                  </div>
+                )}
+
                 {typeVente === "gros_et_detail" && Number(form.prixVente) > 0 && prixGros > 0 && (
                   Number(form.prixVente) > prixGros ? (
                     <div className="flex items-center gap-2 text-success">

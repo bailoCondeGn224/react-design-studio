@@ -482,6 +482,13 @@ const CommandeForm = ({ open, onOpenChange, onSubmit, initialData = null, mode =
                                   {Math.round((Number(ligne.prixUnitaire) || 0) / ligne.modeQuantiteStock).toLocaleString('fr-GN')} GNF
                                 </p>
                               )}
+                              {ligne.prixAchat > 0 &&
+                                (Number(ligne.prixUnitaire) || 0) / (Number(ligne.modeQuantiteStock) || 1) < ligne.prixAchat && (
+                                  <p className="text-xs font-bold text-destructive mt-1">
+                                    Vente à perte : achat à {Number(ligne.prixAchat).toLocaleString('fr-GN')} GNF par{' '}
+                                    {ligne.uniteStock?.toLowerCase() || 'unité'}
+                                  </p>
+                                )}
                             </div>
                           )}
                         </div>

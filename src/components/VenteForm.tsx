@@ -170,11 +170,14 @@ const VenteForm = ({ open, onOpenChange, onSubmit, initialData = null, mode = 'c
 
       // Vérifier le prix de vente par rapport au prix d'achat
       if (field === 'prixUnitaire' && newLignes[index].prixAchat !== undefined) {
-        const prixSaisi = Number(value) || 0;
+        // Le prix de la ligne couvre un lot entier : on compare bien à l'unité
+        const parUnite = (Number(value) || 0) / (Number(newLignes[index].modeQuantiteStock) || 1);
         const prixAchat = newLignes[index].prixAchat || 0;
 
-        if (prixSaisi > 0 && prixSaisi < prixAchat) {
-          toast.error(`Le prix de vente (${prixSaisi.toLocaleString('fr-GN')} GNF) ne peut pas être inférieur au prix d'achat (${prixAchat.toLocaleString('fr-GN')} GNF) !`);
+        if (parUnite > 0 && parUnite < prixAchat) {
+          toast.error(
+            `Vente à perte : ${Math.round(parUnite).toLocaleString('fr-GN')} GNF l'unité pour un achat à ${prixAchat.toLocaleString('fr-GN')} GNF`,
+          );
         }
       }
 
@@ -707,6 +710,14 @@ const VenteForm = ({ open, onOpenChange, onSubmit, initialData = null, mode = 'c
                                   {Math.round((Number(ligne.prixUnitaire) || 0) / ligne.modeQuantiteStock).toLocaleString('fr-GN')} GNF
                                 </p>
                               )}
+                              {ligne.prixAchat > 0 &&
+                                (Number(ligne.prixUnitaire) || 0) / (Number(ligne.modeQuantiteStock) || 1) < ligne.prixAchat && (
+                                  <p className="text-xs font-bold text-destructive mt-1 flex items-center gap-1">
+                                    <AlertTriangle className="w-3 h-3 flex-shrink-0" />
+                                    Vente à perte : achat à {Number(ligne.prixAchat).toLocaleString('fr-GN')} GNF par{' '}
+                                    {ligne.uniteStock?.toLowerCase() || 'unité'}
+                                  </p>
+                                )}
                             </div>
                           )}
                         </div>
