@@ -68,7 +68,7 @@ const ClientDetailsDialog = ({ open, onOpenChange, clientId, clientNom }: Client
 
     return (
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="max-w-4xl h-[90vh]">
+        <DialogContent className="max-w-4xl max-h-[85vh]">
           {loadingContent}
         </DialogContent>
       </Dialog>
