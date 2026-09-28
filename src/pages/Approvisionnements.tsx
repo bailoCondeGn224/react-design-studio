@@ -303,7 +303,9 @@ const Approvisionnements = () => {
                 </div>
                 <div className="flex justify-between text-xs sm:text-sm">
                   <span className="text-muted-foreground">Montant restant</span>
-                  <span className="font-semibold text-destructive">{formatPrix(approvisionnementDetails.montantRestant)}</span>
+                  <span className={`font-semibold ${Number(approvisionnementDetails.montantRestant) > 0 ? 'text-destructive' : 'text-success'}`}>
+                    {formatPrix(approvisionnementDetails.montantRestant)}
+                  </span>
                 </div>
               </div>
 
@@ -354,7 +356,7 @@ const Approvisionnements = () => {
   </Sheet>
 ) : (
   <Dialog open={detailsId !== null} onOpenChange={() => setDetailsId(null)}>
-    <DialogContent className="max-w-[95vw] sm:max-w-2xl h-[90vh] flex flex-col">
+    <DialogContent className="max-w-[95vw] sm:max-w-2xl max-h-[85vh] flex flex-col">
       <DialogHeader>
         <DialogTitle className="font-heading text-base sm:text-lg">Détails Approvisionnement</DialogTitle>
       </DialogHeader>
@@ -417,7 +419,9 @@ const Approvisionnements = () => {
             </div>
             <div className="flex justify-between text-xs sm:text-sm">
               <span className="text-muted-foreground">Montant restant</span>
-              <span className="font-semibold text-destructive">{formatPrix(approvisionnementDetails.montantRestant)}</span>
+              <span className={`font-semibold ${Number(approvisionnementDetails.montantRestant) > 0 ? 'text-destructive' : 'text-success'}`}>
+                {formatPrix(approvisionnementDetails.montantRestant)}
+              </span>
             </div>
           </div>
 
