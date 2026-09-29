@@ -78,19 +78,21 @@ const RetourClientForm = ({ open, onOpenChange, onSubmit, isSubmitting = false }
       newLignes[index] = { ...newLignes[index], [field]: value };
 
       // Recalculer sous-total et quantiteBase si quantité change
+      // La case peut rester vide le temps de la saisie : on ne la remplace pas par un zéro
       if (field === 'quantite') {
-        const quantite = Number(value) || 0;
+        const quantite = value === '' ? 0 : Number(value) || 0;
         if (quantite > newLignes[index].quantiteMax) {
           toast.warning(`Quantité maximum: ${newLignes[index].quantiteMax}`);
           newLignes[index].quantite = newLignes[index].quantiteMax;
         }
+        const quantiteRetenue = Number(newLignes[index].quantite) || 0;
         // Recalculer quantiteBase en fonction du mode de vente
         if (newLignes[index].modeVente) {
-          newLignes[index].quantiteBase = newLignes[index].quantite * Number(newLignes[index].modeVente.quantiteStock);
+          newLignes[index].quantiteBase = quantiteRetenue * Number(newLignes[index].modeVente.quantiteStock);
         } else {
-          newLignes[index].quantiteBase = newLignes[index].quantite;
+          newLignes[index].quantiteBase = quantiteRetenue;
         }
-        newLignes[index].sousTotal = newLignes[index].quantite * newLignes[index].prixUnitaire;
+        newLignes[index].sousTotal = quantiteRetenue * newLignes[index].prixUnitaire;
       }
 
       return { ...prev, lignes: newLignes };
@@ -126,6 +128,12 @@ const RetourClientForm = ({ open, onOpenChange, onSubmit, isSubmitting = false }
       return;
     }
 
+    const lignesSansQuantite = lignesSelectionnees.filter(l => !(Number(l.quantite) > 0));
+    if (lignesSansQuantite.length > 0) {
+      toast.error("Veuillez indiquer la quantité à retourner pour tous les articles");
+      return;
+    }
+
     // Vérifier que toutes les lignes ont une raison
     const lignesSansRaison = lignesSelectionnees.filter(l => !l.raison);
     if (lignesSansRaison.length > 0) {
@@ -137,7 +145,8 @@ const RetourClientForm = ({ open, onOpenChange, onSubmit, isSubmitting = false }
       venteId: form.venteId,
       lignes: lignesSelectionnees.map(({ selected, quantiteMax, modeVente, ...ligne }) => ({
         ...ligne,
-        quantiteBase: ligne.quantiteBase || ligne.quantite,
+        quantite: Number(ligne.quantite),
+        quantiteBase: ligne.quantiteBase || Number(ligne.quantite),
         modeVenteId: ligne.modeVenteId || undefined,
       })),
       total: calculerTotal(),
@@ -243,8 +252,10 @@ const RetourClientForm = ({ open, onOpenChange, onSubmit, isSubmitting = false }
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2">
                           <p className="text-sm font-semibold text-foreground">{ligne.nom}</p>
-                          <span className="text-sm font-bold text-primary">×{ligne.quantiteBase || ligne.quantite}</span>
-                          {ligne.modeVente && ligne.quantite !== ligne.quantiteBase && (
+                          {Number(ligne.quantiteBase) > 0 && (
+                            <span className="text-sm font-bold text-primary">×{ligne.quantiteBase}</span>
+                          )}
+                          {ligne.modeVente && Number(ligne.quantite) > 0 && ligne.quantite !== ligne.quantiteBase && (
                             <span className="text-xs text-muted-foreground">({ligne.quantite} {ligne.modeVente.nom})</span>
                           )}
                         </div>
@@ -259,7 +270,7 @@ const RetourClientForm = ({ open, onOpenChange, onSubmit, isSubmitting = false }
                           <input
                             type="number"
                             value={ligne.quantite}
-                            onChange={(e) => updateLigne(index, 'quantite', Number(e.target.value))}
+                            onChange={(e) => updateLigne(index, 'quantite', e.target.value === '' ? '' : Number(e.target.value))}
                             min="1"
                             max={ligne.quantiteMax}
                             className="w-full px-3 h-11 rounded-lg border-2 border-border bg-card text-base font-bold text-foreground focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500"
@@ -324,8 +335,10 @@ const RetourClientForm = ({ open, onOpenChange, onSubmit, isSubmitting = false }
                         <td className="p-2">
                           <div className="flex items-center gap-2">
                             <span>{ligne.nom}</span>
-                            <span className="text-sm font-bold text-primary">×{ligne.quantiteBase || ligne.quantite}</span>
-                            {ligne.modeVente && ligne.quantite !== ligne.quantiteBase && (
+                            {Number(ligne.quantiteBase) > 0 && (
+                              <span className="text-sm font-bold text-primary">×{ligne.quantiteBase}</span>
+                            )}
+                            {ligne.modeVente && Number(ligne.quantite) > 0 && ligne.quantite !== ligne.quantiteBase && (
                               <span className="text-xs text-muted-foreground">({ligne.quantite} {ligne.modeVente.nom})</span>
                             )}
                           </div>
@@ -335,7 +348,7 @@ const RetourClientForm = ({ open, onOpenChange, onSubmit, isSubmitting = false }
                           <input
                             type="number"
                             value={ligne.quantite}
-                            onChange={(e) => updateLigne(index, 'quantite', Number(e.target.value))}
+                            onChange={(e) => updateLigne(index, 'quantite', e.target.value === '' ? '' : Number(e.target.value))}
                             min="1"
                             max={ligne.quantiteMax}
                             disabled={!ligne.selected}

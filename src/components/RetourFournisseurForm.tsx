@@ -86,13 +86,14 @@ const RetourFournisseurForm = ({ open, onOpenChange, onSubmit, isSubmitting = fa
       const newLignes = [...prev.lignes];
       newLignes[index] = { ...newLignes[index], [field]: value };
 
+      // La case peut rester vide le temps de la saisie : on ne la remplace pas par un zéro
       if (field === 'quantite') {
-        const quantite = Number(value) || 0;
+        const quantite = value === '' ? 0 : Number(value) || 0;
         if (quantite > newLignes[index].quantiteMax) {
           toast.warning(`Quantité maximum: ${newLignes[index].quantiteMax}`);
           newLignes[index].quantite = newLignes[index].quantiteMax;
         }
-        newLignes[index].sousTotal = newLignes[index].quantite * newLignes[index].prixUnitaire;
+        newLignes[index].sousTotal = (Number(newLignes[index].quantite) || 0) * newLignes[index].prixUnitaire;
       }
 
       return { ...prev, lignes: newLignes };
@@ -128,6 +129,12 @@ const RetourFournisseurForm = ({ open, onOpenChange, onSubmit, isSubmitting = fa
       return;
     }
 
+    const lignesSansQuantite = lignesSelectionnees.filter(l => !(Number(l.quantite) > 0));
+    if (lignesSansQuantite.length > 0) {
+      toast.error("Veuillez indiquer la quantité à retourner pour tous les articles");
+      return;
+    }
+
     const lignesSansRaison = lignesSelectionnees.filter(l => !l.raison);
     if (lignesSansRaison.length > 0) {
       toast.error("Veuillez indiquer la raison du retour pour tous les articles");
@@ -141,7 +148,10 @@ const RetourFournisseurForm = ({ open, onOpenChange, onSubmit, isSubmitting = fa
 
     const data = {
       approvisionnementId: form.approvisionnementId,
-      lignes: lignesSelectionnees.map(({ selected, quantiteMax, ...ligne }) => ligne),
+      lignes: lignesSelectionnees.map(({ selected, quantiteMax, ...ligne }) => ({
+        ...ligne,
+        quantite: Number(ligne.quantite),
+      })),
       total: calculerTotal(),
       remboursementRecu: form.remboursementRecu,
       montantRembourse: form.remboursementRecu ? form.montantRembourse : undefined,
@@ -271,7 +281,7 @@ const RetourFournisseurForm = ({ open, onOpenChange, onSubmit, isSubmitting = fa
                               <input
                                 type="number"
                                 value={ligne.quantite}
-                                onChange={(e) => updateLigne(index, 'quantite', Number(e.target.value))}
+                                onChange={(e) => updateLigne(index, 'quantite', e.target.value === '' ? '' : Number(e.target.value))}
                                 min="1"
                                 max={ligne.quantiteMax}
                                 className="w-full px-3 h-11 border border-border rounded-lg bg-background text-foreground focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
@@ -339,7 +349,7 @@ const RetourFournisseurForm = ({ open, onOpenChange, onSubmit, isSubmitting = fa
                             <input
                               type="number"
                               value={ligne.quantite}
-                              onChange={(e) => updateLigne(index, 'quantite', Number(e.target.value))}
+                              onChange={(e) => updateLigne(index, 'quantite', e.target.value === '' ? '' : Number(e.target.value))}
                               min="1"
                               max={ligne.quantiteMax}
                               disabled={!ligne.selected}
