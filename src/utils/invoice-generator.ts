@@ -493,27 +493,36 @@ export const generateInvoiceHTML = (data: InvoiceData, companyInfo?: CompanyInfo
     </div>
   </div>
 
-  <script>
-    // Auto-print on load
-    window.onload = function() {
-      setTimeout(() => window.print(), 500);
-    };
-  </script>
 </body>
 </html>
   `;
 };
 
+// L'impression passe par un cadre masqué dans la page : une nouvelle fenêtre est
+// bloquée par l'application bureau comme par les bloqueurs de pop-ups des navigateurs
 export const printInvoice = (data: InvoiceData, companyInfo?: any) => {
   const html = generateInvoiceHTML(data, companyInfo);
-  const printWindow = window.open('', '_blank', 'width=800,height=600');
 
-  if (printWindow) {
-    printWindow.document.write(html);
-    printWindow.document.close();
-  } else {
-    alert('Veuillez autoriser les pop-ups pour imprimer la facture');
+  const cadre = document.createElement('iframe');
+  cadre.setAttribute('aria-hidden', 'true');
+  cadre.style.cssText = 'position:fixed;right:0;bottom:0;width:0;height:0;border:0;';
+  document.body.appendChild(cadre);
+
+  const documentCadre = cadre.contentWindow?.document;
+  if (!documentCadre) {
+    cadre.remove();
+    return;
   }
+
+  cadre.onload = () => {
+    cadre.contentWindow?.focus();
+    cadre.contentWindow?.print();
+    setTimeout(() => cadre.remove(), 1000);
+  };
+
+  documentCadre.open();
+  documentCadre.write(html);
+  documentCadre.close();
 };
 
 export const shareInvoiceWhatsApp = (data: InvoiceData, companyInfo?: CompanyInfo) => {
